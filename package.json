@@ -1,0 +1,26 @@
+{
+  "name": "typescript-template",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {
+    "ect-bin": "1.4.1",
+    "google-closure-compiler": "^20220601.0.0",
+    "html-minifier": "^4.0.0",
+    "html-webpack-plugin": "^5.3.2",
+    "roadroller": "^2.1.0",
+    "tmp": "^0.2.1",
+    "ts-loader": "^9.2.5",
+    "typescript": "^4.7.4",
+    "webpack": "^5.50.0",
+    "webpack-cli": "^4.8.0",
+    "webpack-dev-server": "^4.0.0",
+    "copy-webpack-plugin": "^9.0.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "webpack serve --mode=development --host=0.0.0.0",
+    "build": "webpack --config webpack.prod.js && npm run zip",
+    "zip": "node zip.js"
+  },
+  "author": ""
+}

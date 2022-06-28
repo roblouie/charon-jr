@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>TypeScript Template</title>
+    <style>
+        #c {
+            width: 100vw;
+            outline: 0;
+            image-rendering: pixelated; /* You definitely want this if you are doing pixel art */
+        }
+
+        /* Get rid of any margins, set background black, use flexbox to center */
+        html, body {
+            margin: 0;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        /* Input whatever aspect ratio you use here */
+        @media (min-aspect-ratio: 16/9) {
+            #c {
+                height: 100vh;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<html>
+<body>
+    <canvas id="c" width="1280" height="720"></canvas>
+</body>
+</html>

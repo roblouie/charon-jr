@@ -2,11 +2,7 @@ const htmlMinify = require('html-minifier');
 const { Packer } = require('roadroller');
 const fs = require("fs/promises");
 const tmp = require('tmp');
-const {execFileSync} = require("child_process");
-const {statSync} = require("fs");
 const ClosureCompiler = require('google-closure-compiler').compiler;
-const ect = require('ect-bin');
-const {file} = require("tmp");
 
 class SuperMinifyPlugin {
   static defaultOptions = {

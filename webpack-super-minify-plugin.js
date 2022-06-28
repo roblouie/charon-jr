@@ -130,17 +130,4 @@ async function applyClosure(js) {
 
 }
 
-// async function ectPlugin(htmlText) {
-//   try {
-//     await fs.mkdir('./dist/super-minified', { recursive: true });
-//     await fs.writeFile('./dist/super-minified/index.html', htmlText);
-//     const args = ['-strip', '-zip', '-10009', './dist/super-minified/index.html'];
-//     const result = await execFileSync(ect, args);
-//     const stats = statSync('./dist/super-minified/index.zip');
-//     console.log('ZIP size', stats.size);
-//   } catch (err) {
-//     console.log('ECT error', err);
-//   }
-// }
-
 module.exports = { SuperMinifyPlugin };

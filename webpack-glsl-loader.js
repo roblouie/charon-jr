@@ -1,0 +1,70 @@
+var fs = require('fs');
+var path = require('path');
+
+
+function parse(loader, source, context, cb) {
+  var imports = [];
+  var importPattern = /#include "([.\/\w_-]+)"/gi;
+  var match = importPattern.exec(source);
+
+  while (match != null) {
+    imports.push({
+      key: match[1],
+      target: match[0],
+      content: ''
+    });
+    match = importPattern.exec(source);
+  }
+
+  processImports(loader, source, context, imports, cb);
+}
+
+function processImports(loader, source, context, imports, cb) {
+  if (imports.length === 0) {
+    // basic glsl minification
+    const firstLineIndex = source.indexOf('\r\n');
+    const [versionLine, code] = [source.slice(0, firstLineIndex), source.slice(firstLineIndex)];
+    const newlineStripped = code.replaceAll('\r', '').replaceAll('\n', '');
+    const extraSpacesStripped = newlineStripped.replace(/\s\s+/g, ' ')
+
+    const combinedBack = versionLine + '\n' + extraSpacesStripped;
+
+    return cb(null, combinedBack);
+  }
+
+  var imp = imports.pop();
+
+  loader.resolve(context, './' + imp.key, function(err, resolved) {
+    if (err) {
+      return cb(err);
+    }
+
+    loader.addDependency(resolved);
+    fs.readFile(resolved, 'utf-8', function(err, src) {
+      if (err) {
+        return cb(err);
+      }
+
+      parse(loader, src, path.dirname(resolved), function(err, bld) {
+        if (err) {
+          return cb(err);
+        }
+
+        source = source.replace(imp.target, bld);
+        processImports(loader, source, context, imports, cb);
+      });
+    });
+  });
+}
+
+module.exports = function(source) {
+  this.cacheable();
+  var cb = this.async();
+  parse(this, source, this.context, function(err, bld) {
+    if (err) {
+      return cb(err);
+    }
+
+    cb(null, 'module.exports = ' + JSON.stringify(bld));
+  });
+};

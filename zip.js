@@ -5,12 +5,6 @@ const path = require('path');
 const pathToZipFolder = path.join(__dirname, 'dist', 'super-minified');
 
 try {
-  fs.unlinkSync(path.join(pathToZipFolder, 'index.zip'));
-} catch(e){
-
-}
-
-try {
   const directoryEntries = fs.readdirSync(pathToZipFolder);
   const filenamesToZip = directoryEntries.filter(entry => entry !== 'index');
   const zipUs = filenamesToZip.map(filename => path.join(pathToZipFolder, filename));

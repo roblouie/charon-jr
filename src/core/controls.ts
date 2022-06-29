@@ -4,6 +4,7 @@ class Controls {
   isLeft = false;
   isRight = false;
   isEnter = false;
+  isSpace = false;
   isEscape = false;
 
   constructor() {
@@ -27,6 +28,9 @@ class Controls {
         break;
       case 'Enter':
         this.isEnter = isPressed;
+        break;
+      case 'Space':
+        this.isSpace = isPressed;
         break;
       case 'Escape':
         this.isEscape = isPressed;

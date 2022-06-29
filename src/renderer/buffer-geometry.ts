@@ -1,0 +1,84 @@
+import { lilgl } from '../lil-gl';
+
+export class BufferGeometry {
+  private positions: { data: Float32Array; size: number };
+  private normals: { data: Float32Array; size: number };
+  private indices?: Uint16Array;
+  private fullBuffer: Float32Array;
+
+  buffer: WebGLBuffer;
+  indexBuffer: WebGLBuffer;
+  vao: WebGLVertexArrayObject;
+
+  constructor() {
+    this.buffer = lilgl.gl.createBuffer()!;
+    this.indexBuffer = lilgl.gl.createBuffer()!;
+    this.vao = lilgl.gl.createVertexArray()!;
+    this.positions = { data: new Float32Array(0), size: 3 };
+    this.normals = { data: new Float32Array(0), size: 3 };
+    this.fullBuffer = new Float32Array();
+  }
+
+  // TODO: Change to just get/set attribute like threejs. Then I can loop through attributes
+  // and build out the full buffer when the size changes. When the size doesn't change though, I
+  // can just set the data in the appropriate spot. Changing to the generic set attribute lets
+  // the code for this all be shared and allows more attributes
+  private populateFullBuffer() {
+    this.fullBuffer = new Float32Array(this.positions.data.length + this.normals.data.length);
+    this.fullBuffer.set(this.positions.data);
+    this.fullBuffer.set(this.normals.data, this.positions.data.length);
+  }
+
+  getPositions() {
+    return this.positions;
+  }
+
+  setPositions(data: Float32Array, size: number) {
+    this.positions = { data, size };
+    this.populateFullBuffer();
+  }
+
+  getNormals() {
+    return this.normals;
+  }
+
+  setNormals(data: Float32Array, size: number) {
+    this.normals = { data, size };
+  }
+
+  setIndices(indices: Uint16Array) {
+    this.indices = indices;
+  }
+
+  getIndices(): Uint16Array | undefined {
+    return this.indices;
+  }
+
+  miniUpdate() {
+    lilgl.gl.bindBuffer(lilgl.gl.ARRAY_BUFFER, this.buffer);
+    lilgl.gl.bufferData(lilgl.gl.ARRAY_BUFFER, this.fullBuffer, lilgl.gl.STATIC_DRAW);
+
+    lilgl.gl.bindVertexArray(this.vao);
+    lilgl.gl.bindBuffer(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+    lilgl.gl.bufferData(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indices!, lilgl.gl.STATIC_DRAW);
+  }
+
+  bindGeometry() {
+    this.buffer = lilgl.gl.createBuffer()!;
+    this.populateFullBuffer();
+    lilgl.gl.bindBuffer(lilgl.gl.ARRAY_BUFFER, this.buffer);
+    lilgl.gl.bufferData(lilgl.gl.ARRAY_BUFFER, this.fullBuffer, lilgl.gl.STATIC_DRAW);
+
+    lilgl.gl.bindVertexArray(this.vao);
+    lilgl.gl.vertexAttribPointer(lilgl.coordsLocation, this.positions!.size, lilgl.gl.FLOAT, false, 0, 0);
+    lilgl.gl.enableVertexAttribArray(lilgl.coordsLocation);
+
+    lilgl.gl.vertexAttribPointer(lilgl.normalsLocation, this.normals!.size, lilgl.gl.FLOAT, false, 0, this.positions!.data.length * this.positions!.data.BYTES_PER_ELEMENT);
+    lilgl.gl.enableVertexAttribArray(lilgl.normalsLocation);
+
+    lilgl.gl.bindBuffer(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+    lilgl.gl.bufferData(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indices!, lilgl.gl.STATIC_DRAW);
+
+    lilgl.gl.bindVertexArray(null);
+  }
+}

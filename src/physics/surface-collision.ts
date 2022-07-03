@@ -1,10 +1,10 @@
 import { Face } from './face';
-import { dotProductVectors } from '../dom-matrix-helpers';
+import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 
 // TODO: Make this return multiple floors and sort by height. Currently
 // this requires floor faces to be sent in from highest to lowest, which with angles
 // won't always be possible in a good way
-export function findFloorHeightAtPosition(floorFaces: Face[], position: DOMPoint) {
+export function findFloorHeightAtPosition(floorFaces: Face[], position: EnhancedDOMPoint) {
   let height: number;
 
   for (const floor of floorFaces) {
@@ -38,7 +38,7 @@ export function findFloorHeightAtPosition(floorFaces: Face[], position: DOMPoint
   }
 }
 
-export function findWallCollisionsFromList(walls: Face[], position: DOMPoint, offsetY: number, radius: number) {
+export function findWallCollisionsFromList(walls: Face[], position: EnhancedDOMPoint, offsetY: number, radius: number) {
   const collisionData = {
     xPush: 0,
     zPush: 0,
@@ -46,7 +46,7 @@ export function findWallCollisionsFromList(walls: Face[], position: DOMPoint, of
     numberOfWallsHit: 0,
   };
 
-  const { x, z} = position;
+  const { x, z } = position;
   const y = position.y + offsetY;
 
   for (const wall of walls) {
@@ -54,7 +54,7 @@ export function findWallCollisionsFromList(walls: Face[], position: DOMPoint, of
       continue;
     }
 
-    const offset = dotProductVectors(wall.normal, position) + wall.originOffset;
+    const offset = wall.normal.dot(position) + wall.originOffset;
     if (offset < -radius || offset > radius) {
       continue;
     }
@@ -63,13 +63,18 @@ export function findWallCollisionsFromList(walls: Face[], position: DOMPoint, of
     const w = isXProjection ? -z : x;
     const wNormal = isXProjection ? wall.normal.x : wall.normal.z;
 
-    let w1 = -wall.points[0].z, w2 = -wall.points[1].z, w3 = -wall.points[2].z;
+    let w1 = -wall.points[0].z;
+    let w2 = -wall.points[1].z;
+    let w3 = -wall.points[2].z;
+
     if (!isXProjection) {
       w1 = wall.points[0].x;
       w2 = wall.points[1].x;
       w3 = wall.points[2].x;
     }
-    let y1 = wall.points[0].y, y2 = wall.points[1].y, y3 = wall.points[2].y;
+    let y1 = wall.points[0].y;
+    let y2 = wall.points[1].y;
+    let y3 = wall.points[2].y;
 
     const invertSign = wNormal > 0 ? 1 : -1;
 

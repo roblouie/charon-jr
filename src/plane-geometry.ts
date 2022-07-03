@@ -1,5 +1,6 @@
 import { BufferGeometry } from './renderer/buffer-geometry';
 import { calculateVertexNormals } from '@/math-helpers';
+import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 
 const sampleHeightMap = [
   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
@@ -27,7 +28,7 @@ export  class PlaneGeometry extends BufferGeometry {
       for (let x = 0; x <= subdivisionsWidth; x++) {
         const u = x / subdivisionsWidth;
         const v = z / subdivisionsDepth;
-        positions.push(new DOMPoint(
+        positions.push(new EnhancedDOMPoint(
           width * u - width * 0.5,
           sampleHeightMap[i],
           depth * v - depth * 0.5

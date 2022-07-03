@@ -1,4 +1,4 @@
-import { lilgl } from '../lil-gl';
+import { lilgl } from '@/lil-gl';
 
 export class BufferGeometry {
   private positions: { data: Float32Array; size: number };

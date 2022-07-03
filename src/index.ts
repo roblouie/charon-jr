@@ -10,34 +10,21 @@ import { PlaneGeometry } from './plane-geometry';
 import { RampGeometry } from './ramp-geometry';
 import { Staircase } from './staircase-geometry';
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
+import { Renderer } from "@/renderer/renderer";
 
 // TESTING
-const test = new EnhancedDOMPoint([0, 1, 2, 3]);
+const test = new EnhancedDOMPoint(1, 2, 3);
+const test2 = new EnhancedDOMPoint(2, 3, 4);
 // @ts-ignore
-console.log(test.x);
-// @ts-ignore
-console.log(test.xy);
-// @ts-ignore
-console.log(test.zyx);
-
-// END TESTING
+console.log(test2.minus(test));
 
 const gl = lilgl.gl;
 const debugElement = document.querySelector('#debug')!;
 
-gl.useProgram(lilgl.program);
-
-gl.enable(gl.CULL_FACE);
-gl.enable(gl.DEPTH_TEST);
-
-const modelviewProjectionLocation = gl.getUniformLocation(lilgl.program, 'modelviewProjection');
-const normalMatrixLocation =  gl.getUniformLocation(lilgl.program, 'normalMatrix');
-const colorLocation =  gl.getUniformLocation(lilgl.program, 'color');
-
 const scene = new Object3d();
 
 const camera = new Camera(Math.PI / 5, 16 / 9, 1, 400);
-camera.position = new DOMPoint(3, 5, -17);
+camera.position = new EnhancedDOMPoint(3, 5, -17);
 
 const player = new Player();
 player.mesh.position.y = 1.5;
@@ -65,35 +52,22 @@ scene.allChildren().forEach(child => {
 camera.lookAt(player.mesh.position);
 camera.rotate(0, 0.2, 0);
 
+const renderer = new Renderer();
+
+let lastTime = 0;
 draw(0);
 
 function draw(time: number) {
-  gl.clearColor(0.3, 0.5, 1, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+  // debugElement.textContent = `${1 / ((time - lastTime) / 1000)} fps`;
+  // lastTime = time;
   player.update(groupedFaces);
 
   scene.updateWorldMatrix();
-  camera.updateWorldMatrix();
-
-  const viewMatrix = camera.worldMatrix.inverse();
-
-  player.mesh.rotate(0, 0.0003, 0);
 
   camera.lookAt(player.mesh.position);
+  camera.updateWorldMatrix();
 
-  scene.allChildren().forEach(object3d => {
-    if (object3d.isMesh()) {
-      const modelViewMatrix = viewMatrix.multiply(object3d.worldMatrix);
-      const modelViewProjectionMatrix = camera.projection.multiply(modelViewMatrix);
-      gl.uniform4fv(colorLocation, object3d.material.color);
-      gl.uniformMatrix4fv(normalMatrixLocation, true, modelViewMatrix.inverse().toFloat32Array());
-      gl.uniformMatrix4fv(modelviewProjectionLocation, false, modelViewProjectionMatrix.toFloat32Array());
-      gl.bindVertexArray(object3d.geometry.vao!);
-      gl.drawElements(gl.TRIANGLES, object3d.geometry.getIndices()!.length, gl.UNSIGNED_SHORT, 0);
-    }
-  });
+  renderer.render(camera, scene);
 
-  gl.bindVertexArray(null);
   requestAnimationFrame(draw);
 }

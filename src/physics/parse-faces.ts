@@ -1,5 +1,6 @@
 import { BufferGeometry } from '@/renderer/buffer-geometry';
 import { Face } from './face';
+import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 
 export function getGroupedFaces(geometries: BufferGeometry[]) {
   const faces = geometries.flatMap(geometry => {
@@ -26,9 +27,9 @@ export function getGroupedFaces(geometries: BufferGeometry[]) {
       const z2 = positions.data[thirdIndex + 2];
 
       return [
-        new DOMPoint(x0, y0, z0),
-        new DOMPoint(x1, y1, z1),
-        new DOMPoint(x2, y2, z2),
+        new EnhancedDOMPoint(x0, y0, z0),
+        new EnhancedDOMPoint(x1, y1, z1),
+        new EnhancedDOMPoint(x2, y2, z2),
       ];
     });
 

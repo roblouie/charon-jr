@@ -4,11 +4,12 @@ import { Material } from './renderer/material';
 import { findFloorHeightAtPosition, findWallCollisionsFromList } from './physics/surface-collision';
 import { Face } from './physics/face';
 import { controls } from '@/core/controls';
+import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 
 export class Player {
   isJumping = false;
-  feetCenter = new DOMPoint(0, 0, 0);
-  velocity = new DOMPoint(0, 0, 0);
+  feetCenter = new EnhancedDOMPoint(0, 0, 0);
+  velocity = new EnhancedDOMPoint(0, 0, 0);
 
   mesh: Mesh;
 
@@ -20,19 +21,12 @@ export class Player {
   update(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
     this.updateVelocityFromControls();
     this.mesh.worldMatrix.transformPoint(this.velocity);
-    this.feetCenter.x += this.velocity.x;
-    this.feetCenter.z += this.velocity.z;
-
-    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.feetCenter, 0.4, 0.1);
-    this.feetCenter.x += wallCollisions.xPush;
-    this.feetCenter.z += wallCollisions.zPush;
-
     this.velocity.y -= 0.003; // gravity
-    this.feetCenter.y += this.velocity.y;
+    this.feetCenter.plusSelf(this.velocity);
     this.collideWithLevel(groupedFaces);
 
-    this.mesh.position.x = this.feetCenter.x; // - 0.25;
-    this.mesh.position.z = this.feetCenter.z;  //- 0.25;
+    this.mesh.position.x = this.feetCenter.x;
+    this.mesh.position.z = this.feetCenter.z;
     this.mesh.position.y = this.feetCenter.y + 0.5;
   }
 

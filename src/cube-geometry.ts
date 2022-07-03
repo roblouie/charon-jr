@@ -47,7 +47,6 @@ export class CubeGeometry extends BufferGeometry {
       [1, 1],
     ];
 
-    // const numVertices = 6 * 4;
     const positions = [];
     const normals   = [];
     const texcoords = [];

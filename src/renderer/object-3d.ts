@@ -1,24 +1,24 @@
 import { Mesh } from './mesh';
 import { radsToDegrees } from '@/math-helpers';
-import { crossProductVectors, normalizeVector, subtractVectors } from '@/dom-matrix-helpers';
+import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 
 export class Object3d {
-  position: DOMPoint;
-  scale: DOMPoint;
+  position: EnhancedDOMPoint;
+  scale: EnhancedDOMPoint;
   children: Object3d[];
   parent?: Object3d;
   localMatrix: DOMMatrix;
   worldMatrix: DOMMatrix;
-  up: DOMPoint;
+  up: EnhancedDOMPoint;
   private rotationMatrix: DOMMatrix;
 
   constructor() {
-    this.position = new DOMPoint();
-    this.scale = new DOMPoint(1, 1, 1);
+    this.position = new EnhancedDOMPoint();
+    this.scale = new EnhancedDOMPoint(1, 1, 1);
     this.children = [];
     this.localMatrix = new DOMMatrix();
     this.worldMatrix = new DOMMatrix();
-    this.up = new DOMPoint(0, 1, 0);
+    this.up = new EnhancedDOMPoint(0, 1, 0);
     this.rotationMatrix = new DOMMatrix();
   }
 
@@ -82,13 +82,10 @@ export class Object3d {
     return allChildren;
   }
 
-  lookAt(target: DOMPoint, up?: DOMPoint) {
-    const subtracted = subtractVectors(this.position, target);
-    const zAxis = normalizeVector(subtracted);
-
-    const xCrossed = crossProductVectors(up ?? this.up, zAxis);
-    const xAxis = normalizeVector(xCrossed);
-    const yAxis = normalizeVector(crossProductVectors(zAxis, xAxis));
+  lookAt(target: EnhancedDOMPoint, up?: EnhancedDOMPoint) {
+    const zAxis = this.position.minus(target).normalize();
+    const xAxis = (up ?? this.up).cross(zAxis).normalize();
+    const yAxis = zAxis.cross(xAxis).normalize();
 
     this.rotationMatrix = new DOMMatrix([
       xAxis.x, xAxis.y, xAxis.z, 0,

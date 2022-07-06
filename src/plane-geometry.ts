@@ -1,18 +1,20 @@
 import { BufferGeometry } from './renderer/buffer-geometry';
 import { calculateVertexNormals } from '@/math-helpers';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
+import { drawLandscape } from '@/textures/texture-maker';
 
-const sampleHeightMap = [
-  10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-  10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-  10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-  10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-  10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-  10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-  10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-  10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-  10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-];
+// const sampleHeightMap = [
+//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
+//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
+//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
+//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
+//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
+//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
+//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
+//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
+//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
+// ];
+
 
 export  class PlaneGeometry extends BufferGeometry {
   constructor(width = 1, depth = 1, subdivisionsWidth = 1, subdivisionsDepth = 1) {
@@ -21,12 +23,19 @@ export  class PlaneGeometry extends BufferGeometry {
   }
 
   createPlaneVertices(width = 1, depth = 1, subdivisionsWidth = 1, subdivisionsDepth = 1) {
+    const sampleHeightMap = [];
+    const imageData = drawLandscape().data;
+    for (let i = 0; i < imageData.length; i+= 4) {
+      sampleHeightMap.push(imageData[i] / 10 - 10);
+    }
+
+
     const positions = [];
     const texcoords = [];
     let i = 0;
     for (let z = 0; z <= subdivisionsDepth; z++) {
       for (let x = 0; x <= subdivisionsWidth; x++) {
-        const texCoord = new EnhancedDOMPoint(x, z);
+        const texCoord = new EnhancedDOMPoint(x / 10, z / 10);
         positions.push(new EnhancedDOMPoint(
           width * (x / subdivisionsWidth) - width * 0.5,
           sampleHeightMap[i],

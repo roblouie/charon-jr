@@ -8,7 +8,7 @@ export enum NoiseType {
   Lines,
 }
 
-export class NoiseMaker {
+class NoiseMaker {
   private perms: number[] = [];
   private directions: EnhancedDOMPoint[] = [];
 
@@ -138,3 +138,5 @@ export class NoiseMaker {
     return this.randomVector(new EnhancedDOMPoint(seed, 123.456)).x;
   }
 }
+
+export const noiseMaker = new NoiseMaker();

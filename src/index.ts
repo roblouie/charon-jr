@@ -11,10 +11,17 @@ import { RampGeometry } from './ramp-geometry';
 import { Staircase } from './staircase-geometry';
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
 import { Renderer } from "@/renderer/renderer";
-import { drawCurrentTexture } from '@/textures/texture-maker';
+import {
+  drawBricks,
+  drawCurrentTexture,
+  drawGrass,
+  drawLandscape,
+  drawMarble,
+  drawStoneWalkway
+} from '@/textures/texture-maker';
+import { textureLoader } from '@/renderer/texture-loader';
 
-// TESTING
-drawCurrentTexture();
+
 
 
 const gl = lilgl.gl;
@@ -28,10 +35,24 @@ camera.position = new EnhancedDOMPoint(3, 5, -17);
 const player = new Player();
 player.mesh.position.y = 1.5;
 
-const floor = new Mesh(new PlaneGeometry(50, 50, 9, 9), new Material([0, 1, 0, 1]));
-const ramp = new Mesh(new RampGeometry(3, 13, 13), new Material([1, 0, 0, 1]));
+const floor = new Mesh(
+  new PlaneGeometry(200, 200, 127, 127),
+  new Material({texture: textureLoader.load(drawGrass())})
+);
+const ramp = new Mesh(
+  new RampGeometry(3, 13, 13),
+  new Material({texture: textureLoader.load(drawMarble())})
+);
 const { cubes } = new Staircase(10, 0.3, 3, 1);
-const wall = new Mesh(new CubeGeometry(3, 4, 4, -6), new Material([1, 1, 0, 1]));
+
+const wall = new Mesh(
+  new CubeGeometry(3, 4, 4, -6),
+  new Material({texture: textureLoader.load(drawBricks())})
+);
+
+// TESTING
+drawCurrentTexture();
+// END TESTING
 
 const levelParts = [ramp, ...cubes, wall, floor];
 const levelGeometries = levelParts.map(levelPart => levelPart.geometry);
@@ -51,6 +72,7 @@ camera.lookAt(player.mesh.position);
 camera.rotate(0, 0.2, 0);
 
 const renderer = new Renderer();
+textureLoader.bindTextures();
 
 let lastTime = 0;
 draw(0);

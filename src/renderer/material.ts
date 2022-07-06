@@ -1,7 +1,11 @@
-export class Material {
-  color: number[];
+import { Texture } from '@/renderer/texture';
 
-  constructor(color: number[]) {
-    this.color = color;
+export class Material {
+  color = [1.0, 1.0, 1.0, 1.0];
+  texture?: Texture;
+
+  constructor(props: { color?: number[], texture?: Texture }) {
+    this.color = props.color ?? this.color;
+    this.texture = props.texture;
   }
 }

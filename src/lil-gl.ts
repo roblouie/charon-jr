@@ -49,3 +49,4 @@ export class LilGl {
 }
 
 export const lilgl = new LilGl();
+export const gl = lilgl.gl;

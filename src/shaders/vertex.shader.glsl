@@ -13,7 +13,7 @@ out vec4 v_color;
 out vec2 vTexCoord;
 out float vDepth;
 
-vec3 light_direction = vec3(-3, 3, 1);
+vec3 light_direction = vec3(-1, 2, 1);
 
 void main() {
     vec4 coords = vec4(a_coords, 1.0);

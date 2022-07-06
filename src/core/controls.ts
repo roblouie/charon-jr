@@ -13,6 +13,7 @@ class Controls {
   }
 
   private toggleKey(event: KeyboardEvent, isPressed: boolean) {
+    event.key
     switch (event.code) {
       case 'KeyW':
         this.isUp = isPressed;

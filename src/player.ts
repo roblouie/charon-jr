@@ -5,6 +5,8 @@ import { findFloorHeightAtPosition, findWallCollisionsFromList } from './physics
 import { Face } from './physics/face';
 import { controls } from '@/core/controls';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
+import { textureLoader } from '@/renderer/texture-loader';
+import { drawVolcanicRock, drawWater } from '@/textures/texture-maker';
 
 export class Player {
   isJumping = false;
@@ -14,7 +16,10 @@ export class Player {
   mesh: Mesh;
 
   constructor() {
-    this.mesh = new Mesh(new CubeGeometry(0.1, 1, 0.1), new Material([1, 0, 1, 1]));
+    this.mesh = new Mesh(
+      new CubeGeometry(0.1, 1, 0.1),
+      new Material({color: [1, 0, 1, 1], texture: textureLoader.load(drawWater())})
+    );
     this.feetCenter.y = 10;
   }
 

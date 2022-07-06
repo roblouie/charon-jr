@@ -1,31 +1,28 @@
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
-import { NoiseMaker, NoiseType } from '@/textures/noise-maker';
+import { noiseMaker, NoiseType } from '@/textures/noise-maker';
 
 const drawContext = document.querySelector<HTMLCanvasElement>('#draw')!.getContext('2d')!;
 const tileContext = document.querySelector<HTMLCanvasElement>('#tile')!.getContext('2d')!;
 const workContext = document.querySelector<HTMLCanvasElement>('#work')!.getContext('2d')!;
 const noiseContext = document.querySelector<HTMLCanvasElement>('#noise')!.getContext('2d')!;
 
-const directions: EnhancedDOMPoint[] = [];
-for (let i = 0; i < 256; i++) {
-  directions.push(new EnhancedDOMPoint(
-    Math.cos(i * 2.0 * Math.PI / 256),
-    Math.sin(i * 2.0 * Math.PI / 256)
-  ));
-}
-
-const noiseMaker = new NoiseMaker();
 
 drawContext.fillStyle = 'red';
 drawContext.fillRect(0, 0, 64, 64);
 
 const resolution = 128;
 
-const positioner = tilePositioner(128, 256);
 
 export function drawCurrentTexture() {
-  drawWater(); //tileContext.getImageData(0, 0, 256, 256).data;
+  drawLandscape(); //tileContext.getImageData(0, 0, 256, 256).data;
   tileDrawn();
+}
+
+export function drawLandscape() {
+  clearWith('black');
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 3, NoiseType.Perlin, 170, 255, 255, 255, true), 0, 0);
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  return drawContext.getImageData(0, 0, 128, 128);
 }
 
 export function drawTest() {
@@ -36,8 +33,7 @@ export function drawTest() {
 }
 
 export function drawBricks() {
-  drawContext.fillStyle = '#ddd';
-  drawContext.fillRect(0, 0, resolution, resolution);
+  clearWith('#ddd');
   drawContext.fillStyle = 'red';
   drawContext.filter = 'drop-shadow(1px 1px 0px #888)';
   tile((x, y) => {
@@ -45,7 +41,7 @@ export function drawBricks() {
     drawContext.fillRect(offsetX, y + 1, 30, 14);
   }, 32, 16);
   noisify(drawContext, 30);
-  return drawContext.getImageData(0, 0, 128, 128).data;
+  return drawContext.getImageData(0, 0, 128, 128);
 }
 
 export function drawTiles() {
@@ -59,7 +55,7 @@ export function drawTiles() {
     drawContext.fill();
   }, resolution, resolution / 2);
   noisify(drawContext, 3);
-  return drawContext.getImageData(0, 0, 128, 128).data;
+  return drawContext.getImageData(0, 0, 128, 128);
 }
 
 export function drawGrass() {
@@ -69,7 +65,7 @@ export function drawGrass() {
   drawContext.globalCompositeOperation = 'screen';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   drawContext.globalCompositeOperation = 'source-over';
-  return drawContext.getImageData(0, 0, 128, 128).data;
+  return drawContext.getImageData(0, 0, 128, 128);
 }
 
 export function drawMarble() {
@@ -78,13 +74,7 @@ export function drawMarble() {
   noiseMaker.seed(23);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 2, NoiseType.Edge, 220, 130, 130, 110, true), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  const data = drawContext.getImageData(0, 0, 128, 128).data;
-  for (let i = 4; i < data.length; i+= 4) {
-    if (data[i] !== 255) {
-      debugger;
-    }
-  }
-  return data;
+  return drawContext.getImageData(0, 0, 128, 128);
 }
 
 export function drawRockWall() {
@@ -94,7 +84,7 @@ export function drawRockWall() {
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 1, NoiseType.Lines, 200, 20, 20, 20, true), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   noisify(drawContext, 2);
-  return drawContext.getImageData(0, 0, 128, 128).data;
+  return drawContext.getImageData(0, 0, 128, 128);
 }
 
 export function drawStoneWalkway() {
@@ -106,21 +96,16 @@ export function drawStoneWalkway() {
   noiseMaker.seed(34);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 1, NoiseType.Lines, 220, 1, 1, 80, true), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  const data = drawContext.getImageData(0, 0, 128, 128).data;
-  for (let i = 3; i < data.length; i+= 4) {
-    if (data[i] !== 255) {
-      data[i] = 255;
-    }
-  }
-  return data;
+  return drawContext.getImageData(0, 0, 128, 128);
 }
 
-function drawVolcanicRock() {
+export function drawVolcanicRock() {
   clearWith('#000000');
   // noiseMaker.seed(17);
   noiseMaker.seed(462);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 1, NoiseType.Lines, 130, 255, 0, 0, true), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  return drawContext.getImageData(0, 0, 128, 128);
 }
 
 export function drawWater() {
@@ -130,7 +115,7 @@ export function drawWater() {
   // noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 1, NoiseType.Lines, 130, 50, 100, 255, true), 0, 0);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 1, NoiseType.Edge, 220, 50, 100, 255), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  return drawContext.getImageData(0, 0, 128, 128).data;
+  return drawContext.getImageData(0, 0, 128, 128);
 }
 
 
@@ -176,19 +161,3 @@ function tileDrawn() {
   }
 }
 
-function* tilePositioner(textureSize: number, canvasSize: number): Generator<DOMPoint> {
-  const currentPosition = new DOMPoint(0, 0);
-  while (true) {
-    yield currentPosition;
-    currentPosition.x += textureSize;
-    if (currentPosition.x >= canvasSize) {
-      currentPosition.x = 0;
-      currentPosition.y += textureSize;
-    }
-    if (currentPosition.y >= canvasSize) {
-      console.warn('too many texture, increase canvas size');
-      currentPosition.x = 0;
-      currentPosition.y = 0;
-    }
-  }
-}

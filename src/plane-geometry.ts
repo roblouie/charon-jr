@@ -26,15 +26,13 @@ export  class PlaneGeometry extends BufferGeometry {
     let i = 0;
     for (let z = 0; z <= subdivisionsDepth; z++) {
       for (let x = 0; x <= subdivisionsWidth; x++) {
-        const u = x / subdivisionsWidth;
-        const v = z / subdivisionsDepth;
+        const texCoord = new EnhancedDOMPoint(x, z);
         positions.push(new EnhancedDOMPoint(
-          width * u - width * 0.5,
+          width * (x / subdivisionsWidth) - width * 0.5,
           sampleHeightMap[i],
-          depth * v - depth * 0.5
+          depth * (z / subdivisionsDepth) - depth * 0.5
         ));
-        texcoords.push(u, v);
-        console.log(i);
+        texcoords.push(texCoord);
         i++;
       }
     }
@@ -66,6 +64,7 @@ export  class PlaneGeometry extends BufferGeometry {
 
     this.setPositions(new Float32Array(positionFlatArray), 3);
     this.setNormals(new Float32Array(normalsFlatArray), 3);
+    this.setTextureCoords(new Float32Array(texcoords.flatMap(coord => [coord.u, coord.v])), 2);
     this.setIndices(new Uint16Array(indices));
   }
 }

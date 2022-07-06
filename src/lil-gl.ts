@@ -5,6 +5,8 @@ export class LilGl {
 
   readonly coordsLocation = 0;
   readonly normalsLocation = 1;
+  readonly texCoordsLocation = 2;
+  readonly textureDepth = 3;
 
  constructor() {
    this.canvas = document.querySelector('#c')!;

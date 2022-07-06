@@ -11,12 +11,11 @@ import { RampGeometry } from './ramp-geometry';
 import { Staircase } from './staircase-geometry';
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
 import { Renderer } from "@/renderer/renderer";
+import { drawCurrentTexture } from '@/textures/texture-maker';
 
 // TESTING
-const test = new EnhancedDOMPoint(1, 2, 3);
-const test2 = new EnhancedDOMPoint(2, 3, 4);
-// @ts-ignore
-console.log(test2.minus(test));
+drawCurrentTexture();
+
 
 const gl = lilgl.gl;
 const debugElement = document.querySelector('#debug')!;
@@ -38,7 +37,6 @@ const levelParts = [ramp, ...cubes, wall, floor];
 const levelGeometries = levelParts.map(levelPart => levelPart.geometry);
 
 const groupedFaces = getGroupedFaces(levelGeometries);
-console.log(groupedFaces);
 
 scene.add(player.mesh);
 scene.add(...levelParts);

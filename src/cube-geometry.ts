@@ -74,6 +74,7 @@ export class CubeGeometry extends BufferGeometry {
 
     this.setPositions(new Float32Array(positions.flat()), 3);
     this.setNormals(new Float32Array(normals.flat()), 3);
+    this.setTextureCoords(new Float32Array(texcoords.flat()), 2);
     this.setIndices(new Uint16Array(indices));
   }
 }

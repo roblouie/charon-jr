@@ -1,6 +1,13 @@
 import { lilgl } from "@/lil-gl";
 import { Camera } from "@/renderer/camera";
 import { Object3d } from "@/renderer/object-3d";
+import {
+  drawBricks,
+  drawGrass,
+  drawStoneWalkway,
+  drawTest,
+  drawWater
+} from '@/textures/texture-maker';
 
 export class Renderer {
   modelviewProjectionLocation: WebGLUniformLocation;
@@ -14,6 +21,17 @@ export class Renderer {
     this.modelviewProjectionLocation = lilgl.gl.getUniformLocation(lilgl.program, 'modelviewProjection')!;
     this.normalMatrixLocation =  lilgl.gl.getUniformLocation(lilgl.program, 'normalMatrix')!;
     this.colorLocation =  lilgl.gl.getUniformLocation(lilgl.program, 'color')!;
+
+    const texture = lilgl.gl.createTexture();
+    lilgl.gl.bindTexture(lilgl.gl.TEXTURE_2D_ARRAY, texture);
+    lilgl.gl.texStorage3D(lilgl.gl.TEXTURE_2D_ARRAY, 8, lilgl.gl.RGBA8, 128, 128, 3);
+
+    lilgl.gl.texSubImage3D(lilgl.gl.TEXTURE_2D_ARRAY, 0, 0, 0, 0, 128, 128, 1, lilgl.gl.RGBA, lilgl.gl.UNSIGNED_BYTE, drawBricks());
+    lilgl.gl.texSubImage3D(lilgl.gl.TEXTURE_2D_ARRAY, 0, 0, 0, 1, 128, 128, 1, lilgl.gl.RGBA, lilgl.gl.UNSIGNED_BYTE, drawGrass());
+    lilgl.gl.texSubImage3D(lilgl.gl.TEXTURE_2D_ARRAY, 0, 0, 0, 2, 128, 128, 1, lilgl.gl.RGBA, lilgl.gl.UNSIGNED_BYTE, drawStoneWalkway());
+    lilgl.gl.vertexAttrib1f(lilgl.textureDepth, 0);
+
+    lilgl.gl.generateMipmap(lilgl.gl.TEXTURE_2D_ARRAY);
   }
 
   render(camera: Camera, scene: Object3d) {

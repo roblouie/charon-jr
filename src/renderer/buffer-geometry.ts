@@ -3,6 +3,7 @@ import { lilgl } from '@/lil-gl';
 export class BufferGeometry {
   private positions: { data: Float32Array; size: number };
   private normals: { data: Float32Array; size: number };
+  private textureCoords: { data: Float32Array; size: number };
   private indices?: Uint16Array;
   private fullBuffer: Float32Array;
 
@@ -16,6 +17,7 @@ export class BufferGeometry {
     this.vao = lilgl.gl.createVertexArray()!;
     this.positions = { data: new Float32Array(0), size: 3 };
     this.normals = { data: new Float32Array(0), size: 3 };
+    this.textureCoords = { data: new Float32Array(0), size: 2 };
     this.fullBuffer = new Float32Array();
   }
 
@@ -24,9 +26,10 @@ export class BufferGeometry {
   // can just set the data in the appropriate spot. Changing to the generic set attribute lets
   // the code for this all be shared and allows more attributes
   private populateFullBuffer() {
-    this.fullBuffer = new Float32Array(this.positions.data.length + this.normals.data.length);
+    this.fullBuffer = new Float32Array(this.positions.data.length + this.normals.data.length + this.textureCoords.data.length);
     this.fullBuffer.set(this.positions.data);
     this.fullBuffer.set(this.normals.data, this.positions.data.length);
+    this.fullBuffer.set(this.textureCoords.data, this.positions.data.length + this.normals.data.length);
   }
 
   getPositions() {
@@ -54,6 +57,14 @@ export class BufferGeometry {
     return this.indices;
   }
 
+  setTextureCoords(data: Float32Array, size: number) {
+    this.textureCoords = { data, size };
+  }
+
+  getTextureCoords() {
+    return this.textureCoords;
+  }
+
   miniUpdate() {
     lilgl.gl.bindBuffer(lilgl.gl.ARRAY_BUFFER, this.buffer);
     lilgl.gl.bufferData(lilgl.gl.ARRAY_BUFFER, this.fullBuffer, lilgl.gl.STATIC_DRAW);
@@ -73,8 +84,15 @@ export class BufferGeometry {
     lilgl.gl.vertexAttribPointer(lilgl.coordsLocation, this.positions!.size, lilgl.gl.FLOAT, false, 0, 0);
     lilgl.gl.enableVertexAttribArray(lilgl.coordsLocation);
 
-    lilgl.gl.vertexAttribPointer(lilgl.normalsLocation, this.normals!.size, lilgl.gl.FLOAT, false, 0, this.positions!.data.length * this.positions!.data.BYTES_PER_ELEMENT);
+    const vertexByteLength = this.positions!.data.length * this.positions!.data.BYTES_PER_ELEMENT;
+    lilgl.gl.vertexAttribPointer(lilgl.normalsLocation, this.normals!.size, lilgl.gl.FLOAT, false, 0, vertexByteLength);
     lilgl.gl.enableVertexAttribArray(lilgl.normalsLocation);
+
+    if (this.textureCoords.data.length) {
+      const normalByteLength = this.normals!.data.length * this.normals!.data.BYTES_PER_ELEMENT;
+      lilgl.gl.vertexAttribPointer(lilgl.texCoordsLocation, this.textureCoords.size, lilgl.gl.FLOAT, false, 0, vertexByteLength + normalByteLength);
+      lilgl.gl.enableVertexAttribArray(lilgl.texCoordsLocation);
+    }
 
     lilgl.gl.bindBuffer(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
     lilgl.gl.bufferData(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indices!, lilgl.gl.STATIC_DRAW);

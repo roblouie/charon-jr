@@ -1,4 +1,20 @@
 export class EnhancedDOMPoint extends DOMPoint {
+  get u() {
+    return this.x;
+  }
+
+  set u(u: number) {
+    this.x = u;
+  }
+
+  get v() {
+    return this.y;
+  }
+
+  set v(v: number) {
+    this.y = v;
+  }
+
   plusSelf(otherVector: EnhancedDOMPoint) {
     return this._plus(otherVector, this);
   }

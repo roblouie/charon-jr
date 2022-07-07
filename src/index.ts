@@ -17,28 +17,39 @@ import {
   drawGrass,
   drawLandscape,
   drawMarble,
-  drawStoneWalkway
+  drawStoneWalkway, drawWater
 } from '@/textures/texture-maker';
 import { textureLoader } from '@/renderer/texture-loader';
+import { controls } from '@/core/controls';
 
-
-
-
-const gl = lilgl.gl;
 const debugElement = document.querySelector('#debug')!;
 
 const scene = new Object3d();
 
 const camera = new Camera(Math.PI / 5, 16 / 9, 1, 400);
-camera.position = new EnhancedDOMPoint(3, 5, -17);
+camera.position = new EnhancedDOMPoint(0, 5, -17);
 
 const player = new Player();
 player.mesh.position.y = 1.5;
 
+player.mesh.add(camera);
+
+const sampleHeightMap = [];
+const imageData = drawLandscape().data;
+for (let i = 0; i < imageData.length; i+= 4) {
+  sampleHeightMap.push(imageData[i] / 10 - 10);
+}
 const floor = new Mesh(
-  new PlaneGeometry(200, 200, 127, 127),
+  new PlaneGeometry(200, 200, 127, 127, sampleHeightMap),
   new Material({texture: textureLoader.load(drawGrass())})
 );
+const lake = new Mesh(
+  new PlaneGeometry(200, 200, 50, 50),
+  new Material({texture: textureLoader.load(drawWater())})
+);
+
+lake.position.y = -8.7 //-7.9;
+
 const ramp = new Mesh(
   new RampGeometry(3, 13, 13),
   new Material({texture: textureLoader.load(drawMarble())})
@@ -54,7 +65,7 @@ const wall = new Mesh(
 drawCurrentTexture();
 // END TESTING
 
-const levelParts = [ramp, ...cubes, wall, floor];
+const levelParts = [ramp, ...cubes, wall, floor, lake];
 const levelGeometries = levelParts.map(levelPart => levelPart.geometry);
 
 const groupedFaces = getGroupedFaces(levelGeometries);
@@ -78,14 +89,15 @@ let lastTime = 0;
 draw(0);
 
 function draw(time: number) {
+  controls.queryController();
   // debugElement.textContent = `${1 / ((time - lastTime) / 1000)} fps`;
   // lastTime = time;
   player.update(groupedFaces);
 
   scene.updateWorldMatrix();
 
-  camera.lookAt(player.mesh.position);
   camera.updateWorldMatrix();
+  // camera.lookAt(player.mesh.position);
 
   renderer.render(camera, scene);
 

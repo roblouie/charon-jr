@@ -6,7 +6,6 @@
         #c {
             width: 100vw;
             outline: 0;
-            /*image-rendering: pixelated; !* You definitely want this if you are doing pixel art *!*/
         }
 
         /* Get rid of any margins, set background black, use flexbox to center */
@@ -27,10 +26,6 @@
             }
         }
 
-        canvas {
-            image-rendering: pixelated;
-        }
-
         #draw, #work, #noise {
             width: 128px;
             height: 128px;
@@ -46,7 +41,7 @@
 </head>
 <html>
 <body>
-<!--    <div id="debug" style="position: fixed; left: 20px; top: 20px; color: white;"></div>-->
+    <div id="debug" style="position: fixed; left: 20px; top: 20px; color: white;"></div>
     <canvas id="c" width="1280" height="720"></canvas>
     <div>
         <canvas id="draw" width="128" height="128"></canvas>

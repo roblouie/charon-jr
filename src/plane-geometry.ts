@@ -17,19 +17,12 @@ import { drawLandscape } from '@/textures/texture-maker';
 
 
 export  class PlaneGeometry extends BufferGeometry {
-  constructor(width = 1, depth = 1, subdivisionsWidth = 1, subdivisionsDepth = 1) {
+  constructor(width = 1, depth = 1, subdivisionsWidth = 1, subdivisionsDepth = 1, heightmap?: number[]) {
     super();
-    this.createPlaneVertices(width, depth, subdivisionsWidth, subdivisionsDepth);
+    this.createPlaneVertices(width, depth, subdivisionsWidth, subdivisionsDepth, heightmap);
   }
 
-  createPlaneVertices(width = 1, depth = 1, subdivisionsWidth = 1, subdivisionsDepth = 1) {
-    const sampleHeightMap = [];
-    const imageData = drawLandscape().data;
-    for (let i = 0; i < imageData.length; i+= 4) {
-      sampleHeightMap.push(imageData[i] / 10 - 10);
-    }
-
-
+  createPlaneVertices(width = 1, depth = 1, subdivisionsWidth = 1, subdivisionsDepth = 1, heightmap?: number[]) {
     const positions = [];
     const texcoords = [];
     let i = 0;
@@ -38,7 +31,7 @@ export  class PlaneGeometry extends BufferGeometry {
         const texCoord = new EnhancedDOMPoint(x / 10, z / 10);
         positions.push(new EnhancedDOMPoint(
           width * (x / subdivisionsWidth) - width * 0.5,
-          sampleHeightMap[i],
+          heightmap ? heightmap[i] : 0,
           depth * (z / subdivisionsDepth) - depth * 0.5
         ));
         texcoords.push(texCoord);

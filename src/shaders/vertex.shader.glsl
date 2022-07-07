@@ -21,10 +21,10 @@ void main() {
 
     vec3 correctedVertexNormals = normalize(mat3(normalMatrix) * a_normal);
     vec3 normalizedLightPosition = normalize(light_direction);
-    float dotOfLightToVertexNormal = dot(normalizedLightPosition, correctedVertexNormals);
-    float ambientLight = 0.1f;
+    float litPercent = max(dot(normalizedLightPosition, correctedVertexNormals), 0.0);
+    float ambientLight = 0.3f;
 
-    vec3 litColor = (dotOfLightToVertexNormal + ambientLight) * color.rgb;
+    vec3 litColor = (color.rgb * ambientLight) + (litPercent * color.rgb * 0.8);
 
     vTexCoord = aTexCoord;
     vDepth = aDepth;

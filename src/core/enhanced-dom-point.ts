@@ -54,11 +54,15 @@ export class EnhancedDOMPoint extends DOMPoint {
     return [this.x, this.y, this.z];
   }
 
+  get magnitude() {
+    return Math.hypot(...this.toArray());
+  }
+
   normalize() {
-    const length = Math.hypot(...this.toArray());
-    if (length === 0) {
+    const magnitude = this.magnitude;
+    if (magnitude === 0) {
       return new EnhancedDOMPoint();
     }
-    return new EnhancedDOMPoint(this.x /= length, this.y /= length, this.z /= length);
+    return new EnhancedDOMPoint(this.x / magnitude, this.y / magnitude, this.z / magnitude);
   }
 }

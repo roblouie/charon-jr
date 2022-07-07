@@ -7,17 +7,19 @@ import { controls } from '@/core/controls';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 import { textureLoader } from '@/renderer/texture-loader';
 import { drawVolcanicRock, drawWater } from '@/textures/texture-maker';
+import { RampGeometry } from '@/ramp-geometry';
 
 export class Player {
   isJumping = false;
   feetCenter = new EnhancedDOMPoint(0, 0, 0);
   velocity = new EnhancedDOMPoint(0, 0, 0);
+  angle = 0;
 
   mesh: Mesh;
 
   constructor() {
     this.mesh = new Mesh(
-      new CubeGeometry(0.1, 1, 0.1),
+      new RampGeometry(0.3, 1, 0.3),
       new Material({color: [1, 0, 1, 1], texture: textureLoader.load(drawWater())})
     );
     this.feetCenter.y = 10;
@@ -56,24 +58,26 @@ export class Player {
 
 
   private updateVelocityFromControls() {
-    if (controls.isRight) {
-      this.velocity.x = -0.06;
-    } else if (controls.isLeft) {
-      this.velocity.x = 0.06;
-    } else {
-      this.velocity.x = 0;
+    const speed = 0.2;
+    const rotationSpeed = 0.02;
+    // this.velocity.x = controls.direction.x * -speed;
+
+    const normalized = controls.direction.normalize();
+
+    if (controls.direction.x !== 0 && controls.direction.z !== 0) {
+      this.angle += controls.direction.x * -rotationSpeed;
     }
 
-    if (controls.isUp) {
-      this.velocity.z = 0.06;
-    } else if (controls.isDown) {
-      this.velocity.z = -0.06;
-    } else {
-      this.velocity.z = 0;
-    }
+    this.velocity.z = Math.cos(this.angle) * controls.direction.z * -speed;
+    this.velocity.x = Math.sin(this.angle) * controls.direction.z * -speed;
 
+    const debugElement = document.querySelector('#debug')!;
 
-    if (controls.isSpace) {
+    debugElement.textContent = `${this.angle}  ${controls.direction.x}, ${controls.direction.y}, ${controls.direction.z}`;
+
+    this.mesh.setRotation(0, this.angle, 0);
+
+    if (controls.isSpace || controls.isJumpPressed) {
       if (!this.isJumping) {
         this.velocity.y = 0.15;
         this.isJumping = true;

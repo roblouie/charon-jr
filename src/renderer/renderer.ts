@@ -47,7 +47,7 @@ export class Renderer {
         const modelViewProjectionMatrix = camera.projection.multiply(modelViewMatrix);
         gl.uniform4fv(this.colorLocation, object3d.material.color);
         gl.vertexAttrib1f(lilgl.textureDepth, object3d.material.texture?.id ?? -1.0);
-        gl.uniformMatrix4fv(this.normalMatrixLocation, true, modelViewMatrix.inverse().toFloat32Array());
+        gl.uniformMatrix4fv(this.normalMatrixLocation, true, object3d.worldMatrix.inverse().toFloat32Array());
         gl.uniformMatrix4fv(this.modelviewProjectionLocation, false, modelViewProjectionMatrix.toFloat32Array());
         gl.bindVertexArray(object3d.geometry.vao!);
         gl.drawElements(gl.TRIANGLES, object3d.geometry.getIndices()!.length, gl.UNSIGNED_SHORT, 0);

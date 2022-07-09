@@ -1,20 +1,6 @@
 import { BufferGeometry } from './renderer/buffer-geometry';
 import { calculateVertexNormals } from '@/math-helpers';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
-import { drawLandscape } from '@/textures/texture-maker';
-
-// const sampleHeightMap = [
-//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-//   10, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 3.9,
-// ];
-
 
 export  class PlaneGeometry extends BufferGeometry {
   constructor(width = 1, depth = 1, subdivisionsWidth = 1, subdivisionsDepth = 1, heightmap?: number[]) {
@@ -28,13 +14,12 @@ export  class PlaneGeometry extends BufferGeometry {
     let i = 0;
     for (let z = 0; z <= subdivisionsDepth; z++) {
       for (let x = 0; x <= subdivisionsWidth; x++) {
-        const texCoord = new EnhancedDOMPoint(x / 10, z / 10);
         positions.push(new EnhancedDOMPoint(
           width * (x / subdivisionsWidth) - width * 0.5,
           heightmap ? heightmap[i] : 0,
           depth * (z / subdivisionsDepth) - depth * 0.5
         ));
-        texcoords.push(texCoord);
+        texcoords.push(new EnhancedDOMPoint(x, z));
         i++;
       }
     }

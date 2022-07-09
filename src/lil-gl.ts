@@ -13,22 +13,14 @@ export class LilGl {
    this.canvas.width  = 1280;
    this.canvas.height = 720;
    this.gl = this.canvas.getContext('webgl2')!;
-   const vertex = this.createVertexShader(require('@/shaders/vertex.shader.glsl'));
-   const fragment = this.createFragmentShader(require('@/shaders/fragment.shader.glsl'));
+   const vertex = this.createShader(this.gl.VERTEX_SHADER, require('@/shaders/vertex.shader.glsl'));
+   const fragment = this.createShader(this.gl.FRAGMENT_SHADER, require('@/shaders/fragment.shader.glsl'));
    this.program = this.createProgram(vertex, fragment);
   }
 
-  createVertexShader(source: TemplateStringsArray | string) {
-    return this.createShader(this.gl.VERTEX_SHADER, source);
-  }
-
-  createFragmentShader(source: TemplateStringsArray | string) {
-   return this.createShader(this.gl.FRAGMENT_SHADER, source)
-  }
-
-  createShader(type: GLenum, source: TemplateStringsArray | string): WebGLShader {
+  createShader(type: GLenum, source: string): WebGLShader {
     const shader = this.gl.createShader(type)!;
-    this.gl.shaderSource(shader, Array.isArray(source) ? source[0] : source);
+    this.gl.shaderSource(shader, source);
     this.gl.compileShader(shader);
     if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
       throw new Error('Error compiling shader: ' + this.gl.getShaderInfoLog(shader));

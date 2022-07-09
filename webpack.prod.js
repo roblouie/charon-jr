@@ -12,15 +12,6 @@ module.exports = {
       template: './index.html'
     }),
     new SuperMinifyPlugin(),
-    new CopyPlugin({
-      patterns: [
-        {
-          context: './static-assets',
-          from: '*',
-          to: './',
-        },
-      ],
-    }),
   ],
   module: {
     rules: [

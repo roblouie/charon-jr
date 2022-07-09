@@ -16,9 +16,9 @@ import {
   drawCurrentTexture,
   drawGrass,
   drawLandscape,
-  drawMarble,
+  drawMarble, drawParticle, drawSky,
   drawStoneWalkway, drawWater
-} from '@/textures/texture-maker';
+} from '@/texture-creation/texture-maker';
 import { textureLoader } from '@/renderer/texture-loader';
 import { controls } from '@/core/controls';
 
@@ -39,13 +39,18 @@ const imageData = drawLandscape().data;
 for (let i = 0; i < imageData.length; i+= 4) {
   sampleHeightMap.push(imageData[i] / 10 - 10);
 }
+const floorTexture = textureLoader.load(drawGrass());
+floorTexture.repeat.x = 1/10; floorTexture.repeat.y = 1/10;
 const floor = new Mesh(
   new PlaneGeometry(200, 200, 127, 127, sampleHeightMap),
-  new Material({texture: textureLoader.load(drawGrass())})
+  new Material({texture: floorTexture})
 );
+
+const lakeTexture = textureLoader.load(drawWater());
+lakeTexture.repeat.x = 6; lakeTexture.repeat.y = 6;
 const lake = new Mesh(
-  new PlaneGeometry(200, 200, 50, 50),
-  new Material({texture: textureLoader.load(drawWater())})
+  new PlaneGeometry(200, 200, 1, 1),
+  new Material({texture: lakeTexture, isTransparent: true, color: '#fffc'})
 );
 
 lake.position.y = -8.7 //-7.9;
@@ -61,6 +66,30 @@ const wall = new Mesh(
   new Material({texture: textureLoader.load(drawBricks())})
 );
 
+const skyTexture = textureLoader.load(drawSky());
+skyTexture.repeat.x = 1;
+skyTexture.repeat.y = 1;
+const sky = new Mesh(
+  new CubeGeometry(400, 100, 400, 0),
+  new Material({texture: skyTexture, emissive: '#fff'})
+);
+
+const particleGeometry = new PlaneGeometry(2, 2);
+const particleTexture = textureLoader.load(drawParticle());
+const particleMaterial = new Material({emissive: '#fff', texture: particleTexture, isTransparent: true});
+const particle = new Mesh(
+  particleGeometry,
+  particleMaterial
+);
+
+const particle2 = new Mesh(
+  particleGeometry,
+  particleMaterial
+);
+
+particle.position.y += 5;
+particle2.position.y += 4.5;
+
 // TESTING
 drawCurrentTexture();
 // END TESTING
@@ -69,6 +98,10 @@ const levelParts = [ramp, ...cubes, wall, floor, lake];
 const levelGeometries = levelParts.map(levelPart => levelPart.geometry);
 
 const groupedFaces = getGroupedFaces(levelGeometries);
+sky.geometry.getIndices()?.reverse();
+levelParts.push(sky);
+levelParts.push(particle);
+levelParts.push(particle2);
 
 scene.add(player.mesh);
 scene.add(...levelParts);
@@ -80,12 +113,11 @@ scene.allChildren().forEach(child => {
 });
 
 camera.lookAt(player.mesh.position);
-camera.rotate(0, 0.2, 0);
 
 const renderer = new Renderer();
 textureLoader.bindTextures();
 
-let lastTime = 0;
+// let lastTime = 0;
 draw(0);
 
 function draw(time: number) {
@@ -93,11 +125,14 @@ function draw(time: number) {
   // debugElement.textContent = `${1 / ((time - lastTime) / 1000)} fps`;
   // lastTime = time;
   player.update(groupedFaces);
-
   scene.updateWorldMatrix();
 
-  camera.updateWorldMatrix();
-  // camera.lookAt(player.mesh.position);
+  const {x, y, z} = player.mesh.getMatrix().transformPoint(camera.position);
+  particle.lookAt(new EnhancedDOMPoint(x, y, z));
+  particle2.lookAt(new EnhancedDOMPoint(x, y, z));
+
+  particle.rotate(-1, 0, 0);
+  particle2.rotate(-1, 0, 0);
 
   renderer.render(camera, scene);
 

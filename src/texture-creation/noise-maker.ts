@@ -1,4 +1,5 @@
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
+import { hexToRgba } from "@/helpers";
 
 export enum NoiseType {
   Perlin,
@@ -53,11 +54,12 @@ class NoiseMaker {
   }
 
   private noise(x: number, y: number, per: number) {
+    const step = (dist: number) => 1 - 6*dist**5 + 15*dist**4 - 10*dist**3;
     const surflet = (gridX: number, gridY: number) => {
       const distX = Math.abs(x - gridX);
       const distY = Math.abs(y - gridY);
-      const polyX = 1 - 6*distX**5 + 15*distX**4 - 10*distX**3;
-      const polyY = 1 - 6*distY**5 + 15*distY**4 - 10*distY**3;
+      const polyX = step(distX);
+      const polyY = step(distY);
       const hashed = this.perms[this.perms[Math.trunc(gridX)%per] + Math.trunc(gridY)%per];
       const grad = (x-gridX)*this.directions[hashed].x + (y-gridY)*this.directions[hashed].y;
       return polyX * polyY * grad;
@@ -101,16 +103,18 @@ class NoiseMaker {
     octals: number,
     noiseType: NoiseType,
     colorScale = 128,
-    red = 255, green = 255, blue = 255,
+    color: string,
     isInverted = false
   ): ImageData {
     const data = [];
 
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
+    for (let y = 0; y < 128; y++) {
+      for (let x = 0; x < 128; x++) {
         data.push(this.fBm(x*frequency, y*frequency, Math.trunc(size*frequency), octals, noiseType));
       }
     }
+
+    const [red, green, blue] = hexToRgba(color);
 
     let dataIndex = 0;
     const imageData = new ImageData(128, 128);
@@ -127,15 +131,8 @@ class NoiseMaker {
     return imageData;
   }
 
-  randomVector(seed: EnhancedDOMPoint): EnhancedDOMPoint{
-    const dotVector = new EnhancedDOMPoint(seed.dot(new EnhancedDOMPoint(127.1,311.7)), seed.dot(new EnhancedDOMPoint(269.5,183.3)));
-    dotVector.x = (Math.sin(dotVector.x) * 43758.5453123) % 1;
-    dotVector.y = (Math.sin(dotVector.y) * 43758.5453123) % 1;
-    return dotVector;
-  }
-
   randomNumber(seed: number): number {
-    return this.randomVector(new EnhancedDOMPoint(seed, 123.456)).x;
+    return (Math.sin(seed * 127.1 + 123.456 * 311.7) * 43758.5453123) % 1;
   }
 }
 

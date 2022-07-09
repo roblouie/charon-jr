@@ -15,15 +15,6 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './index.html'
     }),
-    new CopyPlugin({
-      patterns: [
-        {
-          context: './static-assets',
-          from: '*',
-          to: './',
-        },
-      ],
-    }),
   ],
   module: {
     rules: [

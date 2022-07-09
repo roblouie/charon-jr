@@ -8,8 +8,9 @@ layout(location = 3) in float aDepth;
 uniform mat4 modelviewProjection;
 uniform mat4 normalMatrix;
 uniform vec4 color;
+uniform vec4 emissive;
 
-out vec4 v_color;
+out vec4 vColor;
 out vec2 vTexCoord;
 out float vDepth;
 
@@ -24,10 +25,10 @@ void main() {
     float litPercent = max(dot(normalizedLightPosition, correctedVertexNormals), 0.0);
     float ambientLight = 0.3f;
 
-    vec3 litColor = (color.rgb * ambientLight) + (litPercent * color.rgb * 0.8);
+    vec3 litColor = length(emissive) > 0.0 ? emissive.rgb : (color.rgb * ambientLight) + (litPercent * color.rgb * 0.8);
 
     vTexCoord = aTexCoord;
     vDepth = aDepth;
 
-    v_color = vec4(litColor, color.a);
+    vColor = vec4(litColor, color.a);
 }

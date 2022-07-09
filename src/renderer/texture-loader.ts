@@ -1,5 +1,4 @@
-import { gl, lilgl } from '@/lil-gl';
-import { drawBricks, drawGrass, drawStoneWalkway } from '@/textures/texture-maker';
+import { gl } from '@/lil-gl';
 import { Texture } from '@/renderer/texture';
 
 class TextureLoader {
@@ -20,7 +19,6 @@ class TextureLoader {
       gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, index, 128, 128, 1, gl.RGBA, gl.UNSIGNED_BYTE, texture.imageData);
     });
 
-    // gl.vertexAttrib1f(lilgl.textureDepth, 0);
     gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
   }
 }

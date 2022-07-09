@@ -22,7 +22,7 @@ function parse(loader, source, context, cb) {
 function processImports(loader, source, context, imports, cb) {
   if (imports.length === 0) {
     // basic glsl minification
-    const firstLineIndex = source.indexOf('\r\n');
+    const firstLineIndex = source.indexOf('\n');
     const [versionLine, code] = [source.slice(0, firstLineIndex), source.slice(firstLineIndex)];
     const newlineStripped = code.replaceAll('\r', '').replaceAll('\n', '');
     const extraSpacesStripped = newlineStripped.replace(/\s\s+/g, ' ')

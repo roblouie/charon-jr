@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "devDependencies": {
+    "copy-webpack-plugin": "^9.0.1",
     "ect-bin": "1.4.1",
     "google-closure-compiler": "^20220601.0.0",
     "html-minifier": "^4.0.0",

@@ -6,7 +6,7 @@ import { Face } from './physics/face';
 import { controls } from '@/core/controls';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 import { textureLoader } from '@/renderer/texture-loader';
-import { drawVolcanicRock, drawWater } from '@/textures/texture-maker';
+import { drawVolcanicRock, drawWater } from '@/texture-creation/texture-maker';
 import { RampGeometry } from '@/ramp-geometry';
 
 export class Player {
@@ -18,9 +18,10 @@ export class Player {
   mesh: Mesh;
 
   constructor() {
+    textureLoader.load(drawVolcanicRock())
     this.mesh = new Mesh(
       new RampGeometry(0.3, 1, 0.3),
-      new Material({color: [1, 0, 1, 1], texture: textureLoader.load(drawWater())})
+      new Material({color: '#f0f'})
     );
     this.feetCenter.y = 10;
   }
@@ -73,7 +74,7 @@ export class Player {
 
     const debugElement = document.querySelector('#debug')!;
 
-    debugElement.textContent = `${this.angle}  ${controls.direction.x}, ${controls.direction.y}, ${controls.direction.z}`;
+    // debugElement.textContent = `${this.angle}  ${controls.direction.x}, ${controls.direction.y}, ${controls.direction.z}`;
 
     this.mesh.setRotation(0, this.angle, 0);
 

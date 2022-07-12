@@ -21,6 +21,7 @@ import {
 } from '@/texture-creation/texture-maker';
 import { textureLoader } from '@/renderer/texture-loader';
 import { controls } from '@/core/controls';
+import { ThirdPersonPlayer } from '@/third-person-player';
 
 const debugElement = document.querySelector('#debug')!;
 
@@ -29,10 +30,10 @@ const scene = new Object3d();
 const camera = new Camera(Math.PI / 5, 16 / 9, 1, 400);
 camera.position = new EnhancedDOMPoint(0, 5, -17);
 
-const player = new Player();
+const player = new ThirdPersonPlayer(camera);
 player.mesh.position.y = 1.5;
 
-player.mesh.add(camera);
+// player.mesh.add(camera);
 
 const sampleHeightMap = [];
 const imageData = drawLandscape().data;

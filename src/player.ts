@@ -28,7 +28,6 @@ export class Player {
 
   update(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
     this.updateVelocityFromControls();
-    this.mesh.worldMatrix.transformPoint(this.velocity);
     this.velocity.y -= 0.003; // gravity
     this.feetCenter.plusSelf(this.velocity);
     this.collideWithLevel(groupedFaces);
@@ -58,7 +57,7 @@ export class Player {
   }
 
 
-  private updateVelocityFromControls() {
+  protected updateVelocityFromControls() {
     const speed = 0.2;
     const rotationSpeed = 0.02;
     // this.velocity.x = controls.direction.x * -speed;

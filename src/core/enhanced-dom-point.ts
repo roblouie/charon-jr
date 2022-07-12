@@ -1,3 +1,5 @@
+import { clamp } from '@/helpers';
+
 export class EnhancedDOMPoint extends DOMPoint {
   get u() {
     return this.x;
@@ -24,9 +26,9 @@ export class EnhancedDOMPoint extends DOMPoint {
   }
 
   private _plus(otherVector: EnhancedDOMPoint, target: EnhancedDOMPoint) {
-    target.x += otherVector.x;
-    target.y += otherVector.y;
-    target.z += otherVector.z;
+    target.x = this.x + otherVector.x;
+    target.y = this.y + otherVector.y;
+    target.z = this.z + otherVector.z;
     return target;
   }
 
@@ -64,5 +66,24 @@ export class EnhancedDOMPoint extends DOMPoint {
       return new EnhancedDOMPoint();
     }
     return new EnhancedDOMPoint(this.x / magnitude, this.y / magnitude, this.z / magnitude);
+  }
+
+  setFromRotationMatrix(matrix: DOMMatrix) {
+    this.y = Math.asin(clamp(matrix.m13, -1, 1));
+    if (Math.abs(matrix.m13) < 0.9999999) {
+      this.x = Math.atan2(-matrix.m23, matrix.m33);
+      this.z = Math.atan2(-matrix.m12, matrix.m11);
+    } else {
+      this.x = Math.atan2(matrix.m32, matrix.m22);
+      this.z = 0;
+    }
+    return this;
+  }
+
+  lerp(otherVector: EnhancedDOMPoint, alpha: number) {
+    this.x += ( otherVector.x - this.x ) * alpha;
+    this.y += ( otherVector.y - this.y ) * alpha;
+    this.z += ( otherVector.z - this.z ) * alpha;
+    return this;
   }
 }

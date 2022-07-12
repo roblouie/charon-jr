@@ -10,7 +10,7 @@ export class Object3d {
   localMatrix: DOMMatrix;
   worldMatrix: DOMMatrix;
   up: EnhancedDOMPoint;
-  private rotationMatrix: DOMMatrix;
+  rotationMatrix: DOMMatrix;
 
   constructor() {
     this.position = new EnhancedDOMPoint();

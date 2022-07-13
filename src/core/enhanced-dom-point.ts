@@ -25,6 +25,10 @@ export class EnhancedDOMPoint extends DOMPoint {
     return this._plus(otherVector, new EnhancedDOMPoint());
   }
 
+  scale(scaleBy: number) {
+    return new EnhancedDOMPoint(this.x * scaleBy, this.y * scaleBy, this.z * scaleBy);
+  }
+
   private _plus(otherVector: EnhancedDOMPoint, target: EnhancedDOMPoint) {
     target.x = this.x + otherVector.x;
     target.y = this.y + otherVector.y;

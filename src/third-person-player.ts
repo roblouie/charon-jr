@@ -13,7 +13,7 @@ export class ThirdPersonPlayer extends Player {
   }
 
   private getIdealPosition(): EnhancedDOMPoint {
-    let idealOffset = new EnhancedDOMPoint(0, 5, -17);
+    const idealOffset = new EnhancedDOMPoint(0, 5, -17);
     const {x, y, z} = this.mesh.rotationMatrix.transformPoint(idealOffset);
 
     return new EnhancedDOMPoint(x, y, z).plus(this.mesh.position);
@@ -27,17 +27,13 @@ export class ThirdPersonPlayer extends Player {
 
   update(groupedFaces: { floorFaces: Face[]; wallFaces: Face[] }) {
     super.update(groupedFaces);
-    const idealOffset = this.getIdealPosition();
-    this.camera.position.lerp(idealOffset, 0.01);
+    this.camera.position.lerp(this.getIdealPosition(), 0.01);
 
     // Keep camera away regardless of lerp
     const distanceToKeep = 17;
-
     const normalizedPosition = this.camera.position.minus(this.mesh.position).normalize();
-    const testX = normalizedPosition.x * distanceToKeep;
-    const testZ = normalizedPosition.z * distanceToKeep;
-    this.camera.position.x = testX + this.mesh.position.x;
-    this.camera.position.z = testZ + this.mesh.position.z;
+    this.camera.position.x = normalizedPosition.x * distanceToKeep + this.mesh.position.x;
+    this.camera.position.z = normalizedPosition.z * distanceToKeep + this.mesh.position.z;
 
     this.camera.lookAt(this.getIdealLookat());
     this.camera.updateWorldMatrix();
@@ -47,9 +43,7 @@ export class ThirdPersonPlayer extends Player {
     const speed = 0.1;
 
     const mag = controls.direction.magnitude;
-
     const inputAngle = Math.atan2(-controls.direction.x, -controls.direction.z);
-
     const playerCameraDiff = this.mesh.position.minus(this.camera.position);
     const playerCameraAngle = Math.atan2(playerCameraDiff.x, playerCameraDiff.z);
 

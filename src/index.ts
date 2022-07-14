@@ -17,7 +17,7 @@ import {
   drawGrass,
   drawLandscape,
   drawMarble, drawParticle, drawSky,
-  drawStoneWalkway, drawWater
+  drawStoneWalkway, drawVolcanicRock, drawWater
 } from '@/texture-creation/texture-maker';
 import { textureLoader } from '@/renderer/texture-loader';
 import { controls } from '@/core/controls';
@@ -67,13 +67,53 @@ const wall = new Mesh(
   new Material({texture: textureLoader.load(drawBricks())})
 );
 
-const skyTexture = textureLoader.load(drawSky());
+const skyTexture = textureLoader.load(drawSky(0));
 skyTexture.repeat.x = 1;
 skyTexture.repeat.y = 1;
 const sky = new Mesh(
   new CubeGeometry(400, 100, 400, 0),
   new Material({texture: skyTexture, emissive: '#fff'})
 );
+
+// Skybox test
+const lavaTexture = textureLoader.load(drawSky(0));
+const skyWall1 = new Mesh(
+  new PlaneGeometry(400, 400, 1, 1),
+  new Material({ texture: lavaTexture, emissive: '#fff' })
+);
+skyWall1.rotate(Math.PI / 2, 0, 0);
+skyWall1.position.z = -200;
+
+const skyWall2 = new Mesh(
+  new PlaneGeometry(400, 400, 1, 1),
+  new Material({ texture: lavaTexture, emissive: '#fff' })
+);
+skyWall2.rotate(-Math.PI / 2, 0, 0);
+skyWall2.position.z = 200;
+
+const skyWall3 = new Mesh(
+  new PlaneGeometry(400, 400, 1, 1),
+  new Material({ texture: lavaTexture, emissive: '#fff' })
+);
+skyWall3.rotate(0, 0, Math.PI / 2);
+skyWall3.position.x = 200;
+
+const skyWall4 = new Mesh(
+  new PlaneGeometry(400, 400, 1, 1),
+  new Material({ texture: lavaTexture, emissive: '#fff' })
+);
+skyWall4.rotate(0, 0, -Math.PI / 2);
+skyWall4.position.x = -200;
+
+const skyCeiling = new Mesh(
+  new PlaneGeometry(400, 400, 1, 1),
+  new Material({ texture: lavaTexture, emissive: '#fff' })
+);
+skyCeiling.rotate(Math.PI, 0, 0);
+skyCeiling.position.y = 200;
+
+const skyWalls = [skyWall1, skyWall2, skyWall3, skyWall4, skyCeiling];
+// End skybox test
 
 const particleGeometry = new PlaneGeometry(2, 2);
 const particleTexture = textureLoader.load(drawParticle());
@@ -100,7 +140,8 @@ const levelGeometries = levelParts.map(levelPart => levelPart.geometry);
 
 const groupedFaces = getGroupedFaces(levelGeometries);
 sky.geometry.getIndices()?.reverse();
-levelParts.push(sky);
+// levelParts.push(sky);
+levelParts.push(...skyWalls);
 levelParts.push(particle);
 levelParts.push(particle2);
 

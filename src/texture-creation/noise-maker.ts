@@ -89,9 +89,9 @@ class NoiseMaker {
   }
 
   private pixelPosition = new EnhancedDOMPoint();
-  private fBm(x: number, y: number, z: number, per: number, octs: number, noiseType: NoiseType): number {
+  private fBm(position: EnhancedDOMPoint, per: number, octs: number, noiseType: NoiseType): number {
     let value = 0;
-    const baseMethod = (o: number) => 0.5**o * this.noise(this.pixelPosition.set(x*2**o, y*2**o, z*2**o), per*2**o);
+    const baseMethod = (o: number) => 0.5**o * this.noise(this.pixelPosition.set(position.x*2**o, position.y*2**o, position.z*2**o), per*2**o);
     for (let o = 0; o < octs; o++) {
       switch (noiseType) {
         case NoiseType.Perlin:
@@ -121,14 +121,21 @@ class NoiseMaker {
     noiseType: NoiseType,
     color: string,
     colorScale = 128,
-    zSlice = 0,
-    isInverted = false
+    isInverted = false,
+    firstDimension: "x" | "y" | "z" = 'x',
+    secondDimension: "x" | "y" | "z" = 'y',
+    sliceDimension: 'x' | 'y' | 'z' = 'z',
+    slice: number = 0
   ): ImageData {
     const data = [];
 
-    for (let y = 0; y < 128; y++) {
-      for (let x = 0; x < 128; x++) {
-        data.push(this.fBm(x * frequency, y * frequency, zSlice * frequency, Math.trunc(size * frequency), octals, noiseType));
+    const position = new EnhancedDOMPoint();
+    for (let dimension2 = 0; dimension2 < 128; dimension2++) {
+      for (let dimension1 = 0; dimension1 < 128; dimension1++) {
+        position[firstDimension] = dimension1 * frequency;
+        position[secondDimension] = dimension2 * frequency;
+        position[sliceDimension] = slice * frequency;
+        data.push(this.fBm(position, Math.trunc(size * frequency), octals, noiseType));
       }
     }
 

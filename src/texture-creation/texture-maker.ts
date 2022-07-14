@@ -2,15 +2,34 @@ import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
 import { noiseMaker, NoiseType } from '@/texture-creation/noise-maker';
 
 const drawContext = document.querySelector<HTMLCanvasElement>('#draw')!.getContext('2d')!;
-// const tileContext = document.querySelector<HTMLCanvasElement>('#tile')!.getContext('2d')!;
+const tileContext = document.querySelector<HTMLCanvasElement>('#tile')!.getContext('2d')!;
 const noiseContext = document.querySelector<HTMLCanvasElement>('#noise')!.getContext('2d')!;
 
 const resolution = 128;
 
 
 export function drawCurrentTexture() {
-  drawSky(); //tileContext.getImageData(0, 0, 256, 256).data;
+  draw3dTest(); //tileContext.getImageData(0, 0, 256, 256).data;
   // tileDrawn();
+}
+
+function draw3dTest() {
+  clearWith('#6c93e8');
+  noiseMaker.seed(10);
+  const images = noiseMaker.noiseImage3d(128, 1/64, 4, NoiseType.Perlin, 200, '#fff', true);
+  let imageNumber = 0;
+  setInterval(() => {
+    noiseContext.clearRect(0, 0, 128, 128);
+    noiseContext.putImageData(images[imageNumber], 0, 0);
+    drawContext.clearRect(0, 0, 128, 128);
+    drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+    imageNumber++;
+    if (imageNumber === 128) {
+      imageNumber = 0;
+    }
+    tileDrawn();
+  }, 100);
+  return mainImageData();
 }
 
 export function drawSky() {
@@ -161,7 +180,7 @@ function tileDrawn() {
   const image = drawContext.getImageData(0, 0, resolution, resolution);
   for (let x = 0; x < 256; x += resolution) {
     for (let y = 0; y < 256; y += resolution) {
-      // tileContext.putImageData(image, x, y);
+      tileContext.putImageData(image, x, y);
     }
   }
 }

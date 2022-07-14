@@ -15,3 +15,9 @@ export function hexToWebgl(hex: string): number[] {
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
+
+export function doTimes(times: number, callback: (index: number) => void) {
+  for (let i = 0; i < times; i++) {
+    callback(i);
+  }
+}

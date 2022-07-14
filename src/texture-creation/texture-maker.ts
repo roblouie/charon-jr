@@ -6,36 +6,42 @@ const tileContext = document.querySelector<HTMLCanvasElement>('#tile')!.getConte
 const noiseContext = document.querySelector<HTMLCanvasElement>('#noise')!.getContext('2d')!;
 
 const resolution = 128;
+const debugElement = document.querySelector('#debug')!;
 
 
 export function drawCurrentTexture() {
-  draw3dTest(); //tileContext.getImageData(0, 0, 256, 256).data;
-  // tileDrawn();
+  let zSlice = 30;
+  // setInterval(() => {
+  //   drawLandscape(zSlice); //tileContext.getImageData(0, 0, 256, 256).data;
+  //   zSlice++;
+  //   debugElement.textContent = zSlice.toString();
+  //   tileDrawn();
+  // }, 300);
 }
 
-function draw3dTest() {
-  clearWith('#6c93e8');
-  noiseMaker.seed(10);
-  const images = noiseMaker.noiseImage3d(128, 1/64, 4, NoiseType.Perlin, 200, '#fff', true);
-  let imageNumber = 0;
-  setInterval(() => {
-    noiseContext.clearRect(0, 0, 128, 128);
-    noiseContext.putImageData(images[imageNumber], 0, 0);
-    drawContext.clearRect(0, 0, 128, 128);
-    drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-    imageNumber++;
-    if (imageNumber === 128) {
-      imageNumber = 0;
-    }
-    tileDrawn();
-  }, 100);
-  return mainImageData();
-}
+// function draw3dTest() {
+//   clearWith('#6c93e8');
+//   noiseMaker.seed(10);
+//   const images = noiseMaker.noiseImage3d(128, 1/64, 4, NoiseType.Perlin, 200, '#fff', true);
+//   let imageNumber = 0;
+//   setInterval(() => {
+//     noiseContext.clearRect(0, 0, 128, 128);
+//     noiseContext.putImageData(images[imageNumber], 0, 0);
+//     drawContext.clearRect(0, 0, 128, 128);
+//     drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+//     imageNumber++;
+//     if (imageNumber === 128) {
+//       imageNumber = 0;
+//     }
+//     tileDrawn();
+//   }, 100);
+//   return mainImageData();
+// }
 
 export function drawSky() {
   clearWith('#6c93e8');
   noiseMaker.seed(10);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 3, NoiseType.Perlin, 170, '#fff', true), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 3, NoiseType.Perlin, '#fff', 170, 0, true), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   return mainImageData();
 }
@@ -49,7 +55,17 @@ export function drawParticle() {
 
 export function drawLandscape() {
   clearWith('black');
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 3, NoiseType.Perlin, 170, '#fff', true), 0, 0);
+  noiseContext.putImageData(
+    noiseMaker.noiseImage(
+      128,
+      1 / 64,
+      3,
+      NoiseType.Perlin,
+      '#fff',
+      170,
+      134,
+      true
+    ), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   return mainImageData();
 }
@@ -83,7 +99,7 @@ export function drawTiles() {
 export function drawGrass() {
   clearWith('#090');
   noiseMaker.seed(12);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1/32, 3, NoiseType.Perlin, 128, '#0f0'), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 3, NoiseType.Perlin, '#0f0', 128), 0, 0);
   drawContext.globalCompositeOperation = 'screen';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   drawContext.globalCompositeOperation = 'source-over';
@@ -94,7 +110,7 @@ export function drawMarble() {
   clearWith('#ccccab');
   drawContext.globalCompositeOperation = 'color-dodge';
   noiseMaker.seed(23);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 2, NoiseType.Edge, 220, '#82826e', true), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 2, NoiseType.Edge, '#82826e', 220, 0, true), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   return mainImageData();
 }
@@ -103,7 +119,7 @@ export function drawRockWall() {
   clearWith('#933d00');
   drawContext.globalCompositeOperation = 'overlay';
   noiseMaker.seed(33);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 1, NoiseType.Lines, 200, '#141414', true), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#141414', 200, 0, true), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   noisify(drawContext, 2);
   return mainImageData();
@@ -112,11 +128,11 @@ export function drawRockWall() {
 export function drawStoneWalkway() {
   clearWith('#5e6d81');
   noiseMaker.seed(34);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 1, NoiseType.Lines, 220, '#112', true), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#112', 220, 0, true), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
 
   noiseMaker.seed(34);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 1, NoiseType.Lines, 220, '#115', true), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#115', 220, 0, true), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   return mainImageData();
 }
@@ -124,7 +140,7 @@ export function drawStoneWalkway() {
 export function drawVolcanicRock() {
   clearWith('#000000');
   noiseMaker.seed(462);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 1, NoiseType.Lines, 130, '#f00', true), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#f00', 130, 0, true), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   return mainImageData();
 }
@@ -132,7 +148,7 @@ export function drawVolcanicRock() {
 export function drawWater() {
   clearWith('#030eaf');
   noiseMaker.seed(462);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1/64, 1, NoiseType.Edge, 220, '#3264ff'), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Edge, '#3264ff', 220), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   return mainImageData();
 }

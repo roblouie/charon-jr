@@ -29,7 +29,7 @@ export class Player {
   update(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
     this.updateVelocityFromControls();
     this.velocity.y -= 0.003; // gravity
-    this.feetCenter.plusSelf(this.velocity);
+    this.feetCenter.add(this.velocity);
     this.collideWithLevel(groupedFaces);
 
     this.mesh.position.x = this.feetCenter.x;

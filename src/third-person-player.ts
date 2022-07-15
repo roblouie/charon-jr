@@ -6,7 +6,7 @@ import { controls } from '@/core/controls';
 
 export class ThirdPersonPlayer extends Player {
   camera: Camera;
-  idealPosition = new EnhancedDOMPoint(0, 5, -17);
+  idealPosition = new EnhancedDOMPoint(0, 3, -17);
   idealLookAt = new EnhancedDOMPoint(0, 2, 0);
 
   constructor(camera: Camera) {

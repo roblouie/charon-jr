@@ -1,4 +1,4 @@
-import { BufferGeometry } from '@/renderer/buffer-geometry';
+import { BufferGeometry, BufferType } from '@/renderer/buffer-geometry';
 import { Face } from './face';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 
@@ -12,17 +12,17 @@ export function getGroupedFaces(geometries: BufferGeometry[]) {
   const faces = geometries.flatMap(geometry => {
     const indices = geometry.getIndices()!; // assuming always having indices
 
-    const positions = geometry.getPositions();
+    const positions = geometry.getBuffer(BufferType.Positions);
 
     const triangles = [];
     for (let i = 0; i < indices.length; i += 3) {
-        const firstIndex = indices[i] * 3;
-        const secondIndex = indices[i + 1] * 3;
-        const thirdIndex = indices[i + 2] * 3;
+      const firstIndex = indices[i] * 3;
+      const secondIndex = indices[i + 1] * 3;
+      const thirdIndex = indices[i + 2] * 3;
 
-        const point0 = indexToFaceVertexPoint(firstIndex, positions.data);
-        const point1 = indexToFaceVertexPoint(secondIndex, positions.data);
-        const point2 = indexToFaceVertexPoint(thirdIndex, positions.data);
+      const point0 = indexToFaceVertexPoint(firstIndex, positions.data);
+      const point1 = indexToFaceVertexPoint(secondIndex, positions.data);
+      const point2 = indexToFaceVertexPoint(thirdIndex, positions.data);
 
       triangles.push([
         point0,

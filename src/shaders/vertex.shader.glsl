@@ -6,29 +6,24 @@ layout(location = 2) in vec2 aTexCoord;
 layout(location = 3) in float aDepth;
 
 uniform mat4 modelviewProjection;
-uniform mat4 normalMatrix;
-uniform vec4 color;
-uniform vec4 emissive;
+uniform bool isSkybox;
 
-out vec4 vColor;
 out vec2 vTexCoord;
 out float vDepth;
-
-vec3 light_direction = vec3(-1, 2, 1);
+out vec3 vNormal;
+out vec4 vSkyboxPosition;
 
 void main() {
     vec4 coords = vec4(a_coords, 1.0);
     gl_Position = modelviewProjection * coords;
 
-    vec3 correctedVertexNormals = normalize(mat3(normalMatrix) * a_normal);
-    vec3 normalizedLightPosition = normalize(light_direction);
-    float litPercent = max(dot(normalizedLightPosition, correctedVertexNormals), 0.0);
-    float ambientLight = 0.3f;
-
-    vec3 litColor = length(emissive) > 0.0 ? emissive.rgb : (color.rgb * ambientLight) + (litPercent * color.rgb * 0.8);
+    if (isSkybox) {
+        gl_Position = coords;
+        vSkyboxPosition = coords;
+        gl_Position.z = 1.0;
+    }
 
     vTexCoord = aTexCoord;
     vDepth = aDepth;
-
-    vColor = vec4(litColor, color.a);
+    vNormal = a_normal;
 }

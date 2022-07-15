@@ -1,4 +1,4 @@
-import { BufferGeometry } from './renderer/buffer-geometry';
+import { BufferGeometry, BufferType } from './renderer/buffer-geometry';
 import { calculateVertexNormals } from '@/math-helpers';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 
@@ -49,9 +49,9 @@ export  class PlaneGeometry extends BufferGeometry {
     const positionFlatArray = positions.flatMap(position => [position.x, position.y, position.z]);
     const normalsFlatArray = normals.flatMap(normal => [normal.x, normal.y, normal.z]);
 
-    this.setPositions(new Float32Array(positionFlatArray), 3);
-    this.setNormals(new Float32Array(normalsFlatArray), 3);
-    this.setTextureCoords(new Float32Array(texcoords.flatMap(coord => [coord.u, coord.v])), 2);
+    this.setBuffer(BufferType.Positions, new Float32Array(positionFlatArray), 3);
+    this.setBuffer(BufferType.Normals, new Float32Array(normalsFlatArray), 3);
+    this.setBuffer(BufferType.TextureCoords, new Float32Array(texcoords.flatMap(coord => [coord.u, coord.v])), 2);
     this.setIndices(new Uint16Array(indices));
   }
 }

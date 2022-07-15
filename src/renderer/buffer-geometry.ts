@@ -1,9 +1,18 @@
 import { lilgl } from '@/lil-gl';
 
+// IMPORTANT! The index of a given buffer in the buffer array must match it's respective data location in the shader.
+// This allows us to use the index while looping through buffers to bind the attributes. So setting a buffer
+// happens by placing
+export enum BufferType {
+  Positions = lilgl.coordsLocation,
+  Normals = lilgl.normalsLocation,
+  TextureCoords = lilgl.texCoordsLocation,
+}
+
+type BufferInfo = { data: Float32Array; size: number };
+
 export class BufferGeometry {
-  private positions: { data: Float32Array; size: number };
-  private normals: { data: Float32Array; size: number };
-  private textureCoords: { data: Float32Array; size: number };
+  private buffers: Map<BufferType, BufferInfo> = new Map<BufferType, BufferInfo>();
   private indices?: Uint16Array;
   private fullBuffer: Float32Array;
 
@@ -15,38 +24,27 @@ export class BufferGeometry {
     this.buffer = lilgl.gl.createBuffer()!;
     this.indexBuffer = lilgl.gl.createBuffer()!;
     this.vao = lilgl.gl.createVertexArray()!;
-    this.positions = { data: new Float32Array(0), size: 3 };
-    this.normals = { data: new Float32Array(0), size: 3 };
-    this.textureCoords = { data: new Float32Array(0), size: 2 };
     this.fullBuffer = new Float32Array();
   }
 
-  // TODO: Change to just get/set attribute like threejs. Then I can loop through attributes
-  // and build out the full buffer when the size changes. When the size doesn't change though, I
-  // can just set the data in the appropriate spot. Changing to the generic set attribute lets
-  // the code for this all be shared and allows more attributes
   private populateFullBuffer() {
-    this.fullBuffer = new Float32Array(this.positions.data.length + this.normals.data.length + this.textureCoords.data.length);
-    this.fullBuffer.set(this.positions.data);
-    this.fullBuffer.set(this.normals.data, this.positions.data.length);
-    this.fullBuffer.set(this.textureCoords.data, this.positions.data.length + this.normals.data.length);
+    const fullSize = [...this.buffers.values()].reduce((total, current) => total += current.data.length , 0);
+    this.fullBuffer = new Float32Array(fullSize);
+    let runningOffset = 0;
+    this.buffers.forEach(buffer => {
+      if (buffer) {
+        this.fullBuffer.set(buffer.data, runningOffset);
+        runningOffset+= buffer.data.length;
+      }
+    });
   }
 
-  getPositions() {
-    return this.positions;
+  getBuffer(bufferType: BufferType) {
+    return this.buffers.get(bufferType)!;
   }
 
-  setPositions(data: Float32Array, size: number) {
-    this.positions = { data, size };
-    this.populateFullBuffer();
-  }
-
-  getNormals() {
-    return this.normals;
-  }
-
-  setNormals(data: Float32Array, size: number) {
-    this.normals = { data, size };
+  setBuffer(bufferType: BufferType, data: Float32Array, size: number) {
+    this.buffers.set(bufferType, { data, size });
   }
 
   setIndices(indices: Uint16Array) {
@@ -57,22 +55,14 @@ export class BufferGeometry {
     return this.indices;
   }
 
-  setTextureCoords(data: Float32Array, size: number) {
-    this.textureCoords = { data, size };
-  }
-
-  getTextureCoords() {
-    return this.textureCoords;
-  }
-
-  miniUpdate() {
-    lilgl.gl.bindBuffer(lilgl.gl.ARRAY_BUFFER, this.buffer);
-    lilgl.gl.bufferData(lilgl.gl.ARRAY_BUFFER, this.fullBuffer, lilgl.gl.STATIC_DRAW);
-
-    lilgl.gl.bindVertexArray(this.vao);
-    lilgl.gl.bindBuffer(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-    lilgl.gl.bufferData(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indices!, lilgl.gl.STATIC_DRAW);
-  }
+  // miniUpdate() {
+  //   lilgl.gl.bindBuffer(lilgl.gl.ARRAY_BUFFER, this.buffer);
+  //   lilgl.gl.bufferData(lilgl.gl.ARRAY_BUFFER, this.fullBuffer, lilgl.gl.STATIC_DRAW);
+  //
+  //   lilgl.gl.bindVertexArray(this.vao);
+  //   lilgl.gl.bindBuffer(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+  //   lilgl.gl.bufferData(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indices!, lilgl.gl.STATIC_DRAW);
+  // }
 
   bindGeometry() {
     this.buffer = lilgl.gl.createBuffer()!;
@@ -81,18 +71,15 @@ export class BufferGeometry {
     lilgl.gl.bufferData(lilgl.gl.ARRAY_BUFFER, this.fullBuffer, lilgl.gl.STATIC_DRAW);
 
     lilgl.gl.bindVertexArray(this.vao);
-    lilgl.gl.vertexAttribPointer(lilgl.coordsLocation, this.positions!.size, lilgl.gl.FLOAT, false, 0, 0);
-    lilgl.gl.enableVertexAttribArray(lilgl.coordsLocation);
 
-    const vertexByteLength = this.positions!.data.length * this.positions!.data.BYTES_PER_ELEMENT;
-    lilgl.gl.vertexAttribPointer(lilgl.normalsLocation, this.normals!.size, lilgl.gl.FLOAT, false, 0, vertexByteLength);
-    lilgl.gl.enableVertexAttribArray(lilgl.normalsLocation);
-
-    if (this.textureCoords.data.length) {
-      const normalByteLength = this.normals!.data.length * this.normals!.data.BYTES_PER_ELEMENT;
-      lilgl.gl.vertexAttribPointer(lilgl.texCoordsLocation, this.textureCoords.size, lilgl.gl.FLOAT, false, 0, vertexByteLength + normalByteLength);
-      lilgl.gl.enableVertexAttribArray(lilgl.texCoordsLocation);
-    }
+    let runningOffset = 0;
+    this.buffers.forEach((buffer, index) => {
+      if (buffer) {
+        lilgl.gl.vertexAttribPointer(index, buffer.size, lilgl.gl.FLOAT, false, 0, runningOffset);
+        lilgl.gl.enableVertexAttribArray(index);
+        runningOffset += buffer.data.length * buffer.data.BYTES_PER_ELEMENT;
+      }
+    });
 
     if (this.indices?.length) {
       lilgl.gl.bindBuffer(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);

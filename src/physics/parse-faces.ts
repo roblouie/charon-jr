@@ -2,36 +2,34 @@ import { BufferGeometry } from '@/renderer/buffer-geometry';
 import { Face } from './face';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 
+function indexToFaceVertexPoint(index: number, positionData: Float32Array): EnhancedDOMPoint {
+  return new EnhancedDOMPoint(
+    positionData[index], positionData[index + 1], positionData[index + 2]
+  )
+}
+
 export function getGroupedFaces(geometries: BufferGeometry[]) {
   const faces = geometries.flatMap(geometry => {
     const indices = geometry.getIndices()!; // assuming always having indices
 
     const positions = geometry.getPositions();
 
-    const triangleIndicesChunks = chunkArrayInGroups(indices, 3);
-    const triangles = triangleIndicesChunks.map(triangleIndices => {
-      const firstIndex = triangleIndices[0] * 3;
-      const secondIndex = triangleIndices[1] * 3;
-      const thirdIndex = triangleIndices[2] * 3;
+    const triangles = [];
+    for (let i = 0; i < indices.length; i += 3) {
+        const firstIndex = indices[i] * 3;
+        const secondIndex = indices[i + 1] * 3;
+        const thirdIndex = indices[i + 2] * 3;
 
-      const x0 = positions.data[firstIndex];
-      const y0 = positions.data[firstIndex + 1];
-      const z0 = positions.data[firstIndex + 2];
+        const point0 = indexToFaceVertexPoint(firstIndex, positions.data);
+        const point1 = indexToFaceVertexPoint(secondIndex, positions.data);
+        const point2 = indexToFaceVertexPoint(thirdIndex, positions.data);
 
-      const x1 = positions.data[secondIndex];
-      const y1 = positions.data[secondIndex + 1];
-      const z1 = positions.data[secondIndex + 2];
-
-      const x2 = positions.data[thirdIndex];
-      const y2 = positions.data[thirdIndex + 1];
-      const z2 = positions.data[thirdIndex + 2];
-
-      return [
-        new EnhancedDOMPoint(x0, y0, z0),
-        new EnhancedDOMPoint(x1, y1, z1),
-        new EnhancedDOMPoint(x2, y2, z2),
-      ];
-    });
+      triangles.push([
+        point0,
+        point1,
+        point2,
+      ]);
+    }
 
     return triangles.map(triangle => new Face(triangle));
   });
@@ -55,12 +53,4 @@ export function getGroupedFaces(geometries: BufferGeometry[]) {
     wallFaces,
     ceilingFaces,
   };
-}
-
-function chunkArrayInGroups(array: Uint16Array, chunkSize: number): Uint16Array[] {
-  const chunkedArray = [];
-  for (let i = 0; i < array.length; i += chunkSize) {
-    chunkedArray.push(array.slice(i, i + chunkSize));
-  }
-  return chunkedArray;
 }

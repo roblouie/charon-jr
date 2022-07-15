@@ -94,8 +94,10 @@ export class BufferGeometry {
       lilgl.gl.enableVertexAttribArray(lilgl.texCoordsLocation);
     }
 
-    lilgl.gl.bindBuffer(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-    lilgl.gl.bufferData(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indices!, lilgl.gl.STATIC_DRAW);
+    if (this.indices?.length) {
+      lilgl.gl.bindBuffer(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+      lilgl.gl.bufferData(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indices, lilgl.gl.STATIC_DRAW);
+    }
 
     lilgl.gl.bindVertexArray(null);
   }

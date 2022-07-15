@@ -48,16 +48,13 @@ class NoiseMaker {
       currentIndex--;
 
       // And swap it with the current element.
-      [array[currentIndex], array[randomIndex]] = [
-        array[randomIndex], array[currentIndex]];
+      [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
     }
-
     return array;
   }
 
   private noise(pixelPosition: EnhancedDOMPoint, per: number) {
     const difference = new EnhancedDOMPoint();
-    const gridPos = new EnhancedDOMPoint();
 
     const step = (dist: number) => 1 - 6*dist**5 + 15*dist**4 - 10*dist**3;
 
@@ -72,15 +69,15 @@ class NoiseMaker {
       return poly.x * poly.y * poly.z * grad;
     }
 
-    const intX = Math.trunc(pixelPosition.x);
-    const intY = Math.trunc(pixelPosition.y);
-    const intZ = Math.trunc(pixelPosition.z);
+    const ints = new EnhancedDOMPoint();
+    const gridPos = new EnhancedDOMPoint();
+    ints.set(pixelPosition).modifyComponents(Math.trunc)
 
     let total = 0;
     doTimes(2, z => {
       doTimes(2, y => {
         doTimes(2, x => {
-          gridPos.set(intX + x, intY + y, intZ + z);
+          gridPos.set(ints.x + x, ints.y + y, ints.z + z);
           total += surflet(gridPos);
         })
       })
@@ -122,35 +119,31 @@ class NoiseMaker {
     color: string,
     colorScale = 128,
     isInverted = false,
-    firstDimension: "x" | "y" | "z" = 'x',
-    secondDimension: "x" | "y" | "z" = 'y',
-    sliceDimension: 'x' | 'y' | 'z' = 'z',
-    slice: number = 0
-  ): ImageData {
-    const data = [];
+    horizontalDimension: "x" | "y" | "z" = 'x',
+    verticalDimension: "x" | "y" | "z" = 'y',
+    sliceDimension: "x" | "y" | "z" = 'z',
+    slice = 0,
+    flip = false): ImageData {
+    const [red, green, blue] = hexToRgba(color);
+    const imageData = new ImageData(size, size);
+    let imageDataIndex = 0;
 
     const position = new EnhancedDOMPoint();
-    for (let dimension2 = 0; dimension2 < 128; dimension2++) {
-      for (let dimension1 = 0; dimension1 < 128; dimension1++) {
-        position[firstDimension] = dimension1 * frequency;
-        position[secondDimension] = dimension2 * frequency;
+    const flipBase = size - 1;
+    for (let verticalPosition = 0; verticalPosition < size; verticalPosition++) {
+      for (let horizontalPosition = 0; horizontalPosition < size; horizontalPosition++) {
+        position[horizontalDimension] = (flip ? flipBase - horizontalPosition : horizontalPosition) * frequency;
+        position[verticalDimension] = verticalPosition * frequency;
         position[sliceDimension] = slice * frequency;
-        data.push(this.fBm(position, Math.trunc(size * frequency), octals, noiseType));
+
+        const noiseValue = this.fBm(position, Math.trunc(size * frequency), octals, noiseType);
+        const computed = noiseValue * colorScale + colorScale;
+        imageData.data[imageDataIndex] = red;
+        imageData.data[imageDataIndex + 1] = green;
+        imageData.data[imageDataIndex + 2] = blue;
+        imageData.data[imageDataIndex + 3] = isInverted ? 255 - computed : computed;
+        imageDataIndex += 4;
       }
-    }
-
-    const [red, green, blue] = hexToRgba(color);
-
-    let dataIndex = 0;
-    const imageData = new ImageData(128, 128);
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      const raw = data[dataIndex];
-      const computed = raw * colorScale + colorScale;
-      imageData.data[i] = red;
-      imageData.data[i + 1] = green;
-      imageData.data[i + 2] = blue;
-      imageData.data[i + 3] = isInverted ? 255 - computed : computed;
-      dataIndex++;
     }
 
     return imageData;

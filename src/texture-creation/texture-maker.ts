@@ -10,16 +10,17 @@ const debugElement = document.querySelector('#debug')!;
 
 
 export function drawCurrentTexture() {
-  drawStoneWalkway();
+  drawSky('x', 'y', 'z', 0);
     tileDrawn();
 }
 
-export function drawSky(zSlice: number) {
-  clearWith('#6c93e8');
-  noiseMaker.seed(10);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 3, NoiseType.Perlin, '#fff', 170, true, 'x', 'y', 'z', 0), 0, 0);
+export function drawSky(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
+  clearWith('#2d75fa');
+  noiseMaker.seed(100);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 6, NoiseType.Perlin, '#fff', 210, true, firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  return mainImageData();
+  tileDrawn();
+  return tileContext.getImageData(0, 0, 256, 256);
 }
 
 export function drawParticle() {

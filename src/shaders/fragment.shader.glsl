@@ -13,11 +13,7 @@ uniform vec2 textureRepeat;
 uniform mat4 normalMatrix;
 uniform vec4 color;
 uniform vec4 emissive;
-uniform bool isSkybox;
-uniform samplerCube u_skybox;
 uniform mediump sampler2DArray uSampler;
-uniform mat4 u_viewDirectionProjectionInverse;
-
 
 out vec4 outColor;
 
@@ -33,14 +29,9 @@ void main() {
 
     vec4 vColor = vec4(litColor, color.a);
 
-    if (isSkybox) {
-        vec4 t = u_viewDirectionProjectionInverse * vSkyboxPosition;
-        outColor = texture(u_skybox, normalize(t.xyz / t.w));
+    if (vDepth < 0.0) {
+        outColor = vColor;
     } else {
-        if (vDepth < 0.0) {
-            outColor = vColor;
-        } else {
-            outColor = texture(uSampler, vec3(vTexCoord * textureRepeat, vDepth)) * vColor;
-        }
+        outColor = texture(uSampler, vec3(vTexCoord * textureRepeat, vDepth)) * vColor;
     }
 }

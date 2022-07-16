@@ -3,7 +3,7 @@ import { Camera } from "@/renderer/camera";
 import { Skybox } from '@/skybox';
 import {
   COLOR,
-  EMISSIVE, ISSKYBOX,
+  EMISSIVE,
   MODELVIEWPROJECTION,
   NORMALMATRIX,
   TEXTUREREPEAT,
@@ -32,21 +32,21 @@ export class Renderer {
     this.colorLocation =  gl.getUniformLocation(lilgl.program, COLOR)!;
     this.emissiveLocation = gl.getUniformLocation(lilgl.program, EMISSIVE)!;
     this.textureRepeatLocation = gl.getUniformLocation(lilgl.program, TEXTUREREPEAT)!;
-    this.skyboxLocation = gl.getUniformLocation(lilgl.program, U_SKYBOX)!;
-    this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(lilgl.program, U_VIEWDIRECTIONPROJECTIONINVERSE)!;
+    this.skyboxLocation = gl.getUniformLocation(lilgl.skyboxProgram, U_SKYBOX)!;
+    this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(lilgl.skyboxProgram, U_VIEWDIRECTIONPROJECTIONINVERSE)!;
     gl.useProgram(lilgl.program);
   }
 
   render(camera: Camera, scene: Scene) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.useProgram(lilgl.program);
 
     const viewMatrix = camera.worldMatrix.inverse();
     const viewMatrixCopy = viewMatrix.scale(1, 1, 1);
-    const isSkybox = gl.getUniformLocation(lilgl.program, ISSKYBOX);
     const viewProjectionMatrix = camera.projection.multiply(viewMatrix);
 
     const renderSkybox = (skybox: Skybox) => {
+      gl.useProgram(lilgl.skyboxProgram);
+      gl.uniform1i(this.skyboxLocation, 0);
       viewMatrixCopy.m41 = 0;
       viewMatrixCopy.m42 = 0;
       viewMatrixCopy.m43 = 0;
@@ -57,6 +57,7 @@ export class Renderer {
     }
 
     const renderMesh = (mesh: Mesh) => {
+      gl.useProgram(lilgl.program);
       const modelViewProjectionMatrix = viewProjectionMatrix.multiply(mesh.worldMatrix)
       gl.uniform4fv(this.colorLocation, mesh.material.color);
       gl.vertexAttrib1f(lilgl.textureDepth, mesh.material.texture?.id ?? -1.0);
@@ -76,10 +77,8 @@ export class Renderer {
     // the skybox render method. After rendering the skybox, set the boolean back to false.
     // Also set the depthFunc to less than or equal so the skybox can be drawn at the absolute farthest depth. Without
     // this the skybox will be at the draw distance and so not drawn. After drawing set this back.
-    gl.uniform1i(isSkybox, 1);
     gl.depthFunc(gl.LEQUAL);
     renderSkybox(scene.skybox!);
-    gl.uniform1i(isSkybox, 0);
     gl.depthFunc(gl.LESS);
 
     // Now render transparent items. For transparent items, stop writing to the depth mask. If we don't do this

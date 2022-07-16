@@ -1,15 +1,35 @@
+/* File generated with Shader Minifier 1.2
+ * http://www.ctrl-alt-test.fr
+ */
+export const ADEPTH = "n"
+export const ATEXCOORD = "e"
+export const A_COORDS = "o"
+export const A_NORMAL = "i"
 export const COLOR = "s"
-export const EMISSIVE = "y"
-export const ISSKYBOX = "c"
+export const EMISSIVE = "f"
 export const MODELVIEWPROJECTION = "t"
-export const NORMALMATRIX = "f"
-export const TEXTUREREPEAT = "r"
-export const USAMPLER = "x"
-export const U_SKYBOX = "z"
-export const U_VIEWDIRECTIONPROJECTIONINVERSE = "p"
+export const NORMALMATRIX = "r"
+export const OUTCOLOR = "z"
+export const TEXTUREREPEAT = "u"
+export const USAMPLER = "y"
+export const U_SKYBOX = "p"
+export const U_VIEWDIRECTIONPROJECTIONINVERSE = "g"
+export const VCOLOR = "l"
+export const VDEPTH = "c"
+export const VNORMAL = "a"
+export const VSKYBOXPOSITION = "m"
+export const VTEXCOORD = "v"
+export const V_POSITION = "d"
 
 export const vertex_shader_glsl = `#version 300 es
-layout(location=0)in vec3 o;layout(location=1)in vec3 i;layout(location=2)in vec2 e;layout(location=3)in float n;uniform mat4 t;uniform bool c;out vec2 v;out float l;out vec3 a;out vec4 m;void main(){vec4 P=vec4(o,1.);gl_Position=t*P;if(c)gl_Position=P,m=P,gl_Position.z=1.;v=e;l=n;a=i;}`
+layout(location=0)in vec3 o;layout(location=1)in vec3 i;layout(location=2)in vec2 e;layout(location=3)in float n;uniform mat4 t;out vec2 v;out float c;out vec3 a;void main(){vec4 h=vec4(o,1.);gl_Position=t*h;v=e;c=n;a=i;}`
 
 export const fragment_shader_glsl = `#version 300 es
-precision highp float;in vec4 u;in vec2 v;in float l;in vec3 a;in vec4 m;uniform vec2 r;uniform mat4 f;uniform vec4 s,y;uniform bool c;uniform samplerCube z;uniform mediump sampler2DArray x;uniform mat4 p;out vec4 g;vec3 d=vec3(-1,2,1);void main(){vec3 h=normalize(mat3(f)*a),b=normalize(d);float w=max(dot(b,h),0.);vec3 D=length(y)>0.?y.xyz:s.xyz*.3f+w*s.xyz*.8;vec4 u=vec4(D,s.w);if(c){vec4 C=p*m;g=texture(z,normalize(C.xyz/C.w));}else if(l<0.)g=u;else g=texture(x,vec3(v*r,l))*u;}`
+precision highp float;in vec4 l;in vec2 v;in float c;in vec3 a;in vec4 m;uniform vec2 u;uniform mat4 r;uniform vec4 s,f;uniform mediump sampler2DArray y;out vec4 z;vec3 x=vec3(-1,2,1);void main(){vec3 P=normalize(mat3(r)*a),w=normalize(x);float D=max(dot(w,P),0.);vec3 C=length(f)>0.?f.xyz:s.xyz*.3f+D*s.xyz*.8;vec4 l=vec4(C,s.w);if(c<0.)z=l;else z=texture(y,vec3(v*u,c))*l;}`
+
+export const skybox_fragment_glsl = `#version 300 es
+precision highp float;uniform samplerCube p;uniform mat4 g;in vec4 d;out vec4 z;void main(){vec4 A=g*d;z=texture(p,normalize(A.xyz/A.w));}`
+
+export const skybox_vertex_glsl = `#version 300 es
+layout(location=0)in vec4 o;out vec4 d;void main(){d=o,gl_Position=o,gl_Position.z=1.;}`
+

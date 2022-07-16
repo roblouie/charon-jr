@@ -23,10 +23,31 @@ import { textureLoader } from '@/renderer/texture-loader';
 import { controls } from '@/core/controls';
 import { ThirdPersonPlayer } from '@/third-person-player';
 import { Scene } from '@/scene';
+import { Skybox } from '@/skybox';
 
 const debugElement = document.querySelector('#debug')!;
 
+const skyRight = drawSky('z', 'y', 'x', 0, true);
+const skyLeft = drawSky('z', 'y', 'x', 127); // GOOD
+
+const skyCeiling = drawSky('x', 'z', 'y', 0);
+const skyFloor = drawSky('x', 'z', 'y', 127);
+
+const skyFront = drawSky('x', 'y', 'z', 0); // GOOD
+const skyBack = drawSky('x', 'y', 'z', 127, true);
+
+export const skybox = new Skybox(
+  skyRight,
+  skyLeft,
+  skyCeiling,
+  skyFloor,
+  skyFront,
+  skyBack,
+);
+skybox.bindGeometry();
+
 const scene = new Scene();
+scene.skybox = skybox;
 
 const camera = new Camera(Math.PI / 5, 16 / 9, 1, 400);
 camera.position = new EnhancedDOMPoint(0, 5, -17);
@@ -55,7 +76,7 @@ const lake = new Mesh(
   new Material({texture: lakeTexture, isTransparent: true, color: '#fffc'})
 );
 
-lake.position.y = -6.7 //-7.9;
+lake.position.y = -6.4 //-7.9;
 
 const ramp = new Mesh(
   new RampGeometry(3, 13, 13),
@@ -117,14 +138,13 @@ function draw(time: number) {
   // debugElement.textContent = `${1 / ((time - lastTime) / 1000)} fps`;
   // lastTime = time;
   player.update(groupedFaces);
-  scene.updateWorldMatrix();
 
-  const {x, y, z} = player.mesh.getMatrix().transformPoint(camera.position);
-  particle.lookAt(new EnhancedDOMPoint(x, y, z));
-  particle2.lookAt(new EnhancedDOMPoint(x, y, z));
-
+  particle.lookAt(camera.position);
+  particle2.lookAt(camera.position);
   particle.rotate(-1, 0, 0);
   particle2.rotate(-1, 0, 0);
+
+  scene.updateWorldMatrix();
 
   renderer.render(camera, scene);
 

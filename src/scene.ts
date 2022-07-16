@@ -1,9 +1,9 @@
 import { Object3d } from '@/renderer/object-3d';
-import { skybox, Skybox } from '@/skybox';
+import { Skybox } from '@/skybox';
 import { Mesh } from '@/renderer/mesh';
 
 export class Scene extends Object3d {
-  skybox: Skybox = skybox; // Fix this to be passed in instead
+  skybox?: Skybox;
   solidMeshes: Mesh[] = [];
   transparentMeshes: Mesh[] = [];
 

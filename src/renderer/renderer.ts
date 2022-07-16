@@ -78,7 +78,7 @@ export class Renderer {
     // this the skybox will be at the draw distance and so not drawn. After drawing set this back.
     gl.uniform1i(isSkybox, 1);
     gl.depthFunc(gl.LEQUAL);
-    renderSkybox(scene.skybox);
+    renderSkybox(scene.skybox!);
     gl.uniform1i(isSkybox, 0);
     gl.depthFunc(gl.LESS);
 

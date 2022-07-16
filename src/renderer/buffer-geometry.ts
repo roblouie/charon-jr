@@ -32,10 +32,8 @@ export class BufferGeometry {
     this.fullBuffer = new Float32Array(fullSize);
     let runningOffset = 0;
     this.buffers.forEach(buffer => {
-      if (buffer) {
-        this.fullBuffer.set(buffer.data, runningOffset);
-        runningOffset+= buffer.data.length;
-      }
+      this.fullBuffer.set(buffer.data, runningOffset);
+      runningOffset+= buffer.data.length;
     });
   }
 
@@ -73,12 +71,10 @@ export class BufferGeometry {
     lilgl.gl.bindVertexArray(this.vao);
 
     let runningOffset = 0;
-    this.buffers.forEach((buffer, index) => {
-      if (buffer) {
-        lilgl.gl.vertexAttribPointer(index, buffer.size, lilgl.gl.FLOAT, false, 0, runningOffset);
-        lilgl.gl.enableVertexAttribArray(index);
-        runningOffset += buffer.data.length * buffer.data.BYTES_PER_ELEMENT;
-      }
+    this.buffers.forEach((buffer, position) => {
+      lilgl.gl.vertexAttribPointer(position, buffer.size, lilgl.gl.FLOAT, false, 0, runningOffset);
+      lilgl.gl.enableVertexAttribArray(position);
+      runningOffset += buffer.data.length * buffer.data.BYTES_PER_ELEMENT;
     });
 
     if (this.indices?.length) {

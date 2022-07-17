@@ -1,25 +1,11 @@
-/* File generated with Shader Minifier 1.2
- * http://www.ctrl-alt-test.fr
- */
-export const ADEPTH = "n"
-export const ATEXCOORD = "e"
-export const A_COORDS = "o"
-export const A_NORMAL = "i"
 export const COLOR = "s"
 export const EMISSIVE = "f"
 export const MODELVIEWPROJECTION = "t"
 export const NORMALMATRIX = "r"
-export const OUTCOLOR = "z"
 export const TEXTUREREPEAT = "u"
 export const USAMPLER = "y"
 export const U_SKYBOX = "p"
 export const U_VIEWDIRECTIONPROJECTIONINVERSE = "g"
-export const VCOLOR = "l"
-export const VDEPTH = "c"
-export const VNORMAL = "a"
-export const VSKYBOXPOSITION = "m"
-export const VTEXCOORD = "v"
-export const V_POSITION = "d"
 
 export const vertex_shader_glsl = `#version 300 es
 layout(location=0)in vec3 o;layout(location=1)in vec3 i;layout(location=2)in vec2 e;layout(location=3)in float n;uniform mat4 t;out vec2 v;out float c;out vec3 a;void main(){vec4 h=vec4(o,1.);gl_Position=t*h;v=e;c=n;a=i;}`
@@ -32,4 +18,3 @@ precision highp float;uniform samplerCube p;uniform mat4 g;in vec4 d;out vec4 z;
 
 export const skybox_vertex_glsl = `#version 300 es
 layout(location=0)in vec4 o;out vec4 d;void main(){d=o,gl_Position=o,gl_Position.z=1.;}`
-

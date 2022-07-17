@@ -10,11 +10,6 @@ export class LilGl {
   program: WebGLProgram;
   skyboxProgram: WebGLProgram;
 
-  readonly coordsLocation = 0;
-  readonly normalsLocation = 1;
-  readonly texCoordsLocation = 2;
-  readonly textureDepth = 3;
-
  constructor() {
    this.canvas = document.querySelector('#c')!;
    this.canvas.width  = 1280;

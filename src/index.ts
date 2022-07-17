@@ -1,16 +1,12 @@
-import { lilgl } from './lil-gl';
-import { Object3d } from './renderer/object-3d';
 import { Camera } from './renderer/camera';
-import { Player } from './player';
 import { Mesh } from './renderer/mesh';
 import { CubeGeometry } from './cube-geometry';
 import { Material } from './renderer/material';
 import { getGroupedFaces } from './physics/parse-faces';
 import { PlaneGeometry } from './plane-geometry';
-import { RampGeometry } from './ramp-geometry';
 import { Staircase } from './staircase-geometry';
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
-import { Renderer } from "@/renderer/renderer";
+import { AttributeLocation, Renderer } from "@/renderer/renderer";
 import {
   drawBricks,
   drawCurrentTexture,
@@ -22,7 +18,7 @@ import {
 import { textureLoader } from '@/renderer/texture-loader';
 import { controls } from '@/core/controls';
 import { ThirdPersonPlayer } from '@/third-person-player';
-import { Scene } from '@/scene';
+import { Scene } from '@/shaders/scene';
 import { Skybox } from '@/skybox';
 
 const debugElement = document.querySelector('#debug')!;
@@ -76,12 +72,20 @@ const lake = new Mesh(
   new Material({texture: lakeTexture, isTransparent: true, color: '#fffc'})
 );
 
-lake.position.y = -6.4 //-7.9;
+lake.position.y = -4.4 //-7.9;
 
 const ramp = new Mesh(
-  new RampGeometry(3, 13, 13),
+  new CubeGeometry(3, 13, 13),
   new Material({texture: textureLoader.load(drawMarble())})
 );
+const positions = ramp.geometry.getAttribute(AttributeLocation.Positions).data;
+positions[1] = 0;
+positions[16] = 0;
+positions[31] = 0;
+positions[34] = 0;
+positions[61] = 0;
+positions[64] = 0;
+
 const { cubes } = new Staircase(10, 0.3, 3, 1);
 
 const wall = new Mesh(

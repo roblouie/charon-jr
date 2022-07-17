@@ -42,9 +42,10 @@ class NoiseMaker {
     while (currentIndex > 0) {
 
       // Pick a remaining element.
-      const randomVec = this.randomNumber(seed);
-      randomIndex = Math.floor(Math.abs(randomVec) * currentIndex);
-      seed = randomVec;
+      const randomNumber = this.randomNumber(seed);
+      randomIndex = Math.floor(Math.abs(randomNumber) * currentIndex);
+      // Floating point math causes deviation across browsers, so change the random number to a whole number before seeding again
+      seed = Math.trunc(randomNumber * 10000);
       currentIndex--;
 
       // And swap it with the current element.

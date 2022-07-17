@@ -1,4 +1,5 @@
-import { BufferGeometry, BufferType } from './renderer/buffer-geometry';
+import { BufferGeometry } from './renderer/buffer-geometry';
+import { AttributeLocation } from '@/renderer/renderer';
 
 export class CubeGeometry extends BufferGeometry {
   private cubeFaceIndices = [
@@ -72,9 +73,9 @@ export class CubeGeometry extends BufferGeometry {
       indices.push(offset, offset + 2, offset + 3);
     }
 
-    this.setBuffer(BufferType.Positions, new Float32Array(positions.flat()), 3);
-    this.setBuffer(BufferType.Normals, new Float32Array(normals.flat()), 3);
-    this.setBuffer(BufferType.TextureCoords, new Float32Array(texcoords.flat()), 2);
+    this.setAttribute(AttributeLocation.Positions, new Float32Array(positions.flat()), 3);
+    this.setAttribute(AttributeLocation.Normals, new Float32Array(normals.flat()), 3);
+    this.setAttribute(AttributeLocation.TextureCoords, new Float32Array(texcoords.flat()), 2);
     this.setIndices(new Uint16Array(indices));
   }
 }

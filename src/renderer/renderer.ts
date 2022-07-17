@@ -10,8 +10,18 @@ import {
   U_SKYBOX,
   U_VIEWDIRECTIONPROJECTIONINVERSE,
 } from '@/shaders/shaders';
-import { Scene } from '@/scene';
+import { Scene } from '@/shaders/scene';
 import { Mesh } from '@/renderer/mesh';
+
+// IMPORTANT! The index of a given buffer in the buffer array must match it's respective data location in the shader.
+// This allows us to use the index while looping through buffers to bind the attributes. So setting a buffer
+// happens by placing
+export enum AttributeLocation {
+  Positions,
+  Normals,
+  TextureCoords,
+  TextureDepth,
+}
 
 export class Renderer {
   modelviewProjectionLocation: WebGLUniformLocation;
@@ -60,7 +70,7 @@ export class Renderer {
       gl.useProgram(lilgl.program);
       const modelViewProjectionMatrix = viewProjectionMatrix.multiply(mesh.worldMatrix)
       gl.uniform4fv(this.colorLocation, mesh.material.color);
-      gl.vertexAttrib1f(lilgl.textureDepth, mesh.material.texture?.id ?? -1.0);
+      gl.vertexAttrib1f(AttributeLocation.TextureDepth, mesh.material.texture?.id ?? -1.0);
       const textureRepeat = [mesh.material.texture?.repeat.x ?? 1, mesh.material.texture?.repeat.y ?? 1];
       gl.uniform2fv(this.textureRepeatLocation, textureRepeat);
       gl.uniform4fv(this.emissiveLocation, mesh.material.emissive);
@@ -73,9 +83,7 @@ export class Renderer {
     // Render solid meshes first
     scene.solidMeshes.forEach(renderMesh);
 
-    // Then render the skybox. Set the boolean for isSkybox to true so the shader handles it properly, then call
-    // the skybox render method. After rendering the skybox, set the boolean back to false.
-    // Also set the depthFunc to less than or equal so the skybox can be drawn at the absolute farthest depth. Without
+    // Set the depthFunc to less than or equal so the skybox can be drawn at the absolute farthest depth. Without
     // this the skybox will be at the draw distance and so not drawn. After drawing set this back.
     gl.depthFunc(gl.LEQUAL);
     renderSkybox(scene.skybox!);

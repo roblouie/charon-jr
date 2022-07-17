@@ -6,8 +6,8 @@ import { Face } from './physics/face';
 import { controls } from '@/core/controls';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 import { textureLoader } from '@/renderer/texture-loader';
-import { drawVolcanicRock, drawWater } from '@/texture-creation/texture-maker';
-import { RampGeometry } from '@/ramp-geometry';
+import { drawVolcanicRock } from '@/texture-creation/texture-maker';
+import { AttributeLocation } from '@/renderer/renderer';
 
 export class Player {
   isJumping = false;
@@ -20,9 +20,16 @@ export class Player {
   constructor() {
     textureLoader.load(drawVolcanicRock())
     this.mesh = new Mesh(
-      new RampGeometry(0.3, 1, 0.3),
+      new CubeGeometry(0.3, 1, 0.3),
       new Material({color: '#f0f'})
     );
+    const positions = this.mesh.geometry.getAttribute(AttributeLocation.Positions).data;
+    positions[1] = 0;
+    positions[16] = 0;
+    positions[31] = 0;
+    positions[34] = 0;
+    positions[61] = 0;
+    positions[64] = 0;
     this.feetCenter.y = 10;
   }
 

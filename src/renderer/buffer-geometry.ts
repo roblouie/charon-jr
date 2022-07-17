@@ -1,18 +1,12 @@
 import { lilgl } from '@/lil-gl';
+import { AttributeLocation } from '@/renderer/renderer';
 
-// IMPORTANT! The index of a given buffer in the buffer array must match it's respective data location in the shader.
-// This allows us to use the index while looping through buffers to bind the attributes. So setting a buffer
-// happens by placing
-export enum BufferType {
-  Positions = lilgl.coordsLocation,
-  Normals = lilgl.normalsLocation,
-  TextureCoords = lilgl.texCoordsLocation,
-}
+
 
 type BufferInfo = { data: Float32Array; size: number };
 
 export class BufferGeometry {
-  private buffers: Map<BufferType, BufferInfo> = new Map<BufferType, BufferInfo>();
+  private buffers: Map<AttributeLocation, BufferInfo> = new Map<AttributeLocation, BufferInfo>();
   private indices?: Uint16Array;
   private fullBuffer: Float32Array;
 
@@ -37,12 +31,12 @@ export class BufferGeometry {
     });
   }
 
-  getBuffer(bufferType: BufferType) {
-    return this.buffers.get(bufferType)!;
+  getAttribute(attributeLocation: AttributeLocation) {
+    return this.buffers.get(attributeLocation)!;
   }
 
-  setBuffer(bufferType: BufferType, data: Float32Array, size: number) {
-    this.buffers.set(bufferType, { data, size });
+  setAttribute(attributeLocation: AttributeLocation, data: Float32Array, size: number) {
+    this.buffers.set(attributeLocation, { data, size });
   }
 
   setIndices(indices: Uint16Array) {

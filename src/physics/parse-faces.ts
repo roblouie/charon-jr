@@ -1,6 +1,7 @@
-import { BufferGeometry, BufferType } from '@/renderer/buffer-geometry';
+import { BufferGeometry } from '@/renderer/buffer-geometry';
 import { Face } from './face';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
+import { AttributeLocation } from '@/renderer/renderer';
 
 function indexToFaceVertexPoint(index: number, positionData: Float32Array): EnhancedDOMPoint {
   return new EnhancedDOMPoint(
@@ -12,7 +13,7 @@ export function getGroupedFaces(geometries: BufferGeometry[]) {
   const faces = geometries.flatMap(geometry => {
     const indices = geometry.getIndices()!; // assuming always having indices
 
-    const positions = geometry.getBuffer(BufferType.Positions);
+    const positions = geometry.getAttribute(AttributeLocation.Positions);
 
     const triangles = [];
     for (let i = 0; i < indices.length; i += 3) {

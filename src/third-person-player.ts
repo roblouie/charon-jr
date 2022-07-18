@@ -1,16 +1,32 @@
-import { Player } from '@/player';
 import { Camera } from '@/renderer/camera';
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
 import { Face } from '@/physics/face';
 import { controls } from '@/core/controls';
+import { Mesh } from '@/renderer/mesh';
+import { textureLoader } from '@/renderer/texture-loader';
+import { drawVolcanicRock } from '@/texture-creation/texture-maker';
+import { CubeGeometry } from '@/cube-geometry';
+import { Material } from '@/renderer/material';
+import { findFloorHeightAtPosition, findWallCollisionsFromList } from '@/physics/surface-collision';
 
-export class ThirdPersonPlayer extends Player {
+export class ThirdPersonPlayer {
+  isJumping = false;
+  feetCenter = new EnhancedDOMPoint(0, 0, 0);
+  velocity = new EnhancedDOMPoint(0, 0, 0);
+  angle = 0;
+
+  mesh: Mesh;
   camera: Camera;
   idealPosition = new EnhancedDOMPoint(0, 3, -17);
   idealLookAt = new EnhancedDOMPoint(0, 2, 0);
 
   constructor(camera: Camera) {
-    super();
+    textureLoader.load(drawVolcanicRock())
+    this.mesh = new Mesh(
+      new CubeGeometry(0.3, 1, 0.3),
+      new Material({color: '#f0f'})
+    );
+    this.feetCenter.y = 10;
     this.camera = camera;
   }
 
@@ -21,17 +37,43 @@ export class ThirdPersonPlayer extends Player {
   }
 
   update(groupedFaces: { floorFaces: Face[]; wallFaces: Face[] }) {
-    super.update(groupedFaces);
+    this.updateVelocityFromControls();
+    this.velocity.y -= 0.003; // gravity
+    this.feetCenter.add(this.velocity);
+    this.collideWithLevel(groupedFaces);
+
+    this.mesh.position.set(this.feetCenter);
+    this.mesh.position.y += 0.5; // move up by half height so mesh ends at feet position
+
     this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.01);
 
     // Keep camera away regardless of lerp
     const distanceToKeep = 17;
-    const normalizedPosition = this.camera.position.clone().subtract(this.mesh.position).normalize();
-    this.camera.position.x = normalizedPosition.x * distanceToKeep + this.mesh.position.x;
-    this.camera.position.z = normalizedPosition.z * distanceToKeep + this.mesh.position.z;
+    const normalizedPosition = this.camera.position.clone().subtract(this.mesh.position).normalize().scale(distanceToKeep);
+    this.camera.position.x = normalizedPosition.x + this.mesh.position.x;
+    this.camera.position.z = normalizedPosition.z + this.mesh.position.z;
 
     this.camera.lookAt(this.transformIdeal(this.idealLookAt));
     this.camera.updateWorldMatrix();
+  }
+
+  collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
+    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.feetCenter, 0.4, 0.1);
+    this.feetCenter.x += wallCollisions.xPush;
+    this.feetCenter.z += wallCollisions.zPush;
+
+    const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, this.feetCenter);
+    if (!floorData) {
+      return;
+    }
+
+    const collisionDepth = floorData.height - this.feetCenter.y;
+
+    if (collisionDepth > 0) {
+      this.feetCenter.y += collisionDepth;
+      this.velocity.y = 0;
+      this.isJumping = false;
+    }
   }
 
   protected updateVelocityFromControls() {

@@ -1,3 +1,5 @@
+import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
+
 const canvas = document.createElement('canvas');
 const context = canvas.getContext('2d')!;
 
@@ -21,3 +23,4 @@ export function doTimes(times: number, callback: (index: number) => void) {
     callback(i);
   }
 }
+

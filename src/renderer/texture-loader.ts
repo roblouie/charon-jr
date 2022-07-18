@@ -1,4 +1,4 @@
-import { gl, lilgl } from '@/lil-gl';
+import { gl, lilgl } from '@/renderer/lil-gl';
 import { Texture } from '@/renderer/texture';
 import { U_SKYBOX } from '@/shaders/shaders';
 

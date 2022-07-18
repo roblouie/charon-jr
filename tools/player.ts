@@ -1,13 +1,19 @@
-import { Mesh } from './renderer/mesh';
-import { CubeGeometry } from './cube-geometry';
-import { Material } from './renderer/material';
-import { findFloorHeightAtPosition, findWallCollisionsFromList } from './physics/surface-collision';
-import { Face } from './physics/face';
+import { Mesh } from '@/renderer/mesh';
+import { CubeGeometry } from '@/cube-geometry';
+import { Material } from '@/renderer/material';
+import { findFloorHeightAtPosition, findWallCollisionsFromList } from '@/physics/surface-collision';
+import { Face } from '@/physics/face';
 import { controls } from '@/core/controls';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 import { textureLoader } from '@/renderer/texture-loader';
 import { drawVolcanicRock } from '@/texture-creation/texture-maker';
 import { AttributeLocation } from '@/renderer/renderer';
+
+// Base Player Class
+// Very simple movable player that collides properly with the level. While generally this class would live as a base
+// class in the project, that will result in some amount of duplicate code. So this lives in tools as a template to
+// build real player types from. Take this and add either a third person camera, or first person camera,
+// or car physic, etc.
 
 export class Player {
   isJumping = false;
@@ -67,9 +73,6 @@ export class Player {
   protected updateVelocityFromControls() {
     const speed = 0.2;
     const rotationSpeed = 0.02;
-    // this.velocity.x = controls.direction.x * -speed;
-
-    const normalized = controls.direction.normalize();
 
     if (controls.direction.x !== 0 && controls.direction.z !== 0) {
       this.angle += controls.direction.x * -rotationSpeed;
@@ -77,10 +80,6 @@ export class Player {
 
     this.velocity.z = Math.cos(this.angle) * controls.direction.z * -speed;
     this.velocity.x = Math.sin(this.angle) * controls.direction.z * -speed;
-
-    const debugElement = document.querySelector('#debug')!;
-
-    // debugElement.textContent = `${this.angle}  ${controls.direction.x}, ${controls.direction.y}, ${controls.direction.z}`;
 
     this.mesh.setRotation(0, this.angle, 0);
 

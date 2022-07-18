@@ -18,7 +18,7 @@ import {
 import { textureLoader } from '@/renderer/texture-loader';
 import { controls } from '@/core/controls';
 import { ThirdPersonPlayer } from '@/third-person-player';
-import { Scene } from '@/shaders/scene';
+import { Scene } from '@/renderer/scene';
 import { Skybox } from '@/skybox';
 
 const debugElement = document.querySelector('#debug')!;
@@ -50,8 +50,6 @@ camera.position = new EnhancedDOMPoint(0, 5, -17);
 
 const player = new ThirdPersonPlayer(camera);
 player.mesh.position.y = 1.5;
-
-// player.mesh.add(camera);
 
 const sampleHeightMap = [];
 const imageData = drawLandscape().data;
@@ -89,9 +87,12 @@ positions[64] = 0;
 const { cubes } = new Staircase(10, 0.3, 3, 1);
 
 const wall = new Mesh(
-  new CubeGeometry(3, 4, 4, -6),
+  new CubeGeometry(3, 4, 4),
   new Material({texture: textureLoader.load(drawBricks())})
 );
+
+wall.position.x = -6;
+wall.updateWorldMatrix();
 
 const particleGeometry = new PlaneGeometry(2, 2);
 const particleTexture = textureLoader.load(drawParticle());
@@ -114,9 +115,8 @@ drawCurrentTexture();
 // END TESTING
 
 const levelParts = [ramp, ...cubes, wall, floor, lake];
-const levelGeometries = levelParts.map(levelPart => levelPart.geometry);
 
-const groupedFaces = getGroupedFaces(levelGeometries);
+const groupedFaces = getGroupedFaces(levelParts);
 levelParts.push(particle);
 levelParts.push(particle2);
 

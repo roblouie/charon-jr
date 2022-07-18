@@ -14,10 +14,11 @@ export class Staircase {
     const material = new Material({ texture });
     const offset = new DOMPoint(40, -11, -15);
     for (let stepNumber = 0; stepNumber < numberOfSteps; stepNumber++) {
-      this.cubes.push(new Mesh(
-        new CubeGeometry(stepWidth, stepHeight, stepDepth, offset.x, offset.y, offset.z),
-        material
-      ));
+      const mesh = new Mesh(new CubeGeometry(stepWidth, stepHeight, stepDepth), material);
+      mesh.position.x = offset.x;
+      mesh.position.y = offset.y;
+      mesh.position.z = offset.z;
+      this.cubes.push(mesh);
       offset.y += stepHeight;
       offset.z += stepDepth;
     }

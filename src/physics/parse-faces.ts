@@ -1,29 +1,28 @@
-import { BufferGeometry } from '@/renderer/buffer-geometry';
 import { Face } from './face';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 import { AttributeLocation } from '@/renderer/renderer';
+import { Mesh } from '@/renderer/mesh';
 
-function indexToFaceVertexPoint(index: number, positionData: Float32Array): EnhancedDOMPoint {
-  return new EnhancedDOMPoint(
-    positionData[index], positionData[index + 1], positionData[index + 2]
+function indexToFaceVertexPoint(index: number, positionData: Float32Array, matrix: DOMMatrix): EnhancedDOMPoint {
+  return new EnhancedDOMPoint().set(
+    matrix.transformPoint(new DOMPoint(positionData[index], positionData[index + 1], positionData[index + 2]))
   )
 }
 
-export function getGroupedFaces(geometries: BufferGeometry[]) {
-  const faces = geometries.flatMap(geometry => {
-    const indices = geometry.getIndices()!; // assuming always having indices
+export function getGroupedFaces(meshes: Mesh[]) {
+  const faces = meshes.flatMap(mesh => {
+    const indices = mesh.geometry.getIndices()!; // assuming always having indices
 
-    const positions = geometry.getAttribute(AttributeLocation.Positions);
-
+    const positions = mesh.geometry.getAttribute(AttributeLocation.Positions);
     const triangles = [];
     for (let i = 0; i < indices.length; i += 3) {
       const firstIndex = indices[i] * 3;
       const secondIndex = indices[i + 1] * 3;
       const thirdIndex = indices[i + 2] * 3;
 
-      const point0 = indexToFaceVertexPoint(firstIndex, positions.data);
-      const point1 = indexToFaceVertexPoint(secondIndex, positions.data);
-      const point2 = indexToFaceVertexPoint(thirdIndex, positions.data);
+      const point0 = indexToFaceVertexPoint(firstIndex, positions.data, mesh.worldMatrix);
+      const point1 = indexToFaceVertexPoint(secondIndex, positions.data, mesh.worldMatrix);
+      const point2 = indexToFaceVertexPoint(thirdIndex, positions.data, mesh.worldMatrix);
 
       triangles.push([
         point0,

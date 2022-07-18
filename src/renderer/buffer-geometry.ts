@@ -1,7 +1,5 @@
-import { lilgl } from '@/lil-gl';
+import { gl } from '@/renderer/lil-gl';
 import { AttributeLocation } from '@/renderer/renderer';
-
-
 
 type BufferInfo = { data: Float32Array; size: number };
 
@@ -15,9 +13,9 @@ export class BufferGeometry {
   vao: WebGLVertexArrayObject;
 
   constructor() {
-    this.buffer = lilgl.gl.createBuffer()!;
-    this.indexBuffer = lilgl.gl.createBuffer()!;
-    this.vao = lilgl.gl.createVertexArray()!;
+    this.buffer = gl.createBuffer()!;
+    this.indexBuffer = gl.createBuffer()!;
+    this.vao = gl.createVertexArray()!;
     this.fullBuffer = new Float32Array();
   }
 
@@ -57,25 +55,25 @@ export class BufferGeometry {
   // }
 
   bindGeometry() {
-    this.buffer = lilgl.gl.createBuffer()!;
+    this.buffer = gl.createBuffer()!;
     this.populateFullBuffer();
-    lilgl.gl.bindBuffer(lilgl.gl.ARRAY_BUFFER, this.buffer);
-    lilgl.gl.bufferData(lilgl.gl.ARRAY_BUFFER, this.fullBuffer, lilgl.gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, this.fullBuffer, gl.STATIC_DRAW);
 
-    lilgl.gl.bindVertexArray(this.vao);
+    gl.bindVertexArray(this.vao);
 
     let runningOffset = 0;
     this.buffers.forEach((buffer, position) => {
-      lilgl.gl.vertexAttribPointer(position, buffer.size, lilgl.gl.FLOAT, false, 0, runningOffset);
-      lilgl.gl.enableVertexAttribArray(position);
+      gl.vertexAttribPointer(position, buffer.size, gl.FLOAT, false, 0, runningOffset);
+      gl.enableVertexAttribArray(position);
       runningOffset += buffer.data.length * buffer.data.BYTES_PER_ELEMENT;
     });
 
     if (this.indices?.length) {
-      lilgl.gl.bindBuffer(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-      lilgl.gl.bufferData(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indices, lilgl.gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
     }
 
-    lilgl.gl.bindVertexArray(null);
+    gl.bindVertexArray(null);
   }
 }

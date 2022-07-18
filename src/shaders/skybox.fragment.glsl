@@ -12,5 +12,5 @@ out vec4 outColor;
 
 void main() {
     vec4 t = u_viewDirectionProjectionInverse * v_position;
-    outColor = texture(u_skybox, normalize(t.xyz / t.w));
+    outColor = texture(u_skybox, t.xyz);
 }

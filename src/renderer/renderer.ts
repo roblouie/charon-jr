@@ -1,4 +1,4 @@
-import { gl, lilgl } from "@/lil-gl";
+import { gl, lilgl } from "@/renderer/lil-gl";
 import { Camera } from "@/renderer/camera";
 import { Skybox } from '@/skybox';
 import {
@@ -10,7 +10,7 @@ import {
   U_SKYBOX,
   U_VIEWDIRECTIONPROJECTIONINVERSE,
 } from '@/shaders/shaders';
-import { Scene } from '@/shaders/scene';
+import { Scene } from '@/renderer/scene';
 import { Mesh } from '@/renderer/mesh';
 
 // IMPORTANT! The index of a given buffer in the buffer array must match it's respective data location in the shader.
@@ -34,7 +34,7 @@ export class Renderer {
 
   constructor() {
     gl.enable(gl.CULL_FACE);
-    gl.enable(lilgl.gl.DEPTH_TEST);
+    gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     this.modelviewProjectionLocation = gl.getUniformLocation(lilgl.program, MODELVIEWPROJECTION)!;

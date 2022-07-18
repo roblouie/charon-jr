@@ -1,39 +1,63 @@
-import { lilgl } from './lil-gl';
-import { Object3d } from './renderer/object-3d';
 import { Camera } from './renderer/camera';
-import { Player } from './player';
 import { Mesh } from './renderer/mesh';
 import { CubeGeometry } from './cube-geometry';
 import { Material } from './renderer/material';
 import { getGroupedFaces } from './physics/parse-faces';
 import { PlaneGeometry } from './plane-geometry';
-import { RampGeometry } from './ramp-geometry';
 import { Staircase } from './staircase-geometry';
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
-import { Renderer } from "@/renderer/renderer";
+import { AttributeLocation, Renderer } from "@/renderer/renderer";
 import {
   drawBricks,
   drawCurrentTexture,
   drawGrass,
   drawLandscape,
   drawMarble, drawParticle, drawSky,
-  drawStoneWalkway, drawWater
+  drawStoneWalkway, drawVolcanicRock, drawWater
 } from '@/texture-creation/texture-maker';
 import { textureLoader } from '@/renderer/texture-loader';
 import { controls } from '@/core/controls';
 import { ThirdPersonPlayer } from '@/third-person-player';
+import { Scene } from '@/renderer/scene';
+import { Skybox } from '@/skybox';
+import { doTimes } from '@/helpers';
 
 const debugElement = document.querySelector('#debug')!;
 
-const scene = new Object3d();
+// Cuts slices off the edges of a 3d texture to create a skybox. An easier to read version of this would be the following:
+//
+// const skyRight = drawSky('z', 'y', 'x', 0, true);
+// const skyLeft = drawSky('z', 'y', 'x', 127);
+//
+// const skyCeiling = drawSky('x', 'z', 'y', 0);
+// const skyFloor = drawSky('x', 'z', 'y', 127);
+//
+// const skyFront = drawSky('x', 'y', 'z', 0);
+// const skyBack = drawSky('x', 'y', 'z', 127, true);
+//
+// return [skyRight, skyLeft, skyCeiling, skyFloor, skyFront, skyBack];
+//
+// This is functionally equivalent to the code-golfed version below.
+function generateSkyboxTexture() {
+  // @ts-ignore
+  return new Array(6).fill().map((texture, i) => {
+    // @ts-ignore
+    return drawSky(...['zyx', 'xzy', 'xyz'][Math.floor(i / 2)].split(''), i % 2 === 0 ? 0 : 127, i === 0 || i === 5);
+  });
+}
+
+// @ts-ignore
+const skybox = new Skybox(...generateSkyboxTexture());
+skybox.bindGeometry();
+
+const scene = new Scene();
+scene.skybox = skybox;
 
 const camera = new Camera(Math.PI / 5, 16 / 9, 1, 400);
 camera.position = new EnhancedDOMPoint(0, 5, -17);
 
 const player = new ThirdPersonPlayer(camera);
 player.mesh.position.y = 1.5;
-
-// player.mesh.add(camera);
 
 const sampleHeightMap = [];
 const imageData = drawLandscape().data;
@@ -54,26 +78,29 @@ const lake = new Mesh(
   new Material({texture: lakeTexture, isTransparent: true, color: '#fffc'})
 );
 
-lake.position.y = -8.7 //-7.9;
+lake.position.y = -4.4 //-7.9;
 
 const ramp = new Mesh(
-  new RampGeometry(3, 13, 13),
+  new CubeGeometry(3, 13, 13),
   new Material({texture: textureLoader.load(drawMarble())})
 );
+const positions = ramp.geometry.getAttribute(AttributeLocation.Positions).data;
+positions[1] = 0;
+positions[16] = 0;
+positions[31] = 0;
+positions[34] = 0;
+positions[61] = 0;
+positions[64] = 0;
+
 const { cubes } = new Staircase(10, 0.3, 3, 1);
 
 const wall = new Mesh(
-  new CubeGeometry(3, 4, 4, -6),
+  new CubeGeometry(3, 4, 4),
   new Material({texture: textureLoader.load(drawBricks())})
 );
 
-const skyTexture = textureLoader.load(drawSky());
-skyTexture.repeat.x = 1;
-skyTexture.repeat.y = 1;
-const sky = new Mesh(
-  new CubeGeometry(400, 100, 400, 0),
-  new Material({texture: skyTexture, emissive: '#fff'})
-);
+wall.position.x = -6;
+wall.updateWorldMatrix();
 
 const particleGeometry = new PlaneGeometry(2, 2);
 const particleTexture = textureLoader.load(drawParticle());
@@ -96,22 +123,13 @@ drawCurrentTexture();
 // END TESTING
 
 const levelParts = [ramp, ...cubes, wall, floor, lake];
-const levelGeometries = levelParts.map(levelPart => levelPart.geometry);
 
-const groupedFaces = getGroupedFaces(levelGeometries);
-sky.geometry.getIndices()?.reverse();
-levelParts.push(sky);
+const groupedFaces = getGroupedFaces(levelParts);
 levelParts.push(particle);
 levelParts.push(particle2);
 
 scene.add(player.mesh);
 scene.add(...levelParts);
-
-scene.allChildren().forEach(child => {
-  if (child.isMesh()) {
-    child.geometry.bindGeometry();
-  }
-});
 
 camera.lookAt(player.mesh.position);
 
@@ -126,14 +144,13 @@ function draw(time: number) {
   // debugElement.textContent = `${1 / ((time - lastTime) / 1000)} fps`;
   // lastTime = time;
   player.update(groupedFaces);
-  scene.updateWorldMatrix();
 
-  const {x, y, z} = player.mesh.getMatrix().transformPoint(camera.position);
-  particle.lookAt(new EnhancedDOMPoint(x, y, z));
-  particle2.lookAt(new EnhancedDOMPoint(x, y, z));
-
+  particle.lookAt(camera.position);
+  particle2.lookAt(camera.position);
   particle.rotate(-1, 0, 0);
   particle2.rotate(-1, 0, 0);
+
+  scene.updateWorldMatrix();
 
   renderer.render(camera, scene);
 

@@ -1,55 +1,71 @@
-import { clamp } from '@/helpers';
+interface VectorLike {
+  x: number;
+  y: number;
+  z: number;
+  w?: number;
+}
 
 export class EnhancedDOMPoint extends DOMPoint {
-  get u() {
-    return this.x;
+  add(otherVector: EnhancedDOMPoint) {
+    this.addVectors(this, otherVector);
+    return this;
   }
 
-  set u(u: number) {
-    this.x = u;
+  addVectors(v1: EnhancedDOMPoint, v2: EnhancedDOMPoint) {
+    this.x = v1.x + v2.x;
+    this.y = v1.y + v2.y;
+    this.z = v1.z + v2.z;
+    return this;
   }
 
-  get v() {
-    return this.y;
+  set(x?: number | VectorLike, y?: number, z?: number): EnhancedDOMPoint {
+    if (x && typeof x === 'object') {
+      y = x.y;
+      z = x.z;
+      x = x.x;
+    }
+    this.x = x != null ? x : this.x;
+    this.y = y != null ? y : this.y;
+    this.z = z != null ? z : this.z;
+    return this;
   }
 
-  set v(v: number) {
-    this.y = v;
-  }
-
-  plusSelf(otherVector: EnhancedDOMPoint) {
-    return this._plus(otherVector, this);
-  }
-
-  plus(otherVector: EnhancedDOMPoint) {
-    return this._plus(otherVector, new EnhancedDOMPoint());
+  clone() {
+    return new EnhancedDOMPoint(this.x, this.y, this.z, this.w);
   }
 
   scale(scaleBy: number) {
-    return new EnhancedDOMPoint(this.x * scaleBy, this.y * scaleBy, this.z * scaleBy);
+    this.x *= scaleBy;
+    this.y *= scaleBy;
+    this.z *= scaleBy;
+    return this;
   }
 
-  private _plus(otherVector: EnhancedDOMPoint, target: EnhancedDOMPoint) {
-    target.x = this.x + otherVector.x;
-    target.y = this.y + otherVector.y;
-    target.z = this.z + otherVector.z;
-    return target;
+  subtract(otherVector: EnhancedDOMPoint) {
+   this.subtractVectors(this, otherVector);
+    return this;
   }
 
-  minus(otherVector: EnhancedDOMPoint) {
-    return new EnhancedDOMPoint(
-      this.x - otherVector.x,
-      this.y - otherVector.y,
-      this.z - otherVector.z
-    );
+  subtractVectors(v1: EnhancedDOMPoint, v2: EnhancedDOMPoint) {
+    this.x = v1.x - v2.x;
+    this.y = v1.y - v2.y;
+    this.z = v1.z - v2.z;
+    return this;
   }
 
   cross(otherVector: EnhancedDOMPoint) {
-    return new EnhancedDOMPoint(
-    this.y * otherVector.z - this.z * otherVector.y,
-    this.z * otherVector.x - this.x * otherVector.z,
-    this.x * otherVector.y - this.y * otherVector.x,
-    );
+    this.crossVectors(this, otherVector);
+    return this;
+  }
+
+  crossVectors(v1: EnhancedDOMPoint, v2: EnhancedDOMPoint) {
+    const x = v1.y * v2.z - v1.z * v2.y;
+    const y = v1.z * v2.x - v1.x * v2.z;
+    const z = v1.x * v2.y - v1.y * v2.x;
+    this.x = x
+    this.y = y
+    this.z = z
+    return this;
   }
 
   dot(otherVector: EnhancedDOMPoint): number {
@@ -69,18 +85,9 @@ export class EnhancedDOMPoint extends DOMPoint {
     if (magnitude === 0) {
       return new EnhancedDOMPoint();
     }
-    return new EnhancedDOMPoint(this.x / magnitude, this.y / magnitude, this.z / magnitude);
-  }
-
-  setFromRotationMatrix(matrix: DOMMatrix) {
-    this.y = Math.asin(clamp(matrix.m13, -1, 1));
-    if (Math.abs(matrix.m13) < 0.9999999) {
-      this.x = Math.atan2(-matrix.m23, matrix.m33);
-      this.z = Math.atan2(-matrix.m12, matrix.m11);
-    } else {
-      this.x = Math.atan2(matrix.m32, matrix.m22);
-      this.z = 0;
-    }
+    this.x /= magnitude;
+    this.y /= magnitude;
+    this.z /= magnitude;
     return this;
   }
 
@@ -88,6 +95,13 @@ export class EnhancedDOMPoint extends DOMPoint {
     this.x += ( otherVector.x - this.x ) * alpha;
     this.y += ( otherVector.y - this.y ) * alpha;
     this.z += ( otherVector.z - this.z ) * alpha;
+    return this;
+  }
+
+  modifyComponents(callback: (component: number) => number) {
+    this.x = callback(this.x);
+    this.y = callback(this.y);
+    this.z = callback(this.z);
     return this;
   }
 }

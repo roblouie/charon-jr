@@ -5,7 +5,6 @@
     <style>
         #c {
             width: 100vw;
-            outline: 0;
         }
 
         /* Get rid of any margins, set background black, use flexbox to center */
@@ -26,21 +25,24 @@
             }
         }
 
-        #draw, #noise {
-            width: 128px;
-            height: 128px;
-            /*display: none;*/
-        }
+        /*#draw, #noise {*/
+        /*    width: 128px;*/
+        /*    height: 128px;*/
+        /*    !*display: none;*!*/
+        /*}*/
+
+        /*#tile {*/
+        /*    width: 512px;*/
+        /*    height: 512px;*/
+        /*}*/
     </style>
 </head>
-<html>
+
 <body>
-    <div id="debug" style="position: fixed; left: 20px; top: 20px; color: white;"></div>
-    <canvas id="c" width="1280" height="720"></canvas>
-    <div>
-        <canvas id="draw" width="128" height="128"></canvas>
-        <canvas id="noise" width="128" height="128"></canvas>
-    </div>
-<!--    <canvas id="tile" width="256" height="256"></canvas>-->
+<!--    <div id="debug" style="position: fidxed; left: 20px; top: 20px; color: white;"></div>-->
+    <canvas id="c"></canvas>
+    <canvas id="draw" width="128" height="128"></canvas>
+    <canvas id="noise" width="128" height="128"></canvas>
+    <canvas id="tile" width="256" height="256"></canvas>
 </body>
-</html>
+

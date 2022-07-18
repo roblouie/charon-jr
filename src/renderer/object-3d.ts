@@ -82,15 +82,19 @@ export class Object3d {
     return allChildren;
   }
 
+  private lookAtX = new EnhancedDOMPoint();
+  private lookAtY = new EnhancedDOMPoint();
+  private lookAtZ = new EnhancedDOMPoint();
+  // Consider removing up argument as it should probably just be the up of object3d
   lookAt(target: EnhancedDOMPoint, up?: EnhancedDOMPoint) {
-    const zAxis = this.position.minus(target).normalize();
-    const xAxis = (up ?? this.up).cross(zAxis).normalize();
-    const yAxis = zAxis.cross(xAxis).normalize();
+    this.lookAtZ.subtractVectors(this.position, target).normalize();
+    this.lookAtX.crossVectors((up ?? this.up), this.lookAtZ).normalize();
+    this.lookAtY.crossVectors(this.lookAtZ, this.lookAtX).normalize();
 
     this.rotationMatrix = new DOMMatrix([
-      xAxis.x, xAxis.y, xAxis.z, 0,
-      yAxis.x, yAxis.y, yAxis.z, 0,
-      zAxis.x, zAxis.y, zAxis.z, 0,
+      this.lookAtX.x, this.lookAtX.y, this.lookAtX.z, 0,
+      this.lookAtY.x, this.lookAtY.y, this.lookAtY.z, 0,
+      this.lookAtZ.x, this.lookAtZ.y, this.lookAtZ.z, 0,
       0, 0, 0, 1,
     ]);
   }

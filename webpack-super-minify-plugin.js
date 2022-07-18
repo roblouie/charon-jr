@@ -123,7 +123,6 @@ async function applyClosure(js) {
       console.warn(stdErr); // If we make it here, there were warnings but no errors
     });
   })
-
 }
 
 module.exports = { SuperMinifyPlugin };

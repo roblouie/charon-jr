@@ -21,11 +21,7 @@ module.exports = {
       {
         test: /\.tsx?$/,
         use: 'ts-loader',
-        exclude: [/node_modules/, /.spec.ts/],
-      },
-      {
-        test: /\.glsl/,
-        use: glslLoader,
+        exclude: [/node_modules/, /.spec.ts/, /tools/],
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif|webp)$/i,

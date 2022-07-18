@@ -44,7 +44,6 @@ export class Renderer {
     this.textureRepeatLocation = gl.getUniformLocation(lilgl.program, TEXTUREREPEAT)!;
     this.skyboxLocation = gl.getUniformLocation(lilgl.skyboxProgram, U_SKYBOX)!;
     this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(lilgl.skyboxProgram, U_VIEWDIRECTIONPROJECTIONINVERSE)!;
-    gl.useProgram(lilgl.program);
   }
 
   render(camera: Camera, scene: Scene) {

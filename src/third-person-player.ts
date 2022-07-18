@@ -49,9 +49,14 @@ export class ThirdPersonPlayer {
 
     // Keep camera away regardless of lerp
     const distanceToKeep = 17;
-    const normalizedPosition = this.camera.position.clone().subtract(this.mesh.position).normalize().scale(distanceToKeep);
-    this.camera.position.x = normalizedPosition.x + this.mesh.position.x;
-    this.camera.position.z = normalizedPosition.z + this.mesh.position.z;
+    const {x, z} = this.camera.position.clone()
+      .subtract(this.mesh.position) // distance from camera to player
+      .normalize() // direction of camera to player
+      .scale(distanceToKeep) // scale direction out by distance, giving us a lerp direction but constant distance
+      .add(this.mesh.position); // move back relative to player
+
+    this.camera.position.x = x;
+    this.camera.position.z = z;
 
     this.camera.lookAt(this.transformIdeal(this.idealLookAt));
     this.camera.updateWorldMatrix();

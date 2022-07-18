@@ -1,6 +1,3 @@
-import { clamp } from '@/helpers';
-import * as events from "events";
-
 interface VectorLike {
   x: number;
   y: number;
@@ -9,22 +6,6 @@ interface VectorLike {
 }
 
 export class EnhancedDOMPoint extends DOMPoint {
-  get u() {
-    return this.x;
-  }
-
-  set u(u: number) {
-    this.x = u;
-  }
-
-  get v() {
-    return this.y;
-  }
-
-  set v(v: number) {
-    this.y = v;
-  }
-
   add(otherVector: EnhancedDOMPoint) {
     this.addVectors(this, otherVector);
     return this;
@@ -43,9 +24,9 @@ export class EnhancedDOMPoint extends DOMPoint {
       z = x.z;
       x = x.x;
     }
-    this.x = x !== undefined ? x : this.x;
-    this.y = y !== undefined ? y : this.y;
-    this.z = z !== undefined ? z : this.z;
+    this.x = x != null ? x : this.x;
+    this.y = y != null ? y : this.y;
+    this.z = z != null ? z : this.z;
     return this;
   }
 
@@ -107,18 +88,6 @@ export class EnhancedDOMPoint extends DOMPoint {
     this.x /= magnitude;
     this.y /= magnitude;
     this.z /= magnitude;
-    return this;
-  }
-
-  setFromRotationMatrix(matrix: DOMMatrix) {
-    this.y = Math.asin(clamp(matrix.m13, -1, 1));
-    if (Math.abs(matrix.m13) < 0.9999999) {
-      this.x = Math.atan2(-matrix.m23, matrix.m33);
-      this.z = Math.atan2(-matrix.m12, matrix.m11);
-    } else {
-      this.x = Math.atan2(matrix.m32, matrix.m22);
-      this.z = 0;
-    }
     return this;
   }
 

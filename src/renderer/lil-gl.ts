@@ -1,6 +1,5 @@
 import {
   fragment_shader_glsl, skybox_fragment_glsl, skybox_vertex_glsl,
-  U_SKYBOX, USAMPLER,
   vertex_shader_glsl
 } from '@/shaders/shaders';
 

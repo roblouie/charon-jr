@@ -11,6 +11,8 @@ export class Scene extends Object3d {
     super.add(...object3ds);
     object3ds.forEach(object3d => {
       if (object3d.isMesh()) {
+        object3d.geometry.bindGeometry();
+        object3d.allChildren().forEach(child => child.isMesh() && child.geometry.bindGeometry())
         object3d.material.isTransparent ? this.transparentMeshes.push(object3d) : this.solidMeshes.push(object3d);
       }
     })

@@ -20,26 +20,34 @@ import { controls } from '@/core/controls';
 import { ThirdPersonPlayer } from '@/third-person-player';
 import { Scene } from '@/renderer/scene';
 import { Skybox } from '@/skybox';
+import { doTimes } from '@/helpers';
 
 const debugElement = document.querySelector('#debug')!;
 
-const skyRight = drawSky('z', 'y', 'x', 0, true);
-const skyLeft = drawSky('z', 'y', 'x', 127); // GOOD
+// Cuts slices off the edges of a 3d texture to create a skybox. An easier to read version of this would be the following:
+//
+// const skyRight = drawSky('z', 'y', 'x', 0, true);
+// const skyLeft = drawSky('z', 'y', 'x', 127);
+//
+// const skyCeiling = drawSky('x', 'z', 'y', 0);
+// const skyFloor = drawSky('x', 'z', 'y', 127);
+//
+// const skyFront = drawSky('x', 'y', 'z', 0);
+// const skyBack = drawSky('x', 'y', 'z', 127, true);
+//
+// return [skyRight, skyLeft, skyCeiling, skyFloor, skyFront, skyBack];
+//
+// This is functionally equivalent to the code-golfed version below.
+function generateSkyboxTexture() {
+  // @ts-ignore
+  return new Array(6).fill().map((texture, i) => {
+    // @ts-ignore
+    return drawSky(...['zyx', 'xzy', 'xyz'][Math.floor(i / 2)].split(''), i % 2 === 0 ? 0 : 127, i === 0 || i === 5);
+  });
+}
 
-const skyCeiling = drawSky('x', 'z', 'y', 0);
-const skyFloor = drawSky('x', 'z', 'y', 127);
-
-const skyFront = drawSky('x', 'y', 'z', 0); // GOOD
-const skyBack = drawSky('x', 'y', 'z', 127, true);
-
-export const skybox = new Skybox(
-  skyRight,
-  skyLeft,
-  skyCeiling,
-  skyFloor,
-  skyFront,
-  skyBack,
-);
+// @ts-ignore
+const skybox = new Skybox(...generateSkyboxTexture());
 skybox.bindGeometry();
 
 const scene = new Scene();
@@ -122,12 +130,6 @@ levelParts.push(particle2);
 
 scene.add(player.mesh);
 scene.add(...levelParts);
-
-scene.allChildren().forEach(child => {
-  if (child.isMesh()) {
-    child.geometry.bindGeometry();
-  }
-});
 
 camera.lookAt(player.mesh.position);
 

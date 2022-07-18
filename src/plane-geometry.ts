@@ -49,7 +49,7 @@ export function buildPlane(
 
   const vector = new EnhancedDOMPoint();
 
-  let heigtmapPosition = 0;
+  let heightmapPosition = 0;
   for (let iy = 0; iy < gridY1; iy++) {
     const y = iy * segmentHeight - heightHalf;
 
@@ -60,7 +60,7 @@ export function buildPlane(
       // set values to correct vector component
       vector[u] = x * uDir;
       vector[v] = y * vDir;
-      vector[w] = heightmap ? heightmap[heigtmapPosition] : depthHalf;
+      vector[w] = heightmap ? heightmap[heightmapPosition] : depthHalf;
 
       // now apply vector to vertex buffer
       vertices.push(new EnhancedDOMPoint().set(vector));
@@ -79,7 +79,7 @@ export function buildPlane(
       // uvs.push(1 - (iy / gridY));
       // Currently I don't want this behavior but might in the future. Might be better to have it spread across
       // the whole mesh and handle texture repeat via the material repeat property.
-      heigtmapPosition++;
+      heightmapPosition++;
     }
   }
 

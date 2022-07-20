@@ -1,5 +1,5 @@
-import { gl, lilgl } from "@/renderer/lil-gl";
-import { Camera } from "@/renderer/camera";
+import { gl, lilgl } from "@/engine/renderer/lil-gl";
+import { Camera } from "@/engine/renderer/camera";
 import { Skybox } from '@/skybox';
 import {
   COLOR,
@@ -9,9 +9,9 @@ import {
   TEXTUREREPEAT,
   U_SKYBOX,
   U_VIEWDIRECTIONPROJECTIONINVERSE,
-} from '@/shaders/shaders';
-import { Scene } from '@/renderer/scene';
-import { Mesh } from '@/renderer/mesh';
+} from '@/engine/shaders/shaders';
+import { Scene } from '@/engine/renderer/scene';
+import { Mesh } from '@/engine/renderer/mesh';
 
 // IMPORTANT! The index of a given buffer in the buffer array must match it's respective data location in the shader.
 // This allows us to use the index while looping through buffers to bind the attributes. So setting a buffer
@@ -100,3 +100,5 @@ export class Renderer {
     gl.bindVertexArray(null);
   }
 }
+
+export const renderer = new Renderer();

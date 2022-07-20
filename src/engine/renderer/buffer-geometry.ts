@@ -1,5 +1,5 @@
-import { gl } from '@/renderer/lil-gl';
-import { AttributeLocation } from '@/renderer/renderer';
+import { gl } from '@/engine/renderer/lil-gl';
+import { AttributeLocation } from '@/engine/renderer/renderer';
 
 type BufferInfo = { data: Float32Array; size: number };
 

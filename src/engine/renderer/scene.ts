@@ -1,6 +1,6 @@
-import { Object3d } from '@/renderer/object-3d';
+import { Object3d } from '@/engine/renderer/object-3d';
 import { Skybox } from '@/skybox';
-import { Mesh } from '@/renderer/mesh';
+import { Mesh } from '@/engine/renderer/mesh';
 
 export class Scene extends Object3d {
   skybox?: Skybox;

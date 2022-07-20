@@ -1,5 +1,5 @@
-import { Texture } from '@/renderer/texture';
-import { hexToWebgl } from "@/helpers";
+import { Texture } from '@/engine/renderer/texture';
+import { hexToWebgl } from "@/engine/helpers";
 
 export class Material {
   color = [1.0, 1.0, 1.0, 1.0];

@@ -4,14 +4,10 @@ import { Face } from '@/engine/physics/face';
 import { controls } from '@/core/controls';
 import { Mesh } from '@/engine/renderer/mesh';
 import { textureLoader } from '@/engine/renderer/texture-loader';
-import { drawVolcanicRock } from '@/texture-maker';
-import { CubeGeometry } from '@/engine/cube-geometry';
+import { drawVolcanicRock } from '../src/texture-maker';
+import { CubeGeometry } from '../src/engine/cube-geometry';
 import { Material } from '@/engine/renderer/material';
 import { findFloorHeightAtPosition, findWallCollisionsFromList } from '@/engine/physics/surface-collision';
-import { audioCtx } from '@/engine/audio/audio-player';
-
-const debugElement = document.querySelector('#debug')!;
-
 
 export class ThirdPersonPlayer {
   isJumping = false;
@@ -24,9 +20,6 @@ export class ThirdPersonPlayer {
   idealPosition = new EnhancedDOMPoint(0, 3, -17);
   idealLookAt = new EnhancedDOMPoint(0, 2, 0);
 
-  listener: AudioListener;
-
-
   constructor(camera: Camera) {
     textureLoader.load(drawVolcanicRock())
     this.mesh = new Mesh(
@@ -35,7 +28,6 @@ export class ThirdPersonPlayer {
     );
     this.feetCenter.y = 10;
     this.camera = camera;
-    this.listener = audioCtx.listener;
   }
 
   private transformIdeal(ideal: EnhancedDOMPoint): EnhancedDOMPoint {
@@ -68,8 +60,6 @@ export class ThirdPersonPlayer {
 
     this.camera.lookAt(this.transformIdeal(this.idealLookAt));
     this.camera.updateWorldMatrix();
-
-    this.updateAudio()
   }
 
   collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
@@ -114,22 +104,5 @@ export class ThirdPersonPlayer {
         this.isJumping = true;
       }
     }
-  }
-
-  private updateAudio() {
-    this.listener.positionX.value = this.mesh.position.x;
-    this.listener.positionY.value = this.mesh.position.y;
-    this.listener.positionZ.value = this.mesh.position.z;
-
-    // const cameraDireciton = new EnhancedDOMPoint();
-    // cameraDireciton.setFromRotationMatrix(this.camera.rotationMatrix);
-
-    const {x, z} = this.mesh.position.clone()
-      .subtract(this.camera.position) // distance from camera to player
-      .normalize() // direction of camera to player
-
-    this.listener.forwardX.value = x;
-    // this.listener.forwardY.value = cameraDireciton.y;
-    this.listener.forwardZ.value = z;
   }
 }

@@ -1,8 +1,8 @@
-import { CubeGeometry } from './cube-geometry';
-import { Mesh } from './renderer/mesh';
-import { Material } from './renderer/material';
-import { textureLoader } from '@/renderer/texture-loader';
-import { drawRockWall } from '@/texture-creation/texture-maker';
+import { CubeGeometry } from './engine/cube-geometry';
+import { Mesh } from './engine/renderer/mesh';
+import { Material } from './engine/renderer/material';
+import { textureLoader } from '@/engine/renderer/texture-loader';
+import { drawRockWall } from '@/texture-maker';
 
 export class Staircase {
   cubes: Mesh[];

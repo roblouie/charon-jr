@@ -1,13 +1,13 @@
-import { Mesh } from '@/renderer/mesh';
-import { CubeGeometry } from '@/cube-geometry';
-import { Material } from '@/renderer/material';
-import { findFloorHeightAtPosition, findWallCollisionsFromList } from '@/physics/surface-collision';
-import { Face } from '@/physics/face';
+import { Mesh } from '@/engine/renderer/mesh';
+import { CubeGeometry } from '../src/engine/cube-geometry';
+import { Material } from '@/engine/renderer/material';
+import { findFloorHeightAtPosition, findWallCollisionsFromList } from '@/engine/physics/surface-collision';
+import { Face } from '@/engine/physics/face';
 import { controls } from '@/core/controls';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
-import { textureLoader } from '@/renderer/texture-loader';
-import { drawVolcanicRock } from '@/texture-creation/texture-maker';
-import { AttributeLocation } from '@/renderer/renderer';
+import { textureLoader } from '@/engine/renderer/texture-loader';
+import { drawVolcanicRock } from '../src/texture-maker';
+import { AttributeLocation } from '@/engine/renderer/renderer';
 
 // Base Player Class
 // Very simple movable player that collides properly with the level. While generally this class would live as a base

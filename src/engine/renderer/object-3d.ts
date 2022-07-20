@@ -1,5 +1,5 @@
 import { Mesh } from './mesh';
-import { radsToDegrees } from '@/math-helpers';
+import { radsToDegrees } from '@/engine/math-helpers';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 
 export class Object3d {

@@ -1,5 +1,5 @@
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
-import { doTimes, hexToRgba } from "@/helpers";
+import { doTimes, hexToRgba } from "@/engine/helpers";
 
 export enum NoiseType {
   Perlin,
@@ -151,7 +151,7 @@ class NoiseMaker {
   }
 
   randomNumber(seed: number): number {
-    return (Math.sin(seed * 127.1 + 123.456 * 311.7) * 43758.5453123) % 1;
+    return (Math.sin(seed * 127.1 + 38481) * 43780) % 1;
   }
 }
 

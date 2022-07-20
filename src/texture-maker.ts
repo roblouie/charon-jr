@@ -1,5 +1,7 @@
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
-import { noiseMaker, NoiseType } from '@/texture-creation/noise-maker';
+import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
+import { textureLoader } from '@/engine/renderer/texture-loader';
+import { Material } from '@/engine/renderer/material';
 
 const drawContext = document.querySelector<HTMLCanvasElement>('#draw')!.getContext('2d')!;
 const tileContext = document.querySelector<HTMLCanvasElement>('#tile')!.getContext('2d')!;
@@ -8,9 +10,85 @@ const noiseContext = document.querySelector<HTMLCanvasElement>('#noise')!.getCon
 const resolution = 128;
 const debugElement = document.querySelector('#debug')!;
 
+// *********************
+// Grass
+// *********************
+export function drawGrass() {
+  clearWith('#090');
+  noiseMaker.seed(12);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 3, NoiseType.Perlin, '#0f0', 128), 0, 0);
+  drawContext.globalCompositeOperation = 'screen';
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  drawContext.globalCompositeOperation = 'source-over';
+  return mainImageData();
+}
+const floorTexture = textureLoader.load(drawGrass());
+floorTexture.repeat.x = 1/10; floorTexture.repeat.y = 1/10;
+const grass = new Material({texture: floorTexture});
+
+
+// *********************
+// Water
+// *********************
+export function drawWater() {
+  clearWith('#030eaf');
+  noiseMaker.seed(10);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Edge, '#3264ff', 220), 0, 0);
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  return mainImageData();
+}
+const lakeTexture = textureLoader.load(drawWater());
+lakeTexture.repeat.x = 6; lakeTexture.repeat.y = 6;
+const lake = new Material({texture: lakeTexture, isTransparent: true, color: '#fffc'})
+
+
+// *********************
+// Marble
+// *********************
+export function drawMarble() {
+  clearWith('#ccccab');
+  drawContext.globalCompositeOperation = 'color-dodge';
+  noiseMaker.seed(23);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 2, NoiseType.Edge, '#82826e', 220, true, 'x', 'y', 'z', 0), 0, 0);
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  return mainImageData();
+}
+const marble = new Material({texture: textureLoader.load(drawMarble())})
+
+
+// *********************
+// Bricks
+// *********************
+export function drawBricks() {
+  clearWith('#ddd');
+  drawContext.fillStyle = 'red';
+  drawContext.filter = 'drop-shadow(1px 1px 0px #888)';
+  tile((x, y) => {
+    const offsetX = (y / 16) % 2 === 0 ? x - 15 : x;
+    drawContext.fillRect(offsetX, y + 1, 30, 14);
+  }, 32, 16);
+  noisify(drawContext, 30);
+  return mainImageData();
+}
+const bricks = new Material({texture: textureLoader.load(drawBricks())})
+
+
+textureLoader.bindTextures();
+
+export const materials = {
+  grass,
+  lake,
+  marble,
+  bricks,
+};
+
+export const skyboxes = {
+  dayCloud: createSkybox(drawSky),
+}
+
 
 export function drawCurrentTexture() {
-  drawSky('x', 'y', 'z', 0);
+  drawVolcanicRock();
     tileDrawn();
 }
 
@@ -38,18 +116,6 @@ export function drawLandscape() {
   return mainImageData();
 }
 
-export function drawBricks() {
-  clearWith('#ddd');
-  drawContext.fillStyle = 'red';
-  drawContext.filter = 'drop-shadow(1px 1px 0px #888)';
-  tile((x, y) => {
-    const offsetX = (y / 16) % 2 === 0 ? x - 15 : x;
-    drawContext.fillRect(offsetX, y + 1, 30, 14);
-  }, 32, 16);
-  noisify(drawContext, 30);
-  return mainImageData();
-}
-
 export function drawTiles() {
   clearWith('#bbb');
   drawContext.fillStyle = '#aaa';
@@ -64,24 +130,9 @@ export function drawTiles() {
   return mainImageData();
 }
 
-export function drawGrass() {
-  clearWith('#090');
-  noiseMaker.seed(12);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 3, NoiseType.Perlin, '#0f0', 128), 0, 0);
-  drawContext.globalCompositeOperation = 'screen';
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  drawContext.globalCompositeOperation = 'source-over';
-  return mainImageData();
-}
 
-export function drawMarble() {
-  clearWith('#ccccab');
-  drawContext.globalCompositeOperation = 'color-dodge';
-  noiseMaker.seed(23);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 2, NoiseType.Edge, '#82826e', 220, true, 'x', 'y', 'z', 0), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  return mainImageData();
-}
+
+
 
 export function drawRockWall() {
   clearWith('#933d00');
@@ -113,13 +164,7 @@ export function drawVolcanicRock() {
   return mainImageData();
 }
 
-export function drawWater() {
-  clearWith('#030eaf');
-  noiseMaker.seed(100);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Edge, '#3264ff', 220), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  return mainImageData();
-}
+
 
 function mainImageData() {
   return drawContext.getImageData(0, 0, 128, 128);
@@ -169,3 +214,26 @@ function tileDrawn() {
   }
 }
 
+
+// Cuts slices off the edges of a 3d texture to create a skybox. An easier to read version of this would be the following:
+//
+// const skyRight = skyboxDrawCallback('z', 'y', 'x', 0, true);
+// const skyLeft = skyboxDrawCallback('z', 'y', 'x', 127);
+//
+// const skyCeiling = skyboxDrawCallback('x', 'z', 'y', 0);
+// const skyFloor = skyboxDrawCallback('x', 'z', 'y', 127);
+//
+// const skyFront = skyboxDrawCallback('x', 'y', 'z', 0);
+// const skyBack = skyboxDrawCallback('x', 'y', 'z', 127, true);
+//
+// return [skyRight, skyLeft, skyCeiling, skyFloor, skyFront, skyBack];
+//
+// This is functionally equivalent to the code-golfed version below.
+// @ts-ignore
+function createSkybox(callback: (firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip: boolean) => ImageData) {
+  debugger;
+  return ['zyx', 'zyx', 'xzy', 'xzy', 'xyz', 'xyz'].map((coordinates, i) => {
+    // @ts-ignore
+    return callback(...coordinates.split(''), i % 2 === 0 ? 0 : 127, i === 0 || i === 5);
+  });
+}

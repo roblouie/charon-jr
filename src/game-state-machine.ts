@@ -1,8 +1,12 @@
 import { StateMachine } from './core/state-machine';
 import { State } from './core/state';
 
-export let gameStateMachine: StateMachine;
+let gameStateMachineRef: { value?: StateMachine } = {};
+
+export function getGameStateMachine(): StateMachine {
+  return gameStateMachineRef.value!;
+}
 
 export function createGameStateMachine(initialState: State) {
-  gameStateMachine = new StateMachine(initialState);
+  gameStateMachineRef.value = new StateMachine(initialState);
 }

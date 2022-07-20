@@ -1,7 +1,7 @@
 import { Face } from './face';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
-import { AttributeLocation } from '@/renderer/renderer';
-import { Mesh } from '@/renderer/mesh';
+import { AttributeLocation } from '@/engine/renderer/renderer';
+import { Mesh } from '@/engine/renderer/mesh';
 
 function indexToFaceVertexPoint(index: number, positionData: Float32Array, matrix: DOMMatrix): EnhancedDOMPoint {
   return new EnhancedDOMPoint().set(

@@ -1,4 +1,4 @@
-import { calculateFaceNormal } from '@/math-helpers';
+import { calculateFaceNormal } from '@/engine/math-helpers';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 
 export class Face {

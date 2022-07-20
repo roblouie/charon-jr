@@ -1,7 +1,7 @@
 import {
   fragment_shader_glsl, skybox_fragment_glsl, skybox_vertex_glsl,
   vertex_shader_glsl
-} from '@/shaders/shaders';
+} from '@/engine/shaders/shaders';
 
 export class LilGl {
   canvas: HTMLCanvasElement;

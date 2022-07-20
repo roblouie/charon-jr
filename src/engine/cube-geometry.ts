@@ -1,7 +1,7 @@
 import { BufferGeometry } from './renderer/buffer-geometry';
-import { AttributeLocation } from '@/renderer/renderer';
+import { AttributeLocation } from '@/engine/renderer/renderer';
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
-import { buildPlane } from '@/plane-geometry';
+import { buildPlane } from '@/engine/plane-geometry';
 
 export class CubeGeometry extends BufferGeometry {
   constructor(width = 1, height = 1, depth = 1) {

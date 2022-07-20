@@ -1,7 +1,7 @@
 import { BufferGeometry } from './renderer/buffer-geometry';
-import { calculateVertexNormals } from '@/math-helpers';
+import { calculateVertexNormals } from '@/engine/math-helpers';
 import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
-import { AttributeLocation } from '@/renderer/renderer';
+import { AttributeLocation } from '@/engine/renderer/renderer';
 
 export  class PlaneGeometry extends BufferGeometry {
   constructor(width = 1, depth = 1, subdivisionsWidth = 1, subdivisionsDepth = 1, heightmap?: number[]) {

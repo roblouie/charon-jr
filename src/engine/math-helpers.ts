@@ -7,14 +7,14 @@ export function radsToDegrees(radians: number): number {
 function unormalizedNormal(points: EnhancedDOMPoint[]): EnhancedDOMPoint {
   const u = points[1].clone().subtract(points[0]);
   const v = points[2].clone().subtract(points[0]);
-  return u.crossVectors(u, v)
+  return new EnhancedDOMPoint().crossVectors(u, v)
 }
 
 export function calculateFaceNormal(points: EnhancedDOMPoint[]): EnhancedDOMPoint {
   return unormalizedNormal(points).normalize();
 }
 
-export function calculateVertexNormals(points: EnhancedDOMPoint[], indices: number[]): EnhancedDOMPoint[] {
+export function calculateVertexNormals(points: EnhancedDOMPoint[], indices: number[] | Uint16Array): EnhancedDOMPoint[] {
   const vertexNormals = points.map(point => new EnhancedDOMPoint());
   for (let i = 0; i < indices.length; i+= 3) {
     const faceNormal = unormalizedNormal([points[indices[i]], points[indices[i + 1]], points[indices[i + 2]]]);

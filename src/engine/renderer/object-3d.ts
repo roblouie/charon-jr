@@ -65,10 +65,6 @@ export class Object3d {
     this.children.forEach(child => child.updateWorldMatrix());
   }
 
-  isMesh(): this is Mesh {
-    return (this as any).geometry !== undefined;
-  }
-
   allChildren(): Object3d[] {
     function getChildren(object3d: Object3d, all: Object3d[]) {
       object3d.children.forEach(child => {
@@ -80,6 +76,20 @@ export class Object3d {
     const allChildren: Object3d[] = [];
     getChildren(this, allChildren);
     return allChildren;
+  }
+
+  clone() {
+    const copy = new Object3d();
+    copy.position = new EnhancedDOMPoint().set(this.position);
+    copy.scale = new EnhancedDOMPoint().set(this.scale);
+    copy.localMatrix = this.localMatrix.scale(1, 1, 1); // copy matrix by just scaling by 1
+    copy.worldMatrix = this.worldMatrix.scale(1, 1, 1); // copy matrix by just scaling by 1
+    copy.up = new EnhancedDOMPoint().set(this.up);
+    copy.rotationMatrix = this.rotationMatrix.scale(1, 1, 1) // copy matrix by just scaling by 1
+
+    this.children.forEach(child => copy.add(child.clone()))
+
+    return copy;
   }
 
   private lookAtX = new EnhancedDOMPoint();

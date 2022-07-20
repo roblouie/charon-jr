@@ -231,7 +231,6 @@ function tileDrawn() {
 // This is functionally equivalent to the code-golfed version below.
 // @ts-ignore
 function createSkybox(callback: (firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip: boolean) => ImageData) {
-  debugger;
   return ['zyx', 'zyx', 'xzy', 'xzy', 'xyz', 'xyz'].map((coordinates, i) => {
     // @ts-ignore
     return callback(...coordinates.split(''), i % 2 === 0 ? 0 : 127, i === 0 || i === 5);

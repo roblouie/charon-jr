@@ -35,7 +35,7 @@ drawCurrentTexture();
 
 
 
-createGameStateMachine(menuState);
+createGameStateMachine(gameState);
 
 // let lastTime = 0;
 draw(0);

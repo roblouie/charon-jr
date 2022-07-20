@@ -25,6 +25,8 @@ import { Face } from '@/engine/physics/face';
 import { controls } from '@/core/controls';
 import { getGameStateMachine } from '@/game-state-machine';
 import { menuState } from '@/game-states/menu-state';
+import { Object3d } from '@/engine/renderer/object-3d';
+import { MakeMoldable } from '@/engine/moldable';
 
 class GameState implements State {
   player: ThirdPersonPlayer;
@@ -56,17 +58,31 @@ class GameState implements State {
     );
     lake.position.y = -5.4 //-7.9;
 
-    const ramp = new Mesh(
-      new CubeGeometry(3, 13, 13),
-      materials.marble
-    );
-    const positions = ramp.geometry.getAttribute(AttributeLocation.Positions).data;
-    positions[1] = 0;
-    positions[16] = 0;
-    positions[31] = 0;
-    positions[34] = 0;
-    positions[61] = 0;
-    positions[64] = 0;
+    const MoldableCube = MakeMoldable(CubeGeometry);
+
+    const rampGeometry = new MoldableCube(3, 13, 13);
+    rampGeometry
+      .selectVertices(1, 4, 8, 9, 20, 21)
+      .translate(0, -8)
+      .updateVerticesAttribute();
+
+    const ramp = new Mesh(rampGeometry, materials.marble);
+
+    // const testShapeGeometry = new MoldableCube(5, 2, 2, 4);
+    //
+    // testShapeGeometry.selectVertices(0, 1, 2, 3, 12, 17, 22, 27, 32, 37, 38, 43)
+    //   .scale(1, 0.75)
+    //   .rotate(0, 0, 0.5)
+    //   .updateVerticesAttribute();
+
+    const testShapeGeometry = new MoldableCube(4, 4, 4, 2, 2, 2);
+    testShapeGeometry.all().spherify(3).updateVerticesAttribute();
+
+
+    const testShape = new Mesh(testShapeGeometry, materials.marble);
+    testShape.position.y += 5;
+    testShape.updateWorldMatrix();
+
 
     const { cubes } = new Staircase(10, 0.3, 3, 1);
 
@@ -98,9 +114,9 @@ class GameState implements State {
     drawCurrentTexture();
 // END TESTING
 
-    const levelParts = [ramp, ...cubes, wall, floor, lake];
+    const levelParts = [ramp, ...cubes, wall, floor, lake, testShape];
 
-    this.groupedFaces = getGroupedFaces(levelParts);
+    this.groupedFaces = getGroupedFaces([ramp, ...cubes, wall, floor, lake]);
     levelParts.push(particle);
     levelParts.push(particle2);
 

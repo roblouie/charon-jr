@@ -9,10 +9,10 @@ export class Scene extends Object3d {
 
   add(...object3ds: Object3d[]) {
     super.add(...object3ds);
-    object3ds.forEach(object3d => {
-      if (object3d.isMesh()) {
+    const flatWithChildren = [...object3ds, ...object3ds.flatMap(object3d => object3d.allChildren())];
+    flatWithChildren.forEach(object3d => {
+      if (Mesh.isMesh(object3d)) {
         object3d.geometry.bindGeometry();
-        object3d.allChildren().forEach(child => child.isMesh() && child.geometry.bindGeometry())
         object3d.material.isTransparent ? this.transparentMeshes.push(object3d) : this.solidMeshes.push(object3d);
       }
     })
@@ -20,7 +20,7 @@ export class Scene extends Object3d {
 
   remove(object3d: Object3d) {
     super.remove(object3d);
-    if (object3d.isMesh()) {
+    if (Mesh.isMesh(object3d)) {
       if (object3d.material.isTransparent) {
         this.transparentMeshes = this.transparentMeshes.filter(mesh => mesh !== object3d);
       } else {

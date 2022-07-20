@@ -8,12 +8,12 @@ interface VectorLike {
 }
 
 export class EnhancedDOMPoint extends DOMPoint {
-  add(otherVector: EnhancedDOMPoint) {
+  add(otherVector: VectorLike) {
     this.addVectors(this, otherVector);
     return this;
   }
 
-  addVectors(v1: EnhancedDOMPoint, v2: EnhancedDOMPoint) {
+  addVectors(v1: VectorLike, v2: VectorLike) {
     this.x = v1.x + v2.x;
     this.y = v1.y + v2.y;
     this.z = v1.z + v2.z;

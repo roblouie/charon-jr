@@ -118,4 +118,8 @@ export class EnhancedDOMPoint extends DOMPoint {
     this.z = callback(this.z);
     return this;
   }
+
+  isEqualTo(otherVector: EnhancedDOMPoint): boolean {
+    return this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
+  }
 }

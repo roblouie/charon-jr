@@ -24,10 +24,10 @@ export class CubeGeometry extends BufferGeometry {
     buildPlane('x', 'y', 'z', 1, -1, width, height, depth, widthSegments, heightSegments, this.vertices, indices, normals, uvs, this.vertices.length);
     buildPlane('x', 'y', 'z', -1, -1, width, height, -depth, widthSegments, heightSegments, this.vertices, indices, normals, uvs, this.vertices.length);
 
+    this.setAttribute(AttributeLocation.Positions, new Float32Array(this.vertices.flatMap(point => point.toArray())), 3);
     this.setAttribute(AttributeLocation.Normals, new Float32Array(normals), 3);
     this.setAttribute(AttributeLocation.TextureCoords, new Float32Array(uvs), 2);
     this.setIndices(new Uint16Array(indices));
-    this.updateVerticesAttribute();
   }
 
   updateVerticesAttribute() {

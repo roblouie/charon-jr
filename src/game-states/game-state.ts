@@ -80,7 +80,7 @@ class GameState implements State {
       .all()
       .spherify(3)
       .updateVerticesAttribute()
-      .magicNormalCalc();
+      .computeNormalsCrossPlane();
 
     const testShape = new Mesh(testShapeGeometry, materials.marble);
     testShape.position.y += 5;

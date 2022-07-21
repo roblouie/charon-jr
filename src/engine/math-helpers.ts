@@ -5,8 +5,8 @@ export function radsToDegrees(radians: number): number {
 }
 
 function unormalizedNormal(points: EnhancedDOMPoint[]): EnhancedDOMPoint {
-  const u = points[1].clone().subtract(points[0]);
-  const v = points[2].clone().subtract(points[0]);
+  const u = points[2].clone().subtract(points[1]);
+  const v = points[0].clone().subtract(points[1]);
   return new EnhancedDOMPoint().crossVectors(u, v)
 }
 

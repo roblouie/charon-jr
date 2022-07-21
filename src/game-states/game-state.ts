@@ -76,13 +76,16 @@ class GameState implements State {
     //   .updateVerticesAttribute();
 
     const testShapeGeometry = new MoldableCube(4, 4, 4, 2, 2, 2);
-    testShapeGeometry.all().spherify(3).updateVerticesAttribute();
-
+    testShapeGeometry
+      .all()
+      .spherify(3)
+      .updateVerticesAttribute()
+      .magicNormalCalc();
 
     const testShape = new Mesh(testShapeGeometry, materials.marble);
     testShape.position.y += 5;
     testShape.updateWorldMatrix();
-
+    //
 
     const { cubes } = new Staircase(10, 0.3, 3, 1);
 

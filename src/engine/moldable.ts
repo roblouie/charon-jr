@@ -10,6 +10,7 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
   return class Moldable extends Base {
     verticesToActOn: EnhancedDOMPoint[] = [];
     localIndicesCopy: number[] = [];
+    indexReplacers: { index: number, newValue: number }[] = [];
 
     test() {
       const vertexMatch = (vertexA: EnhancedDOMPoint, vertexB: EnhancedDOMPoint) => {
@@ -58,9 +59,9 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
       // of arrays. For each array, the first element is the one we want to use everywhere
       // so get that first. Then find all instances of the other indices in the index array
       // and replace them with this index
-      debugger;
       matchingIndices.forEach(matches => {
         const trueIndex = matches!.shift();
+        matches!.forEach(match => this.indexReplacers.push({ index: match, newValue: trueIndex! }))
         this.localIndicesCopy = this.localIndicesCopy.map(index => matches!.includes(index) ? trueIndex! : index);
       });
     }
@@ -104,6 +105,9 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
 
     magicNormalCalc() {
       const updatedNormals = calculateVertexNormals(this.vertices, this.localIndicesCopy);
+      this.indexReplacers.forEach(replacer => {
+        updatedNormals[replacer.index] = updatedNormals[replacer.newValue];
+      });
       this.setAttribute(AttributeLocation.Normals, new Float32Array(updatedNormals.flatMap(point => point.toArray())), 3);
     }
   }

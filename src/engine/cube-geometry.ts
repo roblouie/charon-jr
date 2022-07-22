@@ -29,11 +29,4 @@ export class CubeGeometry extends BufferGeometry {
     this.setAttribute(AttributeLocation.TextureCoords, new Float32Array(uvs), 2);
     this.setIndices(new Uint16Array(indices));
   }
-
-  updateVerticesAttribute() {
-    this.setAttribute(AttributeLocation.Positions, new Float32Array(this.vertices.flatMap(point => point.toArray())), 3);
-    const updatedNormals = calculateVertexNormals(this.vertices, this.getIndices()!);
-    this.setAttribute(AttributeLocation.Normals, new Float32Array(updatedNormals.flatMap(point => point.toArray())), 3);
-    return this;
-  }
 }

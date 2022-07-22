@@ -64,7 +64,10 @@ class GameState implements State {
     rampGeometry
       .selectVertices(1, 4, 8, 9, 20, 21)
       .translate(0, -8)
-      .updateVerticesAttribute();
+      .selectVertices(1)
+      .delete()
+      .computeNormalsPerPlane()
+      .done();
 
     const ramp = new Mesh(rampGeometry, materials.marble);
 
@@ -78,9 +81,9 @@ class GameState implements State {
     const testShapeGeometry = new MoldableCube(4, 4, 4, 2, 2, 2);
     testShapeGeometry
       .all()
-      .spherify(3)
-      .updateVerticesAttribute()
-      .computeNormalsCrossPlane();
+      .cylindrify(3)
+      .computeNormalsCrossPlane()
+      .done()
 
     const testShape = new Mesh(testShapeGeometry, materials.marble);
     testShape.position.y += 5;

@@ -4,15 +4,17 @@ import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
 import { AttributeLocation } from '@/engine/renderer/renderer';
 
 export  class PlaneGeometry extends BufferGeometry {
+  vertices: EnhancedDOMPoint[];
+
   constructor(width = 1, depth = 1, subdivisionsWidth = 1, subdivisionsDepth = 1, heightmap?: number[]) {
     super();
     const indices: number[] = [];
-    const vertices: EnhancedDOMPoint[] = [];
     const uvs: number[] = [];
-    buildPlane('x', 'z', 'y', 1, 1, width, depth, 1, subdivisionsWidth, subdivisionsDepth, vertices, indices, [], uvs, 0, heightmap);
+    this.vertices = [];
+    buildPlane('x', 'z', 'y', 1, 1, width, depth, 1, subdivisionsWidth, subdivisionsDepth, this.vertices, indices, [], uvs, 0, heightmap);
 
-    const normals = calculateVertexNormals(vertices, indices);
-    this.setAttribute(AttributeLocation.Positions, new Float32Array(vertices.flatMap(point => point.toArray())), 3);
+    const normals = calculateVertexNormals(this.vertices, indices);
+    this.setAttribute(AttributeLocation.Positions, new Float32Array(this.vertices.flatMap(point => point.toArray())), 3);
     this.setAttribute(AttributeLocation.Normals, new Float32Array(normals.flatMap(point => point.toArray())), 3);
     this.setAttribute(AttributeLocation.TextureCoords, new Float32Array(uvs), 2);
     this.setIndices(new Uint16Array(indices));

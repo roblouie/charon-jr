@@ -24,6 +24,10 @@ class NoiseMaker {
     }
   }
 
+  getDirection(permsIndex: number) {
+    return this.directions[this.perms[permsIndex]];
+  }
+
   seed(seedValue: number) {
     const initialPerm: number[] = [];
     for (let i = 0; i < 256; i++) {

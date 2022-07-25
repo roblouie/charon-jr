@@ -2,7 +2,6 @@ import { BufferGeometry } from './renderer/buffer-geometry';
 import { AttributeLocation } from '@/engine/renderer/renderer';
 import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
 import { buildPlane } from '@/engine/plane-geometry';
-import { calculateVertexNormals, radsToDegrees } from '@/engine/math-helpers';
 
 export class CubeGeometry extends BufferGeometry {
   vertices: EnhancedDOMPoint[] = [];

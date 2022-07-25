@@ -27,7 +27,7 @@ import { getGameStateMachine } from '@/game-state-machine';
 import { menuState } from '@/game-states/menu-state';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { MakeMoldable } from '@/engine/moldable';
-import { range } from '@/engine/helpers';
+import { doTimes, range } from '@/engine/helpers';
 
 class GameState implements State {
   player: ThirdPersonPlayer;
@@ -79,18 +79,49 @@ class GameState implements State {
     //   .rotate(0, 0, 0.5)
     //   .updateVerticesAttribute();
 
-    const testShapeGeometry = new MoldableCube(4, 4, 4, 2, 2, 2);
-    testShapeGeometry
-      .all()
-      .cylindrify(3)
-      .deselectVertices(...range(18, 27), ...range(27, 36))
-      .computeNormalsCrossPlane()
-      .done()
+    function makeTree() {
+      const trunkGeo = new MoldableCube(1, 4, 1, 3, 3, 3)
+        .all()
+        .cylindrify(0.5)
+        .computeNormalsCrossPlane()
+        .done();
 
-    const testShape = new Mesh(testShapeGeometry, materials.marble);
-    testShape.position.y += 5;
-    testShape.updateWorldMatrix();
+      const trunk = new Mesh(trunkGeo, materials.wood);
+
+      const testShapeGeometry = new MoldableCube(4, 4, 4, 2, 2, 2);
+      testShapeGeometry
+        .all()
+        .spherify(4)
+        .scale(1, 1.4, 1)
+        .noisify(13, 0.05)
+        .computeNormalsCrossPlane()
+        .done()
+
+      const leaves = new Mesh(testShapeGeometry, materials.treeLeaves);
+      leaves.position.y += 6;
+      return new Object3d(trunk, leaves);
+    }
+
+   const tree = makeTree();
+    tree.position.x += 10;
+    tree.position.y --;
+    tree.updateWorldMatrix();
     //
+
+    function makeBridge() {
+      const supportArchGeo = new MoldableCube(16, 1, 2, 10, 1, 1);
+      let start = 0; let end = 3;
+      // doTimes(10, index => {
+      //   supportArchGeo.selectVertices(...range(start, end))
+      //     .rotate(0, 0, 0.3)
+      //     .done();
+      //   start +=
+      // })
+      const supportArch = new Mesh(supportArchGeo, materials.tiles);
+      return supportArch;
+    }
+    const bridge = makeBridge();
+    bridge.position.y += 4;
 
     const { cubes } = new Staircase(10, 0.3, 3, 1);
 
@@ -122,7 +153,7 @@ class GameState implements State {
     drawCurrentTexture();
 // END TESTING
 
-    const levelParts = [ramp, ...cubes, wall, floor, lake, testShape];
+    const levelParts = [ramp, ...cubes, wall, floor, lake, tree, bridge];
 
     this.groupedFaces = getGroupedFaces([ramp, ...cubes, wall, floor, lake]);
     levelParts.push(particle);
@@ -142,7 +173,7 @@ class GameState implements State {
     const audio = soundPlayer(...[, , 925, .04, .3, .6, 1, .3, , 6.27, -184, .09, .17] as const);
 
     // audio.loop = true;
-    // audio.connect(panner).connect(audioCtx.destination);
+    audio.connect(panner).connect(audioCtx.destination);
     // audio.start();
 
 

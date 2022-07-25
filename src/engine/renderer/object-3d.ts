@@ -12,7 +12,7 @@ export class Object3d {
   up: EnhancedDOMPoint;
   rotationMatrix: DOMMatrix;
 
-  constructor() {
+  constructor(...children: Object3d[]) {
     this.position = new EnhancedDOMPoint();
     this.scale = new EnhancedDOMPoint(1, 1, 1);
     this.children = [];
@@ -20,6 +20,9 @@ export class Object3d {
     this.worldMatrix = new DOMMatrix();
     this.up = new EnhancedDOMPoint(0, 1, 0);
     this.rotationMatrix = new DOMMatrix();
+    if (children) {
+      this.add(...children);
+    }
   }
 
   add(...object3ds: Object3d[]) {

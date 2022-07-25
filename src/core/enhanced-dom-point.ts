@@ -43,12 +43,12 @@ export class EnhancedDOMPoint extends DOMPoint {
     return this;
   }
 
-  subtract(otherVector: EnhancedDOMPoint) {
+  subtract(otherVector: VectorLike) {
    this.subtractVectors(this, otherVector);
     return this;
   }
 
-  subtractVectors(v1: EnhancedDOMPoint, v2: EnhancedDOMPoint) {
+  subtractVectors(v1: VectorLike, v2: VectorLike) {
     this.x = v1.x - v2.x;
     this.y = v1.y - v2.y;
     this.z = v1.z - v2.z;

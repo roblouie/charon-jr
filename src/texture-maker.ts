@@ -30,6 +30,9 @@ const floorTexture = textureLoader.load(drawGrass());
 floorTexture.repeat.x = 1/10; floorTexture.repeat.y = 1/10;
 const grass = new Material({texture: floorTexture});
 
+const treeTexture = textureLoader.load(drawGrass());
+treeTexture.repeat.set(1, 1);
+const treeLeaves = new Material({texture: treeTexture});
 
 // *********************
 // Water
@@ -74,8 +77,39 @@ export function drawBricks() {
   noisify(drawContext, 30);
   return mainImageData();
 }
-const bricks = new Material({texture: textureLoader.load(drawBricks())})
+const bricks = new Material({texture: textureLoader.load(drawBricks())});
 
+// *********************
+// Wood
+// *********************
+export function drawRockWall() {
+  clearWith('#933d00');
+  drawContext.globalCompositeOperation = 'overlay';
+  noiseMaker.seed(33);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#141414', 200, true, 'x', 'y', 'z', 0), 0, 0);
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  noisify(drawContext, 2);
+  return mainImageData();
+}
+const wood = new Material({texture: textureLoader.load(drawRockWall())});
+
+// *********************
+// Tiles
+// *********************
+export function drawTiles() {
+  clearWith('#bbb');
+  drawContext.fillStyle = '#aaa';
+  drawContext.strokeStyle = '#999';
+  tile((x, y) => {
+    drawContext.filter = 'drop-shadow(1px 1px 2px #9996)';
+    drawContext.rect(x + 6, y + 6, 116, 54);
+    drawContext.stroke();
+    drawContext.fill();
+  }, resolution, resolution / 2);
+  noisify(drawContext, 3);
+  return mainImageData();
+}
+const tiles = new Material({texture: textureLoader.load(drawTiles())});
 
 textureLoader.bindTextures();
 
@@ -84,6 +118,9 @@ export const materials = {
   lake,
   marble,
   bricks,
+  treeLeaves,
+  wood,
+  tiles,
 };
 
 export const skyboxes = {
@@ -120,33 +157,13 @@ export function drawLandscape() {
   return mainImageData();
 }
 
-export function drawTiles() {
-  clearWith('#bbb');
-  drawContext.fillStyle = '#aaa';
-  drawContext.strokeStyle = '#999';
-  tile((x, y) => {
-    drawContext.filter = 'drop-shadow(1px 1px 2px #9996)';
-    drawContext.rect(x + 6, y + 6, 116, 54);
-    drawContext.stroke();
-    drawContext.fill();
-  }, resolution, resolution / 2);
-  noisify(drawContext, 3);
-  return mainImageData();
-}
 
 
 
 
 
-export function drawRockWall() {
-  clearWith('#933d00');
-  drawContext.globalCompositeOperation = 'overlay';
-  noiseMaker.seed(33);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#141414', 200, true, 'x', 'y', 'z', 0), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  noisify(drawContext, 2);
-  return mainImageData();
-}
+
+
 
 export function drawStoneWalkway() {
   clearWith('#5e6d81');

@@ -3,6 +3,7 @@ import { calculateVertexNormals, radsToDegrees } from '@/engine/math-helpers';
 import { CubeGeometry } from '@/engine/cube-geometry';
 import { AttributeLocation } from '@/engine/renderer/renderer';
 import { PlaneGeometry } from '@/engine/plane-geometry';
+import { noiseMaker } from '@/engine/texture-creation/noise-maker';
 
 type GConstructor<T = {}> = new (...args: any[]) => T;
 type CanBeMoldable = GConstructor<CubeGeometry & PlaneGeometry>;
@@ -55,6 +56,28 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
       return this;
     }
 
+    noisify(seed: number, scale: number) {
+      const {indexReplacers, indicesToUniqueVertices} = this.getUniqueIndices();
+
+      noiseMaker.seed(seed);
+      indicesToUniqueVertices.forEach(vertexIndex => {
+        const vertex = this.verticesToActOn[vertexIndex];
+        const angle = noiseMaker.getDirection(vertexIndex);
+        vertex.x += angle.x * scale;
+        vertex.y += angle.y * scale;
+        vertex.z += angle.z * scale;
+      });
+      indexReplacers.forEach(replacer => {
+        this.verticesToActOn[replacer.index].set(this.verticesToActOn[replacer.firstIndex]);
+      });
+      return this;
+    }
+
+    invert() {
+      this.getIndices()!.reverse();
+      return this;
+    }
+
     cylindrify(radius: number) {
       this.verticesToActOn.forEach(vertex => {
         const originalY = vertex.y;
@@ -102,6 +125,38 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
      * have a more continuous surface across multiple sides, like a sphere.
      */
     computeNormalsCrossPlane() {
+      const {indexReplacers, indicesToUniqueVertices} = this.getUniqueIndices();
+
+
+      // Use our new indices to calculate normals
+      const updatedNormals = calculateVertexNormals(this.verticesToActOn, indicesToUniqueVertices);
+
+      // We only calculated normals for unique indices, meaning we don't have any for any additional occurrences of a
+      // vertex position. These additional occurrences are still used to draw our shape, so we need to populate their
+      // normals. We already have a map of first indices to all other indices, and each normal position is the same
+      // as it's vertex position, so we can use our map to populate the duplicates.
+      indexReplacers.forEach(replacer => {
+        updatedNormals[replacer.index] = updatedNormals[replacer.firstIndex];
+      });
+
+      const originalNormals = this.getAttribute(AttributeLocation.Normals).data;
+      this.verticesToActOn.forEach(vertex => {
+        const originalVertexIndex = this.vertices.indexOf(vertex);
+        const newNormalIndex = this.verticesToActOn.indexOf(vertex);
+        const newNormal = updatedNormals[newNormalIndex];
+        const normalIndex = originalVertexIndex * 3;
+        originalNormals[normalIndex] = newNormal.x;
+        originalNormals[normalIndex + 1] = newNormal.y;
+        originalNormals[normalIndex + 2] = newNormal.z;
+      });
+
+      // // Now just set our new normals and we're done.
+      this.setAttribute(AttributeLocation.Normals, originalNormals, 3);
+
+      return this;
+    }
+
+    private getUniqueIndices() {
       const checkedVertices: EnhancedDOMPoint[] = [];
 
       // One cube is made up of six planes. Each plane has it's own vertices, uvs, and normals. This is fine until
@@ -142,7 +197,7 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
         const firstOccurrence = this.verticesToActOn.indexOf(vertex);
         return this.verticesToActOn.reduce((indices, compareVertex, currentIndex) => {
           if (vertex.isEqualTo(compareVertex)) {
-            indices.push({ index: currentIndex, firstIndex: firstOccurrence });
+            indices.push({index: currentIndex, firstIndex: firstOccurrence});
           }
           return indices;
         }, [] as { index: number, firstIndex: number }[]);
@@ -159,7 +214,7 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
         const point2Index = this.verticesToActOn.indexOf(point2);
         const point3Index = this.verticesToActOn.indexOf(point3);
 
-        if (point1Index !== -1 && point2Index !== -1  && point3Index !== -1 ) {
+        if (point1Index !== -1 && point2Index !== -1 && point3Index !== -1) {
           indicesInSelection.push(point1Index, point2Index, point3Index)
         }
       }
@@ -169,38 +224,12 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
         const matchingReplacer = indexReplacers.find(replacer => replacer.index === index);
         return matchingReplacer ? matchingReplacer.firstIndex : index;
       });
-
-
-      // Use our new indices to calculate normals
-      const updatedNormals = calculateVertexNormals(this.verticesToActOn, indicesToUniqueVertices);
-
-      // We only calculated normals for unique indices, meaning we don't have any for any additional occurrences of a
-      // vertex position. These additional occurrences are still used to draw our shape, so we need to populate their
-      // normals. We already have a map of first indices to all other indices, and each normal position is the same
-      // as it's vertex position, so we can use our map to populate the duplicates.
-      indexReplacers.forEach(replacer => {
-        updatedNormals[replacer.index] = updatedNormals[replacer.firstIndex];
-      });
-
-      const originalNormals = this.getAttribute(AttributeLocation.Normals).data;
-      this.verticesToActOn.forEach(vertex => {
-        const originalVertexIndex = this.vertices.indexOf(vertex);
-        const newNormalIndex = this.verticesToActOn.indexOf(vertex);
-        const newNormal = updatedNormals[newNormalIndex];
-        const normalIndex = originalVertexIndex * 3;
-        originalNormals[normalIndex] = newNormal.x;
-        originalNormals[normalIndex + 1] = newNormal.y;
-        originalNormals[normalIndex + 2] = newNormal.z;
-      });
-
-      // // Now just set our new normals and we're done.
-      this.setAttribute(AttributeLocation.Normals, originalNormals, 3);
-
-      return this;
+      return {indexReplacers, indicesToUniqueVertices};
     }
 
     done() {
       this.setAttribute(AttributeLocation.Positions, new Float32Array(this.vertices.flatMap(point => point.toArray())), 3);
+      return this;
     }
   }
 }

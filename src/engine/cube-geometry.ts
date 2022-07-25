@@ -17,12 +17,12 @@ export class CubeGeometry extends BufferGeometry {
     const normals: number[] = [];
     const uvs: number[] = [];
 
-    buildPlane('z', 'y', 'x', -1, -1, depth, height, width, depthSegments, heightSegments, this.vertices, indices, normals, uvs, this.vertices.length);
-    buildPlane('z', 'y', 'x', 1, -1, depth, height, -width, depthSegments, heightSegments, this.vertices, indices, normals, uvs, this.vertices.length);
-    buildPlane('x', 'z', 'y', 1, 1, width, depth, height, widthSegments, depthSegments, this.vertices, indices, normals, uvs, this.vertices.length);
-    buildPlane('x', 'z', 'y', 1, -1, width, depth, -height, widthSegments, depthSegments, this.vertices, indices, normals, uvs, this.vertices.length);
-    buildPlane('x', 'y', 'z', 1, -1, width, height, depth, widthSegments, heightSegments, this.vertices, indices, normals, uvs, this.vertices.length);
-    buildPlane('x', 'y', 'z', -1, -1, width, height, -depth, widthSegments, heightSegments, this.vertices, indices, normals, uvs, this.vertices.length);
+    buildPlane('z', 'y', 'x', -1, -1, depth, height, width, depthSegments, heightSegments, this.vertices, indices, normals, uvs, this.vertices.length); // left
+    buildPlane('z', 'y', 'x', 1, -1, depth, height, -width, depthSegments, heightSegments, this.vertices, indices, normals, uvs, this.vertices.length); // right
+    buildPlane('x', 'z', 'y', 1, 1, width, depth, height, widthSegments, depthSegments, this.vertices, indices, normals, uvs, this.vertices.length); // top
+    buildPlane('x', 'z', 'y', 1, -1, width, depth, -height, widthSegments, depthSegments, this.vertices, indices, normals, uvs, this.vertices.length); // bottom
+    buildPlane('x', 'y', 'z', 1, -1, width, height, depth, widthSegments, heightSegments, this.vertices, indices, normals, uvs, this.vertices.length); // front
+    buildPlane('x', 'y', 'z', -1, -1, width, height, -depth, widthSegments, heightSegments, this.vertices, indices, normals, uvs, this.vertices.length); // back
 
     this.setAttribute(AttributeLocation.Positions, new Float32Array(this.vertices.flatMap(point => point.toArray())), 3);
     this.setAttribute(AttributeLocation.Normals, new Float32Array(normals), 3);

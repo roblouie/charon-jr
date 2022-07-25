@@ -20,20 +20,9 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
       return this;
     }
 
-    spherify(radius: number) {
-      this.verticesToActOn.forEach(vertex => {
-        vertex.normalize().scale(radius);
-      });
-      return this;
-    }
-
-    cylindrify(radius: number) {
-      this.verticesToActOn.forEach(vertex => {
-        const originalY = vertex.y;
-        vertex.y = 0;
-        vertex.normalize().scale(radius);
-        vertex.y = originalY;
-      });
+    deselectVertices(...vertices: number[]) {
+      const verticesToRemove = vertices.map(vertexNumber => this.vertices[vertexNumber]);
+      this.verticesToActOn = this.verticesToActOn.filter(vertex => !verticesToRemove.includes(vertex));
       return this;
     }
 
@@ -56,6 +45,23 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
     rotate(x = 0, y = 0, z = 0) {
       const rotationMatrix = new DOMMatrix().rotateSelf(radsToDegrees(x), radsToDegrees(y), radsToDegrees(z));
       this.verticesToActOn.forEach(vertex => vertex.set(rotationMatrix.transformPoint(vertex)));
+      return this;
+    }
+
+    spherify(radius: number) {
+      this.verticesToActOn.forEach(vertex => {
+        vertex.normalize().scale(radius);
+      });
+      return this;
+    }
+
+    cylindrify(radius: number) {
+      this.verticesToActOn.forEach(vertex => {
+        const originalY = vertex.y;
+        vertex.y = 0;
+        vertex.normalize().scale(radius);
+        vertex.y = originalY;
+      });
       return this;
     }
 

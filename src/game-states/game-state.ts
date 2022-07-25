@@ -27,6 +27,7 @@ import { getGameStateMachine } from '@/game-state-machine';
 import { menuState } from '@/game-states/menu-state';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { MakeMoldable } from '@/engine/moldable';
+import { range } from '@/engine/helpers';
 
 class GameState implements State {
   player: ThirdPersonPlayer;
@@ -82,6 +83,7 @@ class GameState implements State {
     testShapeGeometry
       .all()
       .cylindrify(3)
+      .deselectVertices(...range(18, 27), ...range(27, 36))
       .computeNormalsCrossPlane()
       .done()
 

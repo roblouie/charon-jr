@@ -26,3 +26,9 @@ export function doTimes(times: number, callback: (index: number) => void) {
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
+
+export function range(start: number, end: number, interval = 1) {
+  let lastValue = start - interval;
+  // @ts-ignore
+  return new Array(Math.ceil((end - start)/interval)).fill().map(_ => lastValue += interval);
+}

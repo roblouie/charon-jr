@@ -129,7 +129,7 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
       // vertices we ignored. Luckily we have a map of duplicates to the first value, and since there's a normal for
       // every vertex, their indices are the same. So we just use our same replacer map to copy the normal of the unique
       // position into all of it's copies.
-      const indexReplacers = this.vertices.flatMap((vertex: EnhancedDOMPoint): { index: number, firstIndex: number }[] => {
+      const indexReplacers = this.verticesToActOn.flatMap((vertex: EnhancedDOMPoint): { index: number, firstIndex: number }[] => {
         // If we've already found this vertex once, stop
         if (checkedVertices.find(compareVertex => vertex.isEqualTo(compareVertex))) {
           return [];
@@ -139,8 +139,8 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
 
         // If we've gotten this far, this vertex hasn't been checked yet. So now find the first index of this vertex position,
         // then find all indices of this vertex position, and create a map from first index to each other occurrence.
-        const firstOccurrence = this.vertices.indexOf(vertex);
-        return this.vertices.reduce((indices, compareVertex, currentIndex) => {
+        const firstOccurrence = this.verticesToActOn.indexOf(vertex);
+        return this.verticesToActOn.reduce((indices, compareVertex, currentIndex) => {
           if (vertex.isEqualTo(compareVertex)) {
             indices.push({ index: currentIndex, firstIndex: firstOccurrence });
           }
@@ -148,14 +148,31 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
         }, [] as { index: number, firstIndex: number }[]);
       });
 
+      const allIndices = this.getIndices()!;
+      const indicesInSelection: number[] = [];
+      for (let i = 0; i < allIndices.length; i += 3) {
+        const point1 = this.vertices[allIndices[i]];
+        const point2 = this.vertices[allIndices[i + 1]];
+        const point3 = this.vertices[allIndices[i + 2]];
+
+        const point1Index = this.verticesToActOn.indexOf(point1);
+        const point2Index = this.verticesToActOn.indexOf(point2);
+        const point3Index = this.verticesToActOn.indexOf(point3);
+
+        if (point1Index !== -1 && point2Index !== -1  && point3Index !== -1 ) {
+          indicesInSelection.push(point1Index, point2Index, point3Index)
+        }
+      }
+
       // Use our map to update our indices to only point to the first occurrence of a given vertex position.
-      const indicesToUniqueVertices = this.getIndices()!.map(index => {
+      const indicesToUniqueVertices = indicesInSelection.map(index => {
         const matchingReplacer = indexReplacers.find(replacer => replacer.index === index);
         return matchingReplacer ? matchingReplacer.firstIndex : index;
       });
 
+
       // Use our new indices to calculate normals
-      const updatedNormals = calculateVertexNormals(this.vertices, indicesToUniqueVertices);
+      const updatedNormals = calculateVertexNormals(this.verticesToActOn, indicesToUniqueVertices);
 
       // We only calculated normals for unique indices, meaning we don't have any for any additional occurrences of a
       // vertex position. These additional occurrences are still used to draw our shape, so we need to populate their
@@ -165,8 +182,20 @@ export function MakeMoldable<TBase extends CanBeMoldable>(Base: TBase) {
         updatedNormals[replacer.index] = updatedNormals[replacer.firstIndex];
       });
 
-      // Now just set our new normals and we're done.
-      this.setAttribute(AttributeLocation.Normals, new Float32Array(updatedNormals.flatMap(point => point.toArray())), 3);
+      const originalNormals = this.getAttribute(AttributeLocation.Normals).data;
+      this.verticesToActOn.forEach(vertex => {
+        const originalVertexIndex = this.vertices.indexOf(vertex);
+        const newNormalIndex = this.verticesToActOn.indexOf(vertex);
+        const newNormal = updatedNormals[newNormalIndex];
+        const normalIndex = originalVertexIndex * 3;
+        originalNormals[normalIndex] = newNormal.x;
+        originalNormals[normalIndex + 1] = newNormal.y;
+        originalNormals[normalIndex + 2] = newNormal.z;
+      });
+
+      // // Now just set our new normals and we're done.
+      this.setAttribute(AttributeLocation.Normals, originalNormals, 3);
+
       return this;
     }
 

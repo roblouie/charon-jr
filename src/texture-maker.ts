@@ -3,9 +3,13 @@ import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 
-const drawContext = document.querySelector<HTMLCanvasElement>('#draw')!.getContext('2d')!;
-const tileContext = document.querySelector<HTMLCanvasElement>('#tile')!.getContext('2d')!;
-const noiseContext = document.querySelector<HTMLCanvasElement>('#noise')!.getContext('2d')!;
+const [drawContext, tileContext, noiseContext] = ['draw', 'tile', 'noise'].map(id => {
+  const canvas = document.createElement('canvas');
+  canvas.id = id;
+  canvas.width = id === 'tile' ? 256 : 128;
+  canvas.height = id === 'tile' ? 256 : 128;
+  return canvas.getContext('2d')!;
+});
 
 const resolution = 128;
 const debugElement = document.querySelector('#debug')!;

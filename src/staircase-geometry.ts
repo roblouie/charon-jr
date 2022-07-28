@@ -1,4 +1,4 @@
-import { CubeGeometry } from './engine/cube-geometry';
+import { MoldableCubeGeometry } from './engine/moldable-cube-geometry';
 import { Mesh } from './engine/renderer/mesh';
 import { Material } from './engine/renderer/material';
 import { textureLoader } from '@/engine/renderer/texture-loader';
@@ -14,7 +14,7 @@ export class Staircase {
     const material = new Material({ texture });
     const offset = new DOMPoint(40, -11, -15);
     for (let stepNumber = 0; stepNumber < numberOfSteps; stepNumber++) {
-      const mesh = new Mesh(new CubeGeometry(stepWidth, stepHeight, stepDepth), material);
+      const mesh = new Mesh(new MoldableCubeGeometry(stepWidth, stepHeight, stepDepth), material);
       mesh.position.x = offset.x;
       mesh.position.y = offset.y;
       mesh.position.z = offset.z;

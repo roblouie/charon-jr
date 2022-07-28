@@ -17,7 +17,7 @@ import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Mesh } from '@/engine/renderer/mesh';
 import { PlaneGeometry } from '@/engine/plane-geometry';
 import { Material } from '@/engine/renderer/material';
-import { CubeGeometry } from '@/engine/cube-geometry';
+import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { AttributeLocation, renderer } from '@/engine/renderer/renderer';
 import { Staircase } from '@/staircase-geometry';
 import { getGroupedFaces } from '@/engine/physics/parse-faces';
@@ -26,8 +26,6 @@ import { controls } from '@/core/controls';
 import { getGameStateMachine } from '@/game-state-machine';
 import { menuState } from '@/game-states/menu-state';
 import { Object3d } from '@/engine/renderer/object-3d';
-import { MakeMoldable } from '@/engine/moldable';
-import { doTimes, range } from '@/engine/helpers';
 
 class GameState implements State {
   player: ThirdPersonPlayer;
@@ -39,8 +37,6 @@ class GameState implements State {
     camera.position = new EnhancedDOMPoint(0, 5, -17);
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();
-
-
 
     const sampleHeightMap = [];
     const imageData = drawLandscape().data;
@@ -59,9 +55,7 @@ class GameState implements State {
     );
     lake.position.y = -5.4 //-7.9;
 
-    const MoldableCube = MakeMoldable(CubeGeometry);
-
-    const rampGeometry = new MoldableCube(3, 13, 13);
+    const rampGeometry = new MoldableCubeGeometry(3, 13, 13);
     rampGeometry
       .selectVertices(1, 4, 8, 9, 20, 21)
       .translate(0, -8)
@@ -80,24 +74,22 @@ class GameState implements State {
     //   .updateVerticesAttribute();
 
     function makeTree() {
-      const trunkGeo = new MoldableCube(1, 4, 1, 3, 3, 3)
-        .all()
+      const trunkGeo = new MoldableCubeGeometry(1, 4, 1, 3, 3, 3)
         .cylindrify(0.5)
         .computeNormalsCrossPlane()
         .done();
 
       const trunk = new Mesh(trunkGeo, materials.wood);
 
-      const testShapeGeometry = new MoldableCube(4, 4, 4, 2, 2, 2);
-      testShapeGeometry
-        .all()
+      const foliageGeometry = new MoldableCubeGeometry(4, 4, 4, 2, 2, 2);
+      foliageGeometry
         .spherify(4)
         .scale(1, 1.4, 1)
         .noisify(13, 0.05)
         .computeNormalsCrossPlane()
         .done()
 
-      const leaves = new Mesh(testShapeGeometry, materials.treeLeaves);
+      const leaves = new Mesh(foliageGeometry, materials.treeLeaves);
       leaves.position.y += 6;
       return new Object3d(trunk, leaves);
     }
@@ -109,7 +101,7 @@ class GameState implements State {
     //
 
     function makeBridge() {
-      const supportArchGeo = new MoldableCube(16, 1, 2, 10, 1, 1);
+      const supportArchGeo = new MoldableCubeGeometry(16, 1, 2, 10, 1, 1);
       let start = 0; let end = 3;
       // doTimes(10, index => {
       //   supportArchGeo.selectVertices(...range(start, end))
@@ -126,7 +118,7 @@ class GameState implements State {
     const { cubes } = new Staircase(10, 0.3, 3, 1);
 
     const wall = new Mesh(
-      new CubeGeometry(3, 4, 4),
+      new MoldableCubeGeometry(3, 4, 4),
       materials.bricks,
     );
 

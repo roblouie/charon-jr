@@ -1,5 +1,5 @@
 import { Mesh } from '@/engine/renderer/mesh';
-import { CubeGeometry } from '../src/engine/cube-geometry';
+import { MoldableCubeGeometry } from '../src/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
 import { findFloorHeightAtPosition, findWallCollisionsFromList } from '@/engine/physics/surface-collision';
 import { Face } from '@/engine/physics/face';
@@ -26,7 +26,7 @@ export class Player {
   constructor() {
     textureLoader.load(drawVolcanicRock())
     this.mesh = new Mesh(
-      new CubeGeometry(0.3, 1, 0.3),
+      new MoldableCubeGeometry(0.3, 1, 0.3),
       new Material({color: '#f0f'})
     );
     const positions = this.mesh.geometry.getAttribute(AttributeLocation.Positions).data;

@@ -1,6 +1,6 @@
 import { Camera } from './engine/renderer/camera';
 import { Mesh } from './engine/renderer/mesh';
-import { CubeGeometry } from './engine/cube-geometry';
+import { MoldableCubeGeometry } from './engine/moldable-cube-geometry';
 import { Material } from './engine/renderer/material';
 import { getGroupedFaces } from './engine/physics/parse-faces';
 import { PlaneGeometry } from './engine/plane-geometry';

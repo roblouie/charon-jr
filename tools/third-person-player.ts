@@ -5,7 +5,7 @@ import { controls } from '@/core/controls';
 import { Mesh } from '@/engine/renderer/mesh';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { drawVolcanicRock } from '../src/texture-maker';
-import { CubeGeometry } from '../src/engine/cube-geometry';
+import { MoldableCubeGeometry } from '../src/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
 import { findFloorHeightAtPosition, findWallCollisionsFromList } from '@/engine/physics/surface-collision';
 
@@ -23,7 +23,7 @@ export class ThirdPersonPlayer {
   constructor(camera: Camera) {
     textureLoader.load(drawVolcanicRock())
     this.mesh = new Mesh(
-      new CubeGeometry(0.3, 1, 0.3),
+      new MoldableCubeGeometry(0.3, 1, 0.3),
       new Material({color: '#f0f'})
     );
     this.feetCenter.y = 10;

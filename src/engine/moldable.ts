@@ -1,4 +1,4 @@
-import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
+import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { calculateVertexNormals, radsToDegrees } from '@/engine/math-helpers';
 import { CubeGeometry } from '@/engine/cube-geometry';
 import { AttributeLocation } from '@/engine/renderer/renderer';

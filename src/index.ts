@@ -5,7 +5,7 @@ import { Material } from './engine/renderer/material';
 import { getGroupedFaces } from './engine/physics/parse-faces';
 import { PlaneGeometry } from './engine/plane-geometry';
 import { Staircase } from './staircase-geometry';
-import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
+import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { AttributeLocation, Renderer } from "@/engine/renderer/renderer";
 import {
   drawBricks,

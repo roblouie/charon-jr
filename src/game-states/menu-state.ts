@@ -3,7 +3,7 @@ import { State } from '@/core/state';
 import { Skybox } from '@/skybox';
 import { materials, skyboxes } from '@/texture-maker';
 import { Camera } from '@/engine/renderer/camera';
-import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
+import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { renderer } from '@/engine/renderer/renderer';
 import { controls } from '@/core/controls';
 import { getGameStateMachine } from '@/game-state-machine';

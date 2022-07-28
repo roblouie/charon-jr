@@ -4,7 +4,7 @@ import { Material } from '@/engine/renderer/material';
 import { findFloorHeightAtPosition, findWallCollisionsFromList } from '@/engine/physics/surface-collision';
 import { Face } from '@/engine/physics/face';
 import { controls } from '@/core/controls';
-import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
+import { EnhancedDOMPoint } from "../src/engine/enhanced-dom-point";
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { drawVolcanicRock } from '../src/texture-maker';
 import { AttributeLocation } from '@/engine/renderer/renderer';

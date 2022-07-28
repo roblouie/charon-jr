@@ -1,4 +1,4 @@
-import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
+import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { doTimes, hexToRgba } from "@/engine/helpers";
 
 export enum NoiseType {

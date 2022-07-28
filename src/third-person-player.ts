@@ -1,5 +1,5 @@
 import { Camera } from '@/engine/renderer/camera';
-import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
+import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { Face } from '@/engine/physics/face';
 import { controls } from '@/core/controls';
 import { Mesh } from '@/engine/renderer/mesh';

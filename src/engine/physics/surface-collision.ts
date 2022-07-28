@@ -1,5 +1,5 @@
 import { Face } from './face';
-import { EnhancedDOMPoint } from "@/core/enhanced-dom-point";
+import { EnhancedDOMPoint } from "@/engine/enhanced-dom-point";
 
 // TODO: Make this return multiple floors and sort by height. Currently
 // this requires floor faces to be sent in from highest to lowest, which with angles

@@ -11,7 +11,7 @@ import {
 } from '@/texture-maker';
 import { Scene } from '@/engine/renderer/scene';
 import { Camera } from '@/engine/renderer/camera';
-import { EnhancedDOMPoint } from '@/core/enhanced-dom-point';
+import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { ThirdPersonPlayer } from '@/third-person-player';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Mesh } from '@/engine/renderer/mesh';

@@ -81,11 +81,11 @@ class GameState implements State {
 
       const trunk = new Mesh(trunkGeo, materials.wood);
 
-      const foliageGeometry = new MoldableCubeGeometry(4, 4, 4, 2, 2, 2);
+      const foliageGeometry = new MoldableCubeGeometry(4, 4, 4, 4, 4, 4);
       foliageGeometry
         .spherify(4)
-        .scale(1, 1.4, 1)
-        .noisify(13, 0.05)
+        .scale(1, 1.5, 1)
+        .noisify(2, 0.02)
         .computeNormalsCrossPlane()
         .done()
 
@@ -96,7 +96,8 @@ class GameState implements State {
 
    const tree = makeTree();
     tree.position.x += 10;
-    tree.position.y --;
+    tree.position.z += 40;
+    tree.position.y += 10;
     tree.updateWorldMatrix();
     //
 

@@ -3,11 +3,11 @@ import { AttributeLocation } from '@/engine/renderer/renderer';
 import { gl } from '@/engine/renderer/lil-gl';
 
 export class Skybox extends BufferGeometry {
-  constructor(...textures: ImageData[]) {
+  constructor(...textureSources: (ImageData | HTMLCanvasElement)[]) {
     super();
     const cubemapTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubemapTexture);
-    textures.forEach((tex, index) => {
+    textureSources.forEach((tex, index) => {
       gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + index, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     });
     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);

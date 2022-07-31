@@ -12,6 +12,7 @@ import {
 } from '@/engine/shaders/shaders';
 import { Scene } from '@/engine/renderer/scene';
 import { Mesh } from '@/engine/renderer/mesh';
+import { textureLoader } from '@/engine/renderer/texture-loader';
 
 // IMPORTANT! The index of a given buffer in the buffer array must match it's respective data location in the shader.
 // This allows us to use the index while looping through buffers to bind the attributes. So setting a buffer
@@ -67,7 +68,11 @@ export class Renderer {
 
     const renderMesh = (mesh: Mesh) => {
       gl.useProgram(lilgl.program);
-      const modelViewProjectionMatrix = viewProjectionMatrix.multiply(mesh.worldMatrix)
+      const modelViewProjectionMatrix = viewProjectionMatrix.multiply(mesh.worldMatrix);
+
+      // In order to avoid having to generate mipmaps for every animation frame, animated textures have mipmaps disabled
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, mesh.material.texture?.animationFunction ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
+
       gl.uniform4fv(this.colorLocation, mesh.material.color);
       gl.vertexAttrib1f(AttributeLocation.TextureDepth, mesh.material.texture?.id ?? -1.0);
       const textureRepeat = [mesh.material.texture?.repeat.x ?? 1, mesh.material.texture?.repeat.y ?? 1];
@@ -78,6 +83,8 @@ export class Renderer {
       gl.bindVertexArray(mesh.geometry.vao!);
       gl.drawElements(gl.TRIANGLES, mesh.geometry.getIndices()!.length, gl.UNSIGNED_SHORT, 0);
     }
+
+    textureLoader.updateAnimatedTextures();
 
     // Render solid meshes first
     scene.solidMeshes.forEach(renderMesh);

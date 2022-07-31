@@ -42,11 +42,28 @@ export function drawWater() {
   noiseMaker.seed(10);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Edge, '#3264ff', 220), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  return mainImageData();
+  const imageData = mainImageData();
+  const newContext = getContextToAnimate();
+
+  let xPos = 0;
+  function animate() {
+    newContext.putImageData(imageData, xPos - 128, 0);
+    newContext.putImageData(imageData, xPos, 0);
+    xPos += 0.1;
+    if (xPos > drawContext.canvas.width) {
+      xPos = 0;
+    }
+  }
+
+  animate();
+
+  const lakeTexture = textureLoader.load(newContext.canvas, animate);
+  lakeTexture.repeat.x = 6; lakeTexture.repeat.y = 6;
+
+  return new Material({texture: lakeTexture, isTransparent: true, color: '#fffc'});
 }
-const lakeTexture = textureLoader.load(drawWater());
-lakeTexture.repeat.x = 6; lakeTexture.repeat.y = 6;
-const lake = new Material({texture: lakeTexture, isTransparent: true, color: '#fffc'})
+
+
 
 
 // *********************
@@ -111,6 +128,7 @@ export function drawTiles() {
 }
 const tiles = new Material({texture: textureLoader.load(drawTiles())});
 
+const lake = drawWater();
 textureLoader.bindTextures();
 
 export const materials = {
@@ -189,6 +207,13 @@ export function drawVolcanicRock() {
 
 function mainImageData() {
   return drawContext.getImageData(0, 0, 128, 128);
+}
+
+function getContextToAnimate() {
+  const newCanvas = document.createElement('canvas');
+  newCanvas.width = drawContext.canvas.width;
+  newCanvas.height = drawContext.canvas.height;
+  return newCanvas.getContext('2d')!;
 }
 
 

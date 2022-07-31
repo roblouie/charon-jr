@@ -19,13 +19,12 @@ class MenuState implements State {
   }
 
   onEnter() {
-    const skybox = new Skybox(
-      materials.marble.texture!.imageData,
-      materials.marble.texture!.imageData,
-      materials.marble.texture!.imageData,
-      materials.marble.texture!.imageData,
-      materials.marble.texture!.imageData,
-      materials.marble.texture!.imageData,
+    const skybox = new Skybox(materials.marble.texture!.source,
+      materials.marble.texture!.source,
+      materials.marble.texture!.source,
+      materials.marble.texture!.source,
+      materials.marble.texture!.source,
+      materials.marble.texture!.source,
     );
     skybox.bindGeometry();
     this.scene.skybox = skybox;

@@ -24,7 +24,7 @@ export class ThirdPersonPlayer {
 
   mesh: TruckObject3d;
   camera: Camera;
-  idealPosition = new EnhancedDOMPoint(0, 3, -17);
+  idealPosition = new EnhancedDOMPoint(0, 6, -17);
   idealLookAt = new EnhancedDOMPoint(0, 2, 0);
 
   listener: AudioListener;
@@ -44,15 +44,15 @@ export class ThirdPersonPlayer {
   }
 
   update(groupedFaces: { floorFaces: Face[]; wallFaces: Face[] }) {
-    this.updateVelocityFromControls();
+    this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.003; // gravity
-    this.feetCenter.add(this.velocity);
-    this.collideWithLevel(groupedFaces);
+    this.feetCenter.add(this.velocity);  // move the player position by the velocity
+    this.collideWithLevel(groupedFaces); // do collision detection, if collision is found, feetCenter gets pushed out of the collision
 
-    this.mesh.position.set(this.feetCenter);
+    this.mesh.position.set(this.feetCenter); // at this point, feetCenter is in the correct spot, so draw the mesh there
     this.mesh.position.y += 0.5; // move up by half height so mesh ends at feet position
 
-    this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.01);
+    this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.1);
 
     // Keep camera away regardless of lerp
     const distanceToKeep = 17;
@@ -95,11 +95,9 @@ export class ThirdPersonPlayer {
 
     const mag = controls.direction.magnitude;
     const inputAngle = Math.atan2(-controls.direction.x, -controls.direction.z);
-    const playerCameraDiff = this.mesh.position.clone().subtract(this.camera.position);
-    const playerCameraAngle = Math.atan2(playerCameraDiff.x, playerCameraDiff.z);
 
     if (controls.direction.x !== 0 || controls.direction.z !== 0) {
-      this.angle = inputAngle + playerCameraAngle;
+      this.angle += inputAngle * 0.05;
     }
 
     this.velocity.z = Math.cos(this.angle) * mag * speed;

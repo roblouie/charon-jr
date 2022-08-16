@@ -33,7 +33,7 @@ class GameState implements State {
   groupedFaces?: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]};
 
   constructor() {
-    const camera = new Camera(Math.PI / 5, 16 / 9, 1, 400);
+    const camera = new Camera(Math.PI / 3, 16 / 9, 1, 400);
     camera.position = new EnhancedDOMPoint(0, 5, -17);
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();

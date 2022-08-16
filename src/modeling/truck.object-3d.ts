@@ -99,6 +99,13 @@ export class TruckObject3d extends Object3d {
     return this.frontWheels.children[1];
   }
 
+  get allWheels() {
+    return [
+      ...this.frontWheels.children,
+      ...this.rearWheels.children,
+    ]
+  }
+
   setSteeringAngle(steeringAngleRadians: number) {
     this.leftFrontWheel.setRotation(0, steeringAngleRadians, 0);
     this.rightFrontWheel.setRotation(0, steeringAngleRadians, 0);

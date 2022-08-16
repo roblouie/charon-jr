@@ -11,16 +11,17 @@ import { findFloorHeightAtPosition, findWallCollisionsFromList } from '@/engine/
 import { audioCtx } from '@/engine/audio/audio-player';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { truck, TruckObject3d } from '@/modeling/truck.object-3d';
-import { clamp } from '@/engine/helpers';
+import {clamp, increment} from '@/engine/helpers';
 
 const debugElement = document.querySelector('#debug')!;
-
+type GroupedFaces = { floorFaces: Face[]; wallFaces: Face[] };
 
 export class ThirdPersonPlayer {
   isJumping = false;
-  feetCenter = new EnhancedDOMPoint(0, 0, 0);
+  chassisCenter = new EnhancedDOMPoint(0, 0, 0);
   velocity = new EnhancedDOMPoint(0, 0, 0);
   angle = 0;
+  steeringAngle = 0;
 
   mesh: TruckObject3d;
   camera: Camera;
@@ -32,7 +33,7 @@ export class ThirdPersonPlayer {
   constructor(camera: Camera) {
     textureLoader.load(drawVolcanicRock())
     this.mesh = truck;
-    this.feetCenter.y = 10;
+    this.chassisCenter.y = 10;
     this.camera = camera;
     this.listener = audioCtx.listener;
   }
@@ -43,13 +44,14 @@ export class ThirdPersonPlayer {
       .add(this.mesh.position);
   }
 
-  update(groupedFaces: { floorFaces: Face[]; wallFaces: Face[] }) {
+  update(groupedFaces: GroupedFaces) {
     this.updateVelocityFromControls();
     this.velocity.y -= 0.003; // gravity
-    this.feetCenter.add(this.velocity);
-    this.collideWithLevel(groupedFaces);
+    this.calculateSuspensionMovement(groupedFaces);
+    this.chassisCenter.add(this.velocity);
+    this.collideWithLevel(this.chassisCenter, groupedFaces);
 
-    this.mesh.position.set(this.feetCenter);
+    this.mesh.position.set(this.chassisCenter);
     this.mesh.position.y += 0.5; // move up by half height so mesh ends at feet position
 
     this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.01);
@@ -71,20 +73,20 @@ export class ThirdPersonPlayer {
     this.updateAudio()
   }
 
-  collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
-    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.feetCenter, 0.4, 0.1);
-    this.feetCenter.x += wallCollisions.xPush;
-    this.feetCenter.z += wallCollisions.zPush;
+  collideWithLevel(domPoint: EnhancedDOMPoint, groupedFaces: GroupedFaces) {
+    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, domPoint, 0.4, 0.1);
+    this.chassisCenter.x += wallCollisions.xPush;
+    this.chassisCenter.z += wallCollisions.zPush;
 
-    const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, this.feetCenter);
+    const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, domPoint);
     if (!floorData) {
       return;
     }
 
-    const collisionDepth = floorData.height - this.feetCenter.y;
+    const collisionDepth = floorData.height - domPoint.y;
 
     if (collisionDepth > 0) {
-      this.feetCenter.y += collisionDepth;
+      domPoint.y += collisionDepth;
       this.velocity.y = 0;
       this.isJumping = false;
     }
@@ -92,6 +94,17 @@ export class ThirdPersonPlayer {
 
   protected updateVelocityFromControls() {
     const speed = 0.1;
+
+    // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
+    // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
+    // but not slerp yet, not
+    const wheelTurnScale = -0.7;
+    this.steeringAngle = increment(this.steeringAngle, controls.direction.x * wheelTurnScale, .05)
+    this.mesh.setSteeringAngle(this.steeringAngle);
+
+    // logic to set angle should use controller z input only. Gas and brake can be 'w' and 's' on keyboard, but
+    // need button assignments on the controller. angle assignment should happen from calculated steering angle, and
+    // eventually, update of truck angle should be contingent on a ground collision check with front wheels.
 
     const mag = controls.direction.magnitude;
     const inputAngle = Math.atan2(-controls.direction.x, -controls.direction.z);
@@ -105,12 +118,6 @@ export class ThirdPersonPlayer {
     this.velocity.z = Math.cos(this.angle) * mag * speed;
     this.velocity.x = Math.sin(this.angle) * mag * speed;
 
-    // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
-    // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
-    // but not slerp yet, not
-    const wheelTurnScale = -0.7;
-    this.mesh.setSteeringAngle(controls.direction.x * wheelTurnScale);
-
     // We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
     this.mesh.setDriveRotationRate(clamp(Math.abs(controls.direction.x) + Math.abs(controls.direction.z), -1, 1));
 
@@ -122,6 +129,15 @@ export class ThirdPersonPlayer {
         this.isJumping = true;
       }
     }
+  }
+
+  private calculateSuspensionMovement(groupedFaces: GroupedFaces) {
+    const suspensionForce = .0015;
+
+    // determine state of each wheel, if on ground, exerts force on truck. If in air, truck exerts force on it.
+
+
+
   }
 
   private updateAudio() {

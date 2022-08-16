@@ -32,3 +32,11 @@ export function range(start: number, end: number, interval = 1) {
   // @ts-ignore
   return new Array(Math.ceil((end - start)/interval)).fill().map(_ => lastValue += interval);
 }
+
+export function increment(currentValue: number, maxValue: number, step: number) {
+  const isIncrease = maxValue >= currentValue;
+  if (isIncrease) {
+    return Math.min(currentValue + step, maxValue);
+  }
+  return Math.max(currentValue - step, maxValue);
+}

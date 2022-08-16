@@ -129,6 +129,11 @@ export function drawTiles() {
 const tiles = new Material({texture: textureLoader.load(drawTiles())});
 
 const lake = drawWater();
+
+const chassis = new Material({color: '#00f'});
+const tire = new Material({ color: '#000'});
+const wheel = new Material({ color: '#888'});
+
 textureLoader.bindTextures();
 
 export const materials = {
@@ -139,6 +144,9 @@ export const materials = {
   treeLeaves,
   wood,
   tiles,
+  chassis,
+  tire,
+  wheel,
 };
 
 export const skyboxes = {

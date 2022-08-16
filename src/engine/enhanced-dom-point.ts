@@ -1,6 +1,6 @@
 import { clamp } from '@/engine/helpers';
 
-interface VectorLike {
+export interface VectorLike {
   x: number;
   y: number;
   z: number;

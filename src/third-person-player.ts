@@ -9,6 +9,9 @@ import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
 import { findFloorHeightAtPosition, findWallCollisionsFromList } from '@/engine/physics/surface-collision';
 import { audioCtx } from '@/engine/audio/audio-player';
+import { Object3d } from '@/engine/renderer/object-3d';
+import { truck, TruckObject3d } from '@/modeling/truck.object-3d';
+import { clamp } from '@/engine/helpers';
 
 const debugElement = document.querySelector('#debug')!;
 
@@ -19,20 +22,16 @@ export class ThirdPersonPlayer {
   velocity = new EnhancedDOMPoint(0, 0, 0);
   angle = 0;
 
-  mesh: Mesh;
+  mesh: TruckObject3d;
   camera: Camera;
   idealPosition = new EnhancedDOMPoint(0, 3, -17);
   idealLookAt = new EnhancedDOMPoint(0, 2, 0);
 
   listener: AudioListener;
 
-
   constructor(camera: Camera) {
     textureLoader.load(drawVolcanicRock())
-    this.mesh = new Mesh(
-      new MoldableCubeGeometry(0.3, 1, 0.3),
-      new Material({color: '#f0f'})
-    );
+    this.mesh = truck;
     this.feetCenter.y = 10;
     this.camera = camera;
     this.listener = audioCtx.listener;
@@ -105,6 +104,15 @@ export class ThirdPersonPlayer {
 
     this.velocity.z = Math.cos(this.angle) * mag * speed;
     this.velocity.x = Math.sin(this.angle) * mag * speed;
+
+    // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
+    // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
+    // but not slerp yet, not
+    const wheelTurnScale = -0.7;
+    this.mesh.setSteeringAngle(controls.direction.x * wheelTurnScale);
+
+    // We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
+    this.mesh.setDriveRotationRate(clamp(Math.abs(controls.direction.x) + Math.abs(controls.direction.z), -1, 1));
 
     this.mesh.setRotation(0, this.angle, 0);
 

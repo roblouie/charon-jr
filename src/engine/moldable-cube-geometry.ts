@@ -1,6 +1,6 @@
 import { BufferGeometry } from './renderer/buffer-geometry';
 import { AttributeLocation } from '@/engine/renderer/renderer';
-import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
+import { EnhancedDOMPoint, VectorLike } from '@/engine/enhanced-dom-point';
 import { doTimes } from "@/engine/helpers";
 import { calculateVertexNormals, radsToDegrees } from "@/engine/math-helpers";
 import { noiseMaker } from "@/engine/texture-creation/noise-maker";
@@ -118,6 +118,16 @@ export class MoldableCubeGeometry extends BufferGeometry {
     return this;
   }
 
+  invertSelection() {
+    this.verticesToActOn = this.vertices.filter(vertex => !this.verticesToActOn.includes(vertex));
+    return this;
+  }
+
+  selectBy(callback: (vertex: EnhancedDOMPoint, index: number, array: EnhancedDOMPoint[]) => boolean) {
+    this.verticesToActOn = this.vertices.filter(callback);
+    return this;
+  }
+
   translate(x = 0, y = 0, z = 0) {
     this.verticesToActOn.forEach(vertex => vertex.add({x, y, z}));
     return this;
@@ -147,6 +157,26 @@ export class MoldableCubeGeometry extends BufferGeometry {
     return this;
   }
 
+  merge(otherMoldable: MoldableCubeGeometry) {
+    const updatedOtherIndices = otherMoldable.getIndices()!.map(index => index + this.vertices.length);
+    this.setIndices(new Uint16Array([...this.getIndices()!, ...updatedOtherIndices]));
+
+    this.vertices.push(...otherMoldable.vertices);
+
+    const thisTextureCoords = this.getAttribute(AttributeLocation.TextureCoords).data;
+    const otherTextureCoords = otherMoldable.getAttribute(AttributeLocation.TextureCoords).data;
+    const combinedCoords = new Float32Array([...thisTextureCoords, ...otherTextureCoords]);
+    this.setAttribute(AttributeLocation.TextureCoords, combinedCoords, 2);
+
+    const thisNormals = this.getAttribute(AttributeLocation.Normals).data;
+    const otherNormals = otherMoldable.getAttribute(AttributeLocation.Normals).data;
+    const combinedNormals = new Float32Array([...thisNormals, ...otherNormals]);
+    this.setAttribute(AttributeLocation.Normals, combinedNormals, 3);
+
+    return this;
+  }
+
+
   noisify(seed: number, scale: number) {
     const {indexReplacers, indicesToUniqueVertices} = this.getUniqueIndices();
 
@@ -169,12 +199,13 @@ export class MoldableCubeGeometry extends BufferGeometry {
     return this;
   }
 
-  cylindrify(radius: number) {
+  cylindrify(radius: number, aroundAxis: 'x' | 'y' | 'z' = 'y', circleCenter: VectorLike = {x: 0, y: 0, z: 0}) {
     this.verticesToActOn.forEach(vertex => {
-      const originalY = vertex.y;
-      vertex.y = 0;
-      vertex.normalize().scale(radius);
-      vertex.y = originalY;
+      const originalAxis = vertex[aroundAxis];
+      vertex[aroundAxis] = 0;
+      vertex.subtract(circleCenter).normalize().scale(radius);
+      // vertex.normalize().scale(radius);
+      vertex[aroundAxis] = originalAxis;
     });
     return this;
   }

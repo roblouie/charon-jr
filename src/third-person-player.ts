@@ -91,7 +91,7 @@ export class ThirdPersonPlayer {
   }
 
   protected updateVelocityFromControls() {
-    const speed = 0.1;
+    const speed = 0.3;
 
     const mag = controls.direction.magnitude;
     const inputAngle = Math.atan2(-controls.direction.x, -controls.direction.z);

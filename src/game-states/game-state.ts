@@ -26,34 +26,34 @@ import { controls } from '@/core/controls';
 import { getGameStateMachine } from '@/game-state-machine';
 import { menuState } from '@/game-states/menu-state';
 import { Object3d } from '@/engine/renderer/object-3d';
+import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
+import { getGridPosition } from '@/engine/physics/surface-collision';
 
 class GameState implements State {
   player: ThirdPersonPlayer;
   scene: Scene;
   groupedFaces?: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]};
 
+  gridFaces: Face[][];
+
   constructor() {
     const camera = new Camera(Math.PI / 3, 16 / 9, 1, 400);
     camera.position = new EnhancedDOMPoint(0, 5, -17);
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();
-
-    const sampleHeightMap = [];
-    const imageData = drawLandscape().data;
-    for (let i = 0; i < imageData.length; i+= 4) {
-      sampleHeightMap.push(imageData[i] / 10 - 10);
-    }
+    this.gridFaces = [[]];
+    const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 200)
 
     const floor = new Mesh(
-      new PlaneGeometry(200, 200, 127, 127, sampleHeightMap),
+      new PlaneGeometry(2047, 2047, 255, 255, sampleHeightMap),
       materials.grass
     );
 
     const lake = new Mesh(
-      new PlaneGeometry(200, 200, 1, 1),
+      new PlaneGeometry(2047, 2047, 1, 1),
       materials.lake
     );
-    lake.position.y = -5.4 //-7.9;
+    lake.position.y = -47;
 
     const rampGeometry = new MoldableCubeGeometry(3, 13, 13);
     rampGeometry
@@ -94,63 +94,80 @@ class GameState implements State {
       return new Object3d(trunk, leaves);
     }
 
-   const tree = makeTree();
-    tree.position.x += 10;
-    tree.position.z += 40;
-    tree.position.y += 10;
-    tree.updateWorldMatrix();
+   // const tree = makeTree();
+   //  tree.position.x += 10;
+   //  tree.position.z += 40;
+   //  tree.position.y += 10;
+   //  tree.updateWorldMatrix();
     //
 
-    function makeBridge() {
-      const supportArchGeo = new MoldableCubeGeometry(16, 1, 2, 10, 1, 1);
-      let start = 0; let end = 3;
-      // doTimes(10, index => {
-      //   supportArchGeo.selectVertices(...range(start, end))
-      //     .rotate(0, 0, 0.3)
-      //     .done();
-      //   start +=
-      // })
-      const supportArch = new Mesh(supportArchGeo, materials.tiles);
-      return supportArch;
-    }
-    const bridge = makeBridge();
-    bridge.position.y += 4;
+    // function makeBridge() {
+    //   const supportArchGeo = new MoldableCubeGeometry(16, 1, 2, 10, 1, 1);
+    //   let start = 0; let end = 3;
+    //   // doTimes(10, index => {
+    //   //   supportArchGeo.selectVertices(...range(start, end))
+    //   //     .rotate(0, 0, 0.3)
+    //   //     .done();
+    //   //   start +=
+    //   // })
+    //   const supportArch = new Mesh(supportArchGeo, materials.tiles);
+    //   return supportArch;
+    // }
+    // const bridge = makeBridge();
+    // bridge.position.y += 4;
+    //
+    // const { cubes } = new Staircase(10, 0.3, 3, 1);
+    //
+    // const wall = new Mesh(
+    //   new MoldableCubeGeometry(3, 4, 4),
+    //   materials.bricks,
+    // );
 
-    const { cubes } = new Staircase(10, 0.3, 3, 1);
+    // wall.position.x = -6;
+    // wall.updateWorldMatrix();
 
-    const wall = new Mesh(
-      new MoldableCubeGeometry(3, 4, 4),
-      materials.bricks,
-    );
-
-    wall.position.x = -6;
-    wall.updateWorldMatrix();
-
-    const particleGeometry = new PlaneGeometry(2, 2);
-    const particleTexture = textureLoader.load(drawParticle());
-    const particleMaterial = new Material({emissive: '#fff', texture: particleTexture, isTransparent: true});
-    const particle = new Mesh(
-      particleGeometry,
-      particleMaterial
-    );
-
-    const particle2 = new Mesh(
-      particleGeometry,
-      particleMaterial
-    );
-
-    particle.position.y += 5;
-    particle2.position.y += 4.5;
+    // const particleGeometry = new PlaneGeometry(2, 2);
+    // const particleTexture = textureLoader.load(drawParticle());
+    // const particleMaterial = new Material({emissive: '#fff', texture: particleTexture, isTransparent: true});
+    // const particle = new Mesh(
+    //   particleGeometry,
+    //   particleMaterial
+    // );
+    //
+    // const particle2 = new Mesh(
+    //   particleGeometry,
+    //   particleMaterial
+    // );
+    //
+    // particle.position.y += 5;
+    // particle2.position.y += 4.5;
 
 // TESTING
-    drawCurrentTexture();
+//     drawCurrentTexture();
 // END TESTING
 
-    const levelParts = [ramp, ...cubes, wall, floor, lake, tree, bridge];
+    const levelParts = [ramp, floor, lake];
 
-    this.groupedFaces = getGroupedFaces([ramp, ...cubes, wall, floor, lake]);
-    levelParts.push(particle);
-    levelParts.push(particle2);
+    this.groupedFaces = getGroupedFaces([floor]);
+
+    function onlyUnique(value: any, index: number, array: any[]) {
+      return array.indexOf(value) === index;
+    }
+
+
+    this.groupedFaces.floorFaces.forEach(face => {
+      const gridPositions = face.points.map(getGridPosition);
+
+      gridPositions.filter(onlyUnique).forEach(position => {
+        if (!this.gridFaces[position]) {
+          this.gridFaces[position] = [];
+        }
+        this.gridFaces[position].push(face);
+      });
+    });
+
+    // levelParts.push(particle);
+    // levelParts.push(particle2);
 
     this.scene.add(this.player.mesh);
     this.scene.add(...levelParts);
@@ -176,7 +193,7 @@ class GameState implements State {
   }
 
   onUpdate(timeElapsed: number): void {
-    this.player.update(this.groupedFaces!);
+    this.player.update(this.gridFaces);
 
     // particle.lookAt(this.player.camera.position);
     // particle2.lookAt(this.player.camera.position);

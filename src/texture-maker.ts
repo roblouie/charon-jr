@@ -27,7 +27,7 @@ export function drawGrass() {
   return mainImageData();
 }
 const floorTexture = textureLoader.load(drawGrass());
-floorTexture.repeat.x = 1/10; floorTexture.repeat.y = 1/10;
+floorTexture.repeat.x = 1/8; floorTexture.repeat.y = 1/8;
 const grass = new Material({texture: floorTexture});
 
 const treeTexture = textureLoader.load(drawGrass());
@@ -178,7 +178,7 @@ export function drawParticle() {
 export function drawLandscape() {
   clearWith('black');
   noiseContext.putImageData(
-    noiseMaker.noiseImage(128, 1 / 64, 3, NoiseType.Perlin, '#fff', 170, true, 'x', 'y', 'z', 134), 0, 0);
+    noiseMaker.noiseImage(256, 1 / 64, 3, NoiseType.Perlin, '#fff', 170, true, 'x', 'y', 'z', 134), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   return mainImageData();
 }

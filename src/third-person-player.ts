@@ -15,7 +15,7 @@ import {
 import { audioCtx } from '@/engine/audio/audio-player';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { truck, TruckObject3d } from '@/modeling/truck.object-3d';
-import { clamp } from '@/engine/helpers';
+import { clamp, moveValueTowardsTarget } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
 
 const debugElement = document.querySelector('#debug')!;
@@ -54,7 +54,7 @@ export class ThirdPersonPlayer {
 
   private lastPosition = new EnhancedDOMPoint();
   update(gridFaces: Face[][]) {
-    this.lastPosition.set(this.feetCenter);
+    this.lastPosition.set(this.chassisCenter);
 
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.005; // gravity
@@ -153,7 +153,7 @@ export class ThirdPersonPlayer {
     // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
     // but not slerp yet, not
     const wheelTurnScale = -0.7;
-    this.steeringAngle = increment(this.steeringAngle, controls.direction.x * wheelTurnScale, .05)
+    this.steeringAngle = moveValueTowardsTarget(this.steeringAngle, controls.direction.x * wheelTurnScale, .05)
     this.mesh.setSteeringAngle(this.steeringAngle);
 
     // logic to set angle should use controller z input only. Gas and brake can be 'w' and 's' on keyboard, but

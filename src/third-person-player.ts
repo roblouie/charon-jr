@@ -7,25 +7,33 @@ import { textureLoader } from '@/engine/renderer/texture-loader';
 import { drawVolcanicRock } from '@/texture-maker';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
-import { findFloorHeightAtPosition, findWallCollisionsFromList } from '@/engine/physics/surface-collision';
+import {
+  findFloorHeightAtPosition,
+  findWallCollisionsFromList,
+  getGridPosition, halfLevelSize, maxHalfLevelValue
+} from '@/engine/physics/surface-collision';
 import { audioCtx } from '@/engine/audio/audio-player';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { truck, TruckObject3d } from '@/modeling/truck.object-3d';
-import {clamp, increment} from '@/engine/helpers';
+import { clamp, moveValueTowardsTarget } from '@/engine/helpers';
+import { radsToDegrees } from '@/engine/math-helpers';
 
 const debugElement = document.querySelector('#debug')!;
-type GroupedFaces = { floorFaces: Face[]; wallFaces: Face[] };
+
 
 export class ThirdPersonPlayer {
   isJumping = false;
   chassisCenter = new EnhancedDOMPoint(0, 0, 0);
+  readonly origin = new EnhancedDOMPoint(0, 0, 0);
+  frontLeftWheel = new EnhancedDOMPoint();
+  frontRightWheel = new EnhancedDOMPoint();
   velocity = new EnhancedDOMPoint(0, 0, 0);
   angle = 0;
   steeringAngle = 0;
 
   mesh: TruckObject3d;
   camera: Camera;
-  idealPosition = new EnhancedDOMPoint(0, 3, -17);
+  idealPosition = new EnhancedDOMPoint(0, 6, -17);
   idealLookAt = new EnhancedDOMPoint(0, 2, 0);
 
   listener: AudioListener;
@@ -40,21 +48,52 @@ export class ThirdPersonPlayer {
 
   private transformIdeal(ideal: EnhancedDOMPoint): EnhancedDOMPoint {
     return new EnhancedDOMPoint()
-      .set(this.mesh.rotationMatrix.transformPoint(ideal))
+      .set(this.mesh.wrapper.rotationMatrix.transformPoint(ideal))
       .add(this.mesh.position);
   }
 
-  update(groupedFaces: GroupedFaces) {
-    this.updateVelocityFromControls();
-    this.velocity.y -= 0.003; // gravity
-    this.calculateSuspensionMovement(groupedFaces);
-    this.chassisCenter.add(this.velocity);
-    this.collideWithLevel(this.chassisCenter, groupedFaces);
+  private lastPosition = new EnhancedDOMPoint();
+  update(gridFaces: Face[][]) {
+    this.lastPosition.set(this.chassisCenter);
 
-    this.mesh.position.set(this.chassisCenter);
+    this.updateVelocityFromControls();  // set x / z velocity based on input
+    this.velocity.y -= 0.005; // gravity
+    this.chassisCenter.add(this.velocity);  // move the player position by the velocity
+
+    // don't let the player leave the level
+    this.chassisCenter.x = clamp(this.chassisCenter.x, -maxHalfLevelValue, maxHalfLevelValue);
+    this.chassisCenter.z = clamp(this.chassisCenter.z, -maxHalfLevelValue, maxHalfLevelValue);
+
+    // if the player falls through the floor, reset them
+    if (this.chassisCenter.y < -100) {
+      this.chassisCenter.y = 50;
+      this.velocity.y = 0;
+    }
+
+    const playerGridPosition = getGridPosition(this.chassisCenter);
+    this.velocity.y = clamp(this.velocity.y, -1, 1);
+    this.collideWithLevel({ floorFaces: gridFaces[playerGridPosition], wallFaces: [] }); // do collision detection, if collision is found, feetCenter gets pushed out of the collision
+
+    // 4 wheels in the right place
+    this.frontLeftWheel.set(this.mesh.leftFrontWheel.worldMatrix.transformPoint(this.origin));
+    this.frontRightWheel.set(this.mesh.rightFrontWheel.worldMatrix.transformPoint(this.origin));
+
+    debugElement.textContent = `
+    Front Left: ${this.frontLeftWheel.x}, ${this.frontLeftWheel.y},${this.frontLeftWheel.z}
+    Front Right: ${this.frontRightWheel.x}, ${this.frontRightWheel.y},${this.frontRightWheel.z}
+    Truck Center: ${this.chassisCenter.x}, ${this.chassisCenter.y},${this.chassisCenter.z}
+    `
+
+    const heightTraveled = this.chassisCenter.y - this.lastPosition.y;
+
+    if (heightTraveled > 0.1 && !this.isJumping) {
+      this.velocity.y += heightTraveled;
+    }
+
+    this.mesh.position.set(this.chassisCenter); // at this point, feetCenter is in the correct spot, so draw the mesh there
     this.mesh.position.y += 0.5; // move up by half height so mesh ends at feet position
 
-    this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.01);
+    this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.1);
 
     // Keep camera away regardless of lerp
     const distanceToKeep = 17;
@@ -73,55 +112,68 @@ export class ThirdPersonPlayer {
     this.updateAudio()
   }
 
-  collideWithLevel(domPoint: EnhancedDOMPoint, groupedFaces: GroupedFaces) {
-    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, domPoint, 0.4, 0.1);
+  private axis = new EnhancedDOMPoint();
+  private previousFloorHeight = 0;
+  collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
+    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 0.4, 0.1);
     this.chassisCenter.x += wallCollisions.xPush;
     this.chassisCenter.z += wallCollisions.zPush;
 
-    const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, domPoint);
+    const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, this.chassisCenter);
+
     if (!floorData) {
       return;
     }
 
-    const collisionDepth = floorData.height - domPoint.y;
+    const collisionDepth = floorData.height - this.chassisCenter.y;
 
     if (collisionDepth > 0) {
-      domPoint.y += collisionDepth;
+      // const verticalDistanceTraveled = floorData.height - this.previousFloorHeight;
+      // debugElement.textContent = `${verticalDistanceTraveled}`;
+      // if (floorData.height)
+
+      this.lastPosition.set(this.chassisCenter);
+      this.chassisCenter.y += collisionDepth;
       this.velocity.y = 0;
       this.isJumping = false;
+      this.axis = this.axis.crossVectors(this.mesh.up, floorData.floor.normal);
+      const radians = Math.acos(floorData.floor.normal.dot(this.mesh.up));
+      this.mesh.rotationMatrix = new DOMMatrix();
+      this.mesh.rotationMatrix.rotateAxisAngleSelf(this.axis.x, this.axis.y, this.axis.z, radsToDegrees(radians));
+      this.previousFloorHeight = floorData.height;
+    } else {
+      this.isJumping = true;
     }
   }
 
   protected updateVelocityFromControls() {
-    const speed = 0.1;
+    const mag = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
 
     // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
     // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
     // but not slerp yet, not
     const wheelTurnScale = -0.7;
-    this.steeringAngle = increment(this.steeringAngle, controls.direction.x * wheelTurnScale, .05)
+    this.steeringAngle = moveValueTowardsTarget(this.steeringAngle, controls.direction.x * wheelTurnScale, .05)
     this.mesh.setSteeringAngle(this.steeringAngle);
 
     // logic to set angle should use controller z input only. Gas and brake can be 'w' and 's' on keyboard, but
     // need button assignments on the controller. angle assignment should happen from calculated steering angle, and
     // eventually, update of truck angle should be contingent on a ground collision check with front wheels.
+// We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
+    this.mesh.setDriveRotationRate(mag);
 
-    const mag = controls.direction.magnitude;
+    const speed = 0.6;
+
     const inputAngle = Math.atan2(-controls.direction.x, -controls.direction.z);
-    const playerCameraDiff = this.mesh.position.clone().subtract(this.camera.position);
-    const playerCameraAngle = Math.atan2(playerCameraDiff.x, playerCameraDiff.z);
 
     if (controls.direction.x !== 0 || controls.direction.z !== 0) {
-      this.angle = inputAngle + playerCameraAngle;
+      this.angle += inputAngle * 0.05;
     }
 
     this.velocity.z = Math.cos(this.angle) * mag * speed;
     this.velocity.x = Math.sin(this.angle) * mag * speed;
 
-    // We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
-    this.mesh.setDriveRotationRate(clamp(Math.abs(controls.direction.x) + Math.abs(controls.direction.z), -1, 1));
-
-    this.mesh.setRotation(0, this.angle, 0);
+    this.mesh.wrapper.setRotation(0, this.angle, 0);
 
     if (controls.isSpace || controls.isJumpPressed) {
       if (!this.isJumping) {
@@ -129,15 +181,6 @@ export class ThirdPersonPlayer {
         this.isJumping = true;
       }
     }
-  }
-
-  private calculateSuspensionMovement(groupedFaces: GroupedFaces) {
-    const suspensionForce = .0015;
-
-    // determine state of each wheel, if on ground, exerts force on truck. If in air, truck exerts force on it.
-
-
-
   }
 
   private updateAudio() {

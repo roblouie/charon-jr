@@ -116,6 +116,17 @@ class NoiseMaker {
     return value;
   }
 
+  noiseLandscape(size: number,frequency: number, octals: number, noiseType: NoiseType, scale: number) {
+    const values = [];
+    const position = new EnhancedDOMPoint();
+    for (let verticalPosition = 0; verticalPosition < size; verticalPosition++) {
+      for (let horizontalPosition = 0; horizontalPosition < size; horizontalPosition++) {
+        values.push(this.fBm(position.set(horizontalPosition * frequency, verticalPosition * frequency), Math.trunc(size * frequency), octals, noiseType) * scale);
+      }
+    }
+    return values;
+  }
+
   noiseImage(
     size: number,
     frequency: number,

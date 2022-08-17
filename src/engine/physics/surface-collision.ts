@@ -1,6 +1,16 @@
 import { Face } from './face';
 import { EnhancedDOMPoint } from "@/engine/enhanced-dom-point";
 
+export const halfLevelSize = 1024;
+export const maxHalfLevelValue = halfLevelSize - 1;
+const cellSize = 128;
+
+const cellsInOneDirection = 8;
+
+export function getGridPosition(point: EnhancedDOMPoint) {
+  return Math.floor((point.x + halfLevelSize) / cellSize) + (Math.floor((point.z + halfLevelSize) / cellSize) * cellsInOneDirection);
+}
+
 // TODO: Make this return multiple floors and sort by height. Currently
 // this requires floor faces to be sent in from highest to lowest, which with angles
 // won't always be possible in a good way

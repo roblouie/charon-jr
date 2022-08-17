@@ -83,9 +83,11 @@ export class TruckObject3d extends Object3d {
   frontWheels: Object3d;
   rearWheels: Object3d;
   chassis: Object3d;
+  wrapper: Object3d
 
   constructor(frontWheels: Object3d, rearWheels: Object3d, chassis: Object3d) {
-    super(frontWheels, rearWheels, chassis);
+    super(new Object3d(frontWheels, rearWheels, chassis));
+    this.wrapper = this.children[0];
     this.frontWheels = frontWheels;
     this.rearWheels = rearWheels;
     this.chassis = chassis;

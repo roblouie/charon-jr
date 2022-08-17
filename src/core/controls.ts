@@ -10,6 +10,9 @@ class Controls {
   isEscape = false;
   direction: EnhancedDOMPoint;
   isJumpPressed = false;
+  leftTrigger = 0;
+  rightTrigger = 0;
+  isGamepadAttached = false;
 
   constructor() {
     document.addEventListener('keydown', event => this.toggleKey(event, true));
@@ -19,11 +22,14 @@ class Controls {
 
   queryController() {
     const gamepad = navigator.getGamepads()[0];
+    this.isGamepadAttached = !!gamepad;
     if (gamepad) {
       this.direction.x = gamepad.axes[0];
       this.direction.z = gamepad.axes[1];
+      this.leftTrigger = gamepad.buttons[6].value;
+      this.rightTrigger = gamepad.buttons[7].value;
 
-      const deadzone = 0.08;
+      const deadzone = 0.1;
       if (this.direction.magnitude < deadzone) {
         this.direction.x = 0; this.direction.z = 0;
       }

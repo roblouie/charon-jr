@@ -42,7 +42,7 @@ class GameState implements State {
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();
     this.gridFaces = [[]];
-    const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 200)
+    const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 100)
 
     const floor = new Mesh(
       new PlaneGeometry(2047, 2047, 255, 255, sampleHeightMap),
@@ -55,17 +55,18 @@ class GameState implements State {
     );
     lake.position.y = -47;
 
-    const rampGeometry = new MoldableCubeGeometry(3, 13, 13);
+    const rampGeometry = new MoldableCubeGeometry(16, 40, 40);
     rampGeometry
-      .selectVertices(1, 4, 8, 9, 20, 21)
-      .translate(0, -8)
-      .selectVertices(1)
-      .delete()
+      .selectBy(vertex => {
+        return vertex.y > 5 && vertex.z > 1;
+      })
+      .translate(0, -30)
       .computeNormalsPerPlane()
       .done();
 
     const ramp = new Mesh(rampGeometry, materials.marble);
-
+    ramp.position.y += 8;
+    ramp.updateWorldMatrix();
     // const testShapeGeometry = new MoldableCube(5, 2, 2, 4);
     //
     // testShapeGeometry.selectVertices(0, 1, 2, 3, 12, 17, 22, 27, 32, 37, 38, 43)
@@ -148,7 +149,7 @@ class GameState implements State {
 
     const levelParts = [ramp, floor, lake];
 
-    this.groupedFaces = getGroupedFaces([floor]);
+    this.groupedFaces = getGroupedFaces([ramp, floor]);
 
     function onlyUnique(value: any, index: number, array: any[]) {
       return array.indexOf(value) === index;

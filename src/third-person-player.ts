@@ -130,9 +130,20 @@ export class ThirdPersonPlayer {
   }
 
   protected updateVelocityFromControls() {
+    // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
+    // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
+    // but not slerp yet, not
+    const wheelTurnScale = -0.8;
+    const wheelAngle = controls.direction.x * wheelTurnScale;
+    this.mesh.setSteeringAngle(wheelAngle);
+
+    const mag = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
+
+    // We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
+    this.mesh.setDriveRotationRate(mag);
+
     const speed = 0.6;
 
-    const mag = controls.rightTrigger;
     const inputAngle = Math.atan2(-controls.direction.x, -controls.direction.z);
 
     debugElement.textContent = `${controls.direction.x}, ${controls.direction.z}`;
@@ -144,16 +155,6 @@ export class ThirdPersonPlayer {
 
     this.velocity.z = Math.cos(this.angle) * mag * speed;
     this.velocity.x = Math.sin(this.angle) * mag * speed;
-
-    // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
-    // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
-    // but not slerp yet, not
-    const wheelTurnScale = -0.8;
-    const wheelAngle = controls.direction.x * wheelTurnScale;
-    this.mesh.setSteeringAngle(wheelAngle);
-
-    // We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
-    this.mesh.setDriveRotationRate(mag);
 
     this.mesh.wrapper.setRotation(0, this.angle, 0);
 

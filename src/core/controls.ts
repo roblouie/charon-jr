@@ -12,6 +12,7 @@ class Controls {
   isJumpPressed = false;
   leftTrigger = 0;
   rightTrigger = 0;
+  isGamepadAttached = false;
 
   constructor() {
     document.addEventListener('keydown', event => this.toggleKey(event, true));
@@ -21,6 +22,7 @@ class Controls {
 
   queryController() {
     const gamepad = navigator.getGamepads()[0];
+    this.isGamepadAttached = !!gamepad;
     if (gamepad) {
       this.direction.x = gamepad.axes[0];
       this.direction.z = gamepad.axes[1];

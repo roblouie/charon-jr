@@ -24,6 +24,9 @@ const debugElement = document.querySelector('#debug')!;
 export class ThirdPersonPlayer {
   isJumping = false;
   feetCenter = new EnhancedDOMPoint(0, 0, 0);
+  readonly origin = new EnhancedDOMPoint(0, 0, 0);
+  frontLeftWheel = new EnhancedDOMPoint();
+  frontRightWheel = new EnhancedDOMPoint();
   velocity = new EnhancedDOMPoint(0, 0, 0);
   angle = 0;
 
@@ -50,7 +53,7 @@ export class ThirdPersonPlayer {
 
   private lastPosition = new EnhancedDOMPoint();
   update(gridFaces: Face[][]) {
-    this.lastPosition.set(this.feetCenter)
+    this.lastPosition.set(this.feetCenter);
 
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.005; // gravity
@@ -69,6 +72,16 @@ export class ThirdPersonPlayer {
     const playerGridPosition = getGridPosition(this.feetCenter);
     this.velocity.y = clamp(this.velocity.y, -1, 1);
     this.collideWithLevel({ floorFaces: gridFaces[playerGridPosition], wallFaces: [] }); // do collision detection, if collision is found, feetCenter gets pushed out of the collision
+
+    // 4 wheels in the right place
+    this.frontLeftWheel.set(this.mesh.leftFrontWheel.worldMatrix.transformPoint(this.origin));
+    this.frontRightWheel.set(this.mesh.rightFrontWheel.worldMatrix.transformPoint(this.origin));
+
+    debugElement.textContent = `
+    Front Left: ${this.frontLeftWheel.x}, ${this.frontLeftWheel.y},${this.frontLeftWheel.z}
+    Front Right: ${this.frontRightWheel.x}, ${this.frontRightWheel.y},${this.frontRightWheel.z}
+    Truck Center: ${this.feetCenter.x}, ${this.feetCenter.y},${this.feetCenter.z}
+    `
 
     const heightTraveled = this.feetCenter.y - this.lastPosition.y;
 
@@ -99,31 +112,34 @@ export class ThirdPersonPlayer {
   }
 
   private axis = new EnhancedDOMPoint();
+  private previousFloorHeight = 0;
   collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
     const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.feetCenter, 0.4, 0.1);
     this.feetCenter.x += wallCollisions.xPush;
     this.feetCenter.z += wallCollisions.zPush;
 
     const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, this.feetCenter);
+
     if (!floorData) {
       return;
     }
 
     const collisionDepth = floorData.height - this.feetCenter.y;
 
-    if (collisionDepth > 0.5) {
-      console.log(collisionDepth);
-    }
-
     if (collisionDepth > 0) {
+      // const verticalDistanceTraveled = floorData.height - this.previousFloorHeight;
+      // debugElement.textContent = `${verticalDistanceTraveled}`;
+      // if (floorData.height)
+
       this.lastPosition.set(this.feetCenter);
       this.feetCenter.y += collisionDepth;
-      this.velocity.y = 0 //(this.feetCenter.y - this.lastPosition.y) * 2;
+      this.velocity.y = 0;
       this.isJumping = false;
       this.axis = this.axis.crossVectors(this.mesh.up, floorData.floor.normal);
       const radians = Math.acos(floorData.floor.normal.dot(this.mesh.up));
       this.mesh.rotationMatrix = new DOMMatrix();
       this.mesh.rotationMatrix.rotateAxisAngleSelf(this.axis.x, this.axis.y, this.axis.z, radsToDegrees(radians));
+      this.previousFloorHeight = floorData.height;
     } else {
       this.isJumping = true;
     }
@@ -145,9 +161,6 @@ export class ThirdPersonPlayer {
     const speed = 0.6;
 
     const inputAngle = Math.atan2(-controls.direction.x, -controls.direction.z);
-
-    debugElement.textContent = `${controls.direction.x}, ${controls.direction.z}`;
-
 
     if (controls.direction.x !== 0 || controls.direction.z !== 0) {
       this.angle += inputAngle * 0.05;

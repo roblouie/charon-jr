@@ -23,12 +23,13 @@ const debugElement = document.querySelector('#debug')!;
 
 export class ThirdPersonPlayer {
   isJumping = false;
-  feetCenter = new EnhancedDOMPoint(0, 0, 0);
+  chassisCenter = new EnhancedDOMPoint(0, 0, 0);
   readonly origin = new EnhancedDOMPoint(0, 0, 0);
   frontLeftWheel = new EnhancedDOMPoint();
   frontRightWheel = new EnhancedDOMPoint();
   velocity = new EnhancedDOMPoint(0, 0, 0);
   angle = 0;
+  steeringAngle = 0;
 
   mesh: TruckObject3d;
   camera: Camera;
@@ -40,7 +41,7 @@ export class ThirdPersonPlayer {
   constructor(camera: Camera) {
     textureLoader.load(drawVolcanicRock())
     this.mesh = truck;
-    this.feetCenter.y = 10;
+    this.chassisCenter.y = 10;
     this.camera = camera;
     this.listener = audioCtx.listener;
   }
@@ -57,19 +58,19 @@ export class ThirdPersonPlayer {
 
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.005; // gravity
-    this.feetCenter.add(this.velocity);  // move the player position by the velocity
+    this.chassisCenter.add(this.velocity);  // move the player position by the velocity
 
     // don't let the player leave the level
-    this.feetCenter.x = clamp(this.feetCenter.x, -maxHalfLevelValue, maxHalfLevelValue);
-    this.feetCenter.z = clamp(this.feetCenter.z, -maxHalfLevelValue, maxHalfLevelValue);
+    this.chassisCenter.x = clamp(this.chassisCenter.x, -maxHalfLevelValue, maxHalfLevelValue);
+    this.chassisCenter.z = clamp(this.chassisCenter.z, -maxHalfLevelValue, maxHalfLevelValue);
 
     // if the player falls through the floor, reset them
-    if (this.feetCenter.y < -100) {
-      this.feetCenter.y = 50;
+    if (this.chassisCenter.y < -100) {
+      this.chassisCenter.y = 50;
       this.velocity.y = 0;
     }
 
-    const playerGridPosition = getGridPosition(this.feetCenter);
+    const playerGridPosition = getGridPosition(this.chassisCenter);
     this.velocity.y = clamp(this.velocity.y, -1, 1);
     this.collideWithLevel({ floorFaces: gridFaces[playerGridPosition], wallFaces: [] }); // do collision detection, if collision is found, feetCenter gets pushed out of the collision
 
@@ -80,16 +81,16 @@ export class ThirdPersonPlayer {
     debugElement.textContent = `
     Front Left: ${this.frontLeftWheel.x}, ${this.frontLeftWheel.y},${this.frontLeftWheel.z}
     Front Right: ${this.frontRightWheel.x}, ${this.frontRightWheel.y},${this.frontRightWheel.z}
-    Truck Center: ${this.feetCenter.x}, ${this.feetCenter.y},${this.feetCenter.z}
+    Truck Center: ${this.chassisCenter.x}, ${this.chassisCenter.y},${this.chassisCenter.z}
     `
 
-    const heightTraveled = this.feetCenter.y - this.lastPosition.y;
+    const heightTraveled = this.chassisCenter.y - this.lastPosition.y;
 
     if (heightTraveled > 0.1 && !this.isJumping) {
       this.velocity.y += heightTraveled;
     }
 
-    this.mesh.position.set(this.feetCenter); // at this point, feetCenter is in the correct spot, so draw the mesh there
+    this.mesh.position.set(this.chassisCenter); // at this point, feetCenter is in the correct spot, so draw the mesh there
     this.mesh.position.y += 0.5; // move up by half height so mesh ends at feet position
 
     this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.1);
@@ -114,25 +115,25 @@ export class ThirdPersonPlayer {
   private axis = new EnhancedDOMPoint();
   private previousFloorHeight = 0;
   collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
-    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.feetCenter, 0.4, 0.1);
-    this.feetCenter.x += wallCollisions.xPush;
-    this.feetCenter.z += wallCollisions.zPush;
+    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 0.4, 0.1);
+    this.chassisCenter.x += wallCollisions.xPush;
+    this.chassisCenter.z += wallCollisions.zPush;
 
-    const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, this.feetCenter);
+    const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, this.chassisCenter);
 
     if (!floorData) {
       return;
     }
 
-    const collisionDepth = floorData.height - this.feetCenter.y;
+    const collisionDepth = floorData.height - this.chassisCenter.y;
 
     if (collisionDepth > 0) {
       // const verticalDistanceTraveled = floorData.height - this.previousFloorHeight;
       // debugElement.textContent = `${verticalDistanceTraveled}`;
       // if (floorData.height)
 
-      this.lastPosition.set(this.feetCenter);
-      this.feetCenter.y += collisionDepth;
+      this.lastPosition.set(this.chassisCenter);
+      this.chassisCenter.y += collisionDepth;
       this.velocity.y = 0;
       this.isJumping = false;
       this.axis = this.axis.crossVectors(this.mesh.up, floorData.floor.normal);
@@ -146,16 +147,19 @@ export class ThirdPersonPlayer {
   }
 
   protected updateVelocityFromControls() {
+    const mag = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
+
     // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
     // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
     // but not slerp yet, not
-    const wheelTurnScale = -0.8;
-    const wheelAngle = controls.direction.x * wheelTurnScale;
-    this.mesh.setSteeringAngle(wheelAngle);
+    const wheelTurnScale = -0.7;
+    this.steeringAngle = increment(this.steeringAngle, controls.direction.x * wheelTurnScale, .05)
+    this.mesh.setSteeringAngle(this.steeringAngle);
 
-    const mag = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
-
-    // We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
+    // logic to set angle should use controller z input only. Gas and brake can be 'w' and 's' on keyboard, but
+    // need button assignments on the controller. angle assignment should happen from calculated steering angle, and
+    // eventually, update of truck angle should be contingent on a ground collision check with front wheels.
+// We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
     this.mesh.setDriveRotationRate(mag);
 
     const speed = 0.6;

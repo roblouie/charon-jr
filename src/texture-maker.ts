@@ -14,6 +14,36 @@ const [drawContext, tileContext, noiseContext] = ['draw', 'tile', 'noise'].map(i
 const resolution = 128;
 const debugElement = document.querySelector('#debug')!;
 
+
+// *********************
+// Dirt Path
+// *********************
+export function drawDirtPath() {
+  clearWith('#525200');
+  noiseMaker.seed(33);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 16, 4, NoiseType.Perlin, '#804b10', 128), 0, 0);
+  drawContext.globalCompositeOperation = 'screen';
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  drawContext.globalCompositeOperation = 'source-over';
+  return mainImageData();
+}
+const dirtPath = new Material({texture: textureLoader.load(drawDirtPath())})
+
+
+// *********************
+// Dirt - Grass In Between
+// *********************
+// export function dirtGrassInbetween() {
+//   clearWith('#525200');
+//   noiseMaker.seed(12);
+//   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 3, NoiseType.Perlin, '#0f0', 128), 0, 0);
+//   drawContext.globalCompositeOperation = 'screen';
+//   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+//   drawContext.globalCompositeOperation = 'source-over';
+//   return mainImageData();
+// }
+// const dirtGrassInBetween = new Material({texture: textureLoader.load(dirtGrassInbetween())});
+
 // *********************
 // Grass
 // *********************
@@ -33,6 +63,22 @@ const grass = new Material({texture: floorTexture});
 const treeTexture = textureLoader.load(drawGrass());
 treeTexture.repeat.set(1, 1);
 const treeLeaves = new Material({texture: treeTexture});
+
+// *********************
+// Bricks
+// *********************
+export function drawBricks() {
+  clearWith('#ddd');
+  drawContext.fillStyle = 'red';
+  drawContext.filter = 'drop-shadow(1px 1px 0px #888)';
+  tile((x, y) => {
+    const offsetX = (y / 16) % 2 === 0 ? x - 15 : x;
+    drawContext.fillRect(offsetX, y + 1, 30, 14);
+  }, 32, 16);
+  noisify(drawContext, 30);
+  return mainImageData();
+}
+const bricks = new Material({texture: textureLoader.load(drawBricks())});
 
 // *********************
 // Water
@@ -63,9 +109,6 @@ export function drawWater() {
   return new Material({texture: lakeTexture, isTransparent: true, color: '#fffc'});
 }
 
-
-
-
 // *********************
 // Marble
 // *********************
@@ -78,23 +121,6 @@ export function drawMarble() {
   return mainImageData();
 }
 const marble = new Material({texture: textureLoader.load(drawMarble())})
-
-
-// *********************
-// Bricks
-// *********************
-export function drawBricks() {
-  clearWith('#ddd');
-  drawContext.fillStyle = 'red';
-  drawContext.filter = 'drop-shadow(1px 1px 0px #888)';
-  tile((x, y) => {
-    const offsetX = (y / 16) % 2 === 0 ? x - 15 : x;
-    drawContext.fillRect(offsetX, y + 1, 30, 14);
-  }, 32, 16);
-  noisify(drawContext, 30);
-  return mainImageData();
-}
-const bricks = new Material({texture: textureLoader.load(drawBricks())});
 
 // *********************
 // Wood
@@ -147,6 +173,7 @@ export const materials = {
   chassis,
   tire,
   wheel,
+  dirtPath,
 };
 
 export const skyboxes = {

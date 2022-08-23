@@ -31,6 +31,18 @@ import { findFloorHeightAtPosition, getGridPosition } from '@/engine/physics/sur
 import { doTimes } from '@/engine/helpers';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 import { largeTree, leavesMesh, plant1 } from '@/modeling/flora.modeling';
+import { Level } from '@/Level';
+
+
+const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 100);
+const level = new Level(
+  sampleHeightMap,
+  skyboxes.dayCloud,
+  -47,
+  39,
+  materials.grass.texture!,
+  materials.dirtPath.texture!,
+);
 
 class GameState implements State {
   player: ThirdPersonPlayer;
@@ -45,18 +57,17 @@ class GameState implements State {
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();
     this.gridFaces = [[]];
-    const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 100)
 
-    const floor = new Mesh(
-      new PlaneGeometry(2047, 2047, 255, 255, sampleHeightMap),
-      materials.grass
-    );
-
-    const lake = new Mesh(
-      new PlaneGeometry(2047, 2047, 1, 1),
-      materials.lake
-    );
-    lake.position.y = -47;
+    // const floor = new Mesh(
+    //   new PlaneGeometry(2047, 2047, 255, 255, sampleHeightMap),
+    //   materials.grass
+    // );
+    //
+    // const lake = new Mesh(
+    //   new PlaneGeometry(2047, 2047, 1, 1),
+    //   materials.lake
+    // );
+    // lake.position.y = -47;
 
     const rampGeometry = new MoldableCubeGeometry(16, 40, 40);
     rampGeometry
@@ -77,26 +88,7 @@ class GameState implements State {
     //   .rotate(0, 0, 0.5)
     //   .updateVerticesAttribute();
 
-    function makeTree() {
-      const trunkGeo = new MoldableCubeGeometry(1, 4, 1, 3, 3, 3)
-        .cylindrify(0.5)
-        .computeNormalsCrossPlane()
-        .done();
 
-      const trunk = new Mesh(trunkGeo, materials.wood);
-
-      const foliageGeometry = new MoldableCubeGeometry(4, 4, 4, 4, 4, 4);
-      foliageGeometry
-        .spherify(4)
-        .scale(1, 1.5, 1)
-        .noisify(2, 0.02)
-        .computeNormalsCrossPlane()
-        .done()
-
-      const leaves = new Mesh(foliageGeometry, materials.treeLeaves);
-      leaves.position.y += 6;
-      return new Object3d(trunk, leaves);
-    }
 
    // const tree = makeTree();
    //  tree.position.x += 10;
@@ -151,46 +143,11 @@ class GameState implements State {
 // END TESTING
 
     // Instanced drawing test add:
-    function getRandomArbitrary(min: number, max: number) {
-      return Math.random() * (max - min) + min;
-    }
 
-    const terrain = getGroupedFaces([floor]); // TODO: Allow passing in of threshold for walls. This will help with tree placement as anything too steep can be discarded.
-    const count = 243;
-    const transforms: DOMMatrix[] = [];
-    doTimes(count, () => {
-      const translateX = getRandomArbitrary(-127, 127);
-      const translateZ = getRandomArbitrary(-127, 127);
-      const translateY = findFloorHeightAtPosition(terrain.floorFaces, new EnhancedDOMPoint(translateX, 500, translateZ))!.height;
 
-      const transformMatrix = new DOMMatrix().translate(translateX, translateY, translateZ).rotate(0, getRandomArbitrary(-90, 90), 0);
-      // Using the transform matrix as the normal matrix is of course not strictly correct, but it largely works as long as the
-      // transform matrix doesn't heavily squash the mesh and this avoids having to write a matrix transpose method just for
-      // instanced drawing.
-      transforms.push(transformMatrix);
-    });
-    const instancedTest = new InstancedMesh(plant1.geometry, transforms, count, plant1.material);
+    const levelParts = [ramp, ...level.meshesToRender];
 
-    const count2 = 43;
-    const transforms2: DOMMatrix[] = [];
-    doTimes(count2, () => {
-      const translateX = getRandomArbitrary(-127, 127);
-      const translateZ = getRandomArbitrary(-127, 127);
-      const translateY = findFloorHeightAtPosition(terrain.floorFaces, new EnhancedDOMPoint(translateX, 500, translateZ))!.height;
-
-      const transformMatrix = new DOMMatrix().translate(translateX, translateY, translateZ).rotate(0, getRandomArbitrary(-90, 90), 0);
-      // Using the transform matrix as the normal matrix is of course not strictly correct, but it largely works as long as the
-      // transform matrix doesn't heavily squash the mesh and this avoids having to write a matrix transpose method just for
-      // instanced drawing.
-      transforms2.push(transformMatrix);
-    });
-    const instancedTest2 = new InstancedMesh(largeTree.geometry, transforms2, count2, largeTree.material);
-    const treeLeaves = new InstancedMesh(leavesMesh.geometry, transforms2, count2, leavesMesh.material);
-    // End Instanced drawing test add.
-
-    const levelParts = [ramp, floor, lake, instancedTest, instancedTest2, treeLeaves];
-
-    this.groupedFaces = getGroupedFaces([ramp, floor]);
+    this.groupedFaces = getGroupedFaces([ramp, level.floorMesh]);
 
     function onlyUnique(value: any, index: number, array: any[]) {
       return array.indexOf(value) === index;
@@ -219,7 +176,7 @@ class GameState implements State {
 
     const soundPlayer = getAudioPlayer();
 
-    this.scene.skybox = new Skybox(...skyboxes.dayCloud);
+    this.scene.skybox = level.skybox
     this.scene.skybox.bindGeometry();
 
     const audio = soundPlayer(...[, , 925, .04, .3, .6, 1, .3, , 6.27, -184, .09, .17] as const);

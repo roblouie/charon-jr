@@ -54,8 +54,6 @@ export class ThirdPersonPlayer {
 
   private lastPosition = new EnhancedDOMPoint();
   update(gridFaces: Face[][]) {
-    this.lastPosition.set(this.chassisCenter);
-
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.005; // gravity
     this.chassisCenter.add(this.velocity);  // move the player position by the velocity
@@ -74,19 +72,16 @@ export class ThirdPersonPlayer {
     this.velocity.y = clamp(this.velocity.y, -1, 1);
     this.collideWithLevel({ floorFaces: gridFaces[playerGridPosition], wallFaces: [] }); // do collision detection, if collision is found, feetCenter gets pushed out of the collision
 
+
     // 4 wheels in the right place
     this.frontLeftWheel.set(this.mesh.leftFrontWheel.worldMatrix.transformPoint(this.origin));
     this.frontRightWheel.set(this.mesh.rightFrontWheel.worldMatrix.transformPoint(this.origin));
 
-    debugElement.textContent = `
-    Front Left: ${this.frontLeftWheel.x}, ${this.frontLeftWheel.y},${this.frontLeftWheel.z}
-    Front Right: ${this.frontRightWheel.x}, ${this.frontRightWheel.y},${this.frontRightWheel.z}
-    Truck Center: ${this.chassisCenter.x}, ${this.chassisCenter.y},${this.chassisCenter.z}
-    `
+    debugElement.textContent = `${this.chassisCenter.y - this.lastPosition.y}`
 
     const heightTraveled = this.chassisCenter.y - this.lastPosition.y;
 
-    if (heightTraveled > 0.1 && !this.isJumping) {
+    if (!this.isJumping) {
       this.velocity.y += heightTraveled;
     }
 
@@ -110,6 +105,7 @@ export class ThirdPersonPlayer {
     this.camera.updateWorldMatrix();
 
     this.updateAudio()
+    this.lastPosition.set(this.chassisCenter);
   }
 
   private axis = new EnhancedDOMPoint();
@@ -132,7 +128,7 @@ export class ThirdPersonPlayer {
       // debugElement.textContent = `${verticalDistanceTraveled}`;
       // if (floorData.height)
 
-      this.lastPosition.set(this.chassisCenter);
+      // this.lastPosition.set(this.chassisCenter);
       this.chassisCenter.y += collisionDepth;
       this.velocity.y = 0;
       this.isJumping = false;

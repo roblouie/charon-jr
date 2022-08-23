@@ -2,7 +2,7 @@ import { Object3d } from '@/engine/renderer/object-3d';
 import { materials } from '@/texture-maker';
 import { Mesh } from '@/engine/renderer/mesh';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
-import { createBox } from '@/modeling/base.object3d';
+import { createBox } from '@/modeling/building-blocks.modeling';
 
 function createTire() {
   return createBox(6, 2, 1, 6, 1, 1)

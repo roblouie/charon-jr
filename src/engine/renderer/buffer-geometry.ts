@@ -4,9 +4,9 @@ import { AttributeLocation } from '@/engine/renderer/renderer';
 type BufferInfo = { data: Float32Array; size: number };
 
 export class BufferGeometry {
-  private buffers: Map<AttributeLocation, BufferInfo> = new Map<AttributeLocation, BufferInfo>();
+  buffers: Map<AttributeLocation, BufferInfo> = new Map<AttributeLocation, BufferInfo>();
   private indices?: Uint16Array;
-  private fullBuffer: Float32Array;
+  fullBuffer: Float32Array;
 
   buffer: WebGLBuffer;
   indexBuffer: WebGLBuffer;
@@ -19,7 +19,7 @@ export class BufferGeometry {
     this.fullBuffer = new Float32Array();
   }
 
-  private populateFullBuffer() {
+  populateFullBuffer() {
     const fullSize = [...this.buffers.values()].reduce((total, current) => total += current.data.length , 0);
     this.fullBuffer = new Float32Array(fullSize);
     let runningOffset = 0;

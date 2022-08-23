@@ -8,22 +8,26 @@ import {
   NORMALMATRIX,
   TEXTUREREPEAT,
   U_SKYBOX,
-  U_VIEWDIRECTIONPROJECTIONINVERSE,
+  U_VIEWDIRECTIONPROJECTIONINVERSE, VIEWPROJECTION,
 } from '@/engine/shaders/shaders';
 import { Scene } from '@/engine/renderer/scene';
 import { Mesh } from '@/engine/renderer/mesh';
 import { textureLoader } from '@/engine/renderer/texture-loader';
+import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 
 // IMPORTANT! The index of a given buffer in the buffer array must match it's respective data location in the shader.
 // This allows us to use the index while looping through buffers to bind the attributes. So setting a buffer
 // happens by placing
-export enum AttributeLocation {
+export const enum AttributeLocation {
   Positions,
   Normals,
   TextureCoords,
   TextureDepth,
+  LocalMatrix,
+  NormalMatrix = 8,
 }
 
+// Possibly change this from a class to just a function, it's just setup and a single method
 export class Renderer {
   modelviewProjectionLocation: WebGLUniformLocation;
   normalMatrixLocation: WebGLUniformLocation;
@@ -32,6 +36,8 @@ export class Renderer {
   textureRepeatLocation : WebGLUniformLocation;
   skyboxLocation: WebGLUniformLocation;
   viewDirectionProjectionInverseLocation: WebGLUniformLocation;
+
+  viewProjectionLocation: WebGLUniformLocation;
 
   constructor() {
     gl.enable(gl.CULL_FACE);
@@ -45,6 +51,7 @@ export class Renderer {
     this.textureRepeatLocation = gl.getUniformLocation(lilgl.program, TEXTUREREPEAT)!;
     this.skyboxLocation = gl.getUniformLocation(lilgl.skyboxProgram, U_SKYBOX)!;
     this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(lilgl.skyboxProgram, U_VIEWDIRECTIONPROJECTIONINVERSE)!;
+    this.viewProjectionLocation = gl.getUniformLocation(lilgl.instancedProgram, VIEWPROJECTION)!;
   }
 
   render(camera: Camera, scene: Scene) {
@@ -66,22 +73,35 @@ export class Renderer {
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 
-    const renderMesh = (mesh: Mesh) => {
-      gl.useProgram(lilgl.program);
+    const instancedColorLocation = gl.getUniformLocation(lilgl.instancedProgram, COLOR)!;
+    const instancedEmissiveLocation = gl.getUniformLocation(lilgl.instancedProgram, EMISSIVE)!;
+    const instancedNormalMatrixLocation = gl.getUniformLocation(lilgl.instancedProgram, NORMALMATRIX);
+    const textureRepeatLocation = gl.getUniformLocation(lilgl.instancedProgram, TEXTUREREPEAT);
+
+    const renderMesh = (mesh: Mesh | InstancedMesh) => {
+      const isInstancedMesh = Mesh.isInstanced(mesh);
+      gl.useProgram(isInstancedMesh ? lilgl.instancedProgram : lilgl.program);
       const modelViewProjectionMatrix = viewProjectionMatrix.multiply(mesh.worldMatrix);
 
       // In order to avoid having to generate mipmaps for every animation frame, animated textures have mipmaps disabled
       gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, mesh.material.texture?.animationFunction ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
 
-      gl.uniform4fv(this.colorLocation, mesh.material.color);
+      gl.uniform4fv(isInstancedMesh ? instancedColorLocation : this.colorLocation, mesh.material.color);
+      gl.uniform4fv(isInstancedMesh ? instancedEmissiveLocation : this.emissiveLocation, mesh.material.emissive);
       gl.vertexAttrib1f(AttributeLocation.TextureDepth, mesh.material.texture?.id ?? -1.0);
       const textureRepeat = [mesh.material.texture?.repeat.x ?? 1, mesh.material.texture?.repeat.y ?? 1];
-      gl.uniform2fv(this.textureRepeatLocation, textureRepeat);
-      gl.uniform4fv(this.emissiveLocation, mesh.material.emissive);
-      gl.uniformMatrix4fv(this.normalMatrixLocation, true, mesh.worldMatrix.inverse().toFloat32Array());
-      gl.uniformMatrix4fv(this.modelviewProjectionLocation, false, modelViewProjectionMatrix.toFloat32Array());
+      gl.uniform2fv(isInstancedMesh ? textureRepeatLocation : this.textureRepeatLocation, textureRepeat);
+
       gl.bindVertexArray(mesh.geometry.vao!);
-      gl.drawElements(gl.TRIANGLES, mesh.geometry.getIndices()!.length, gl.UNSIGNED_SHORT, 0);
+
+      if (isInstancedMesh) {
+        gl.uniformMatrix4fv(this.viewProjectionLocation, false, viewProjectionMatrix.toFloat32Array());
+        gl.drawElementsInstanced(gl.TRIANGLES, mesh.geometry.getIndices()!.length, gl.UNSIGNED_SHORT, 0, mesh.count);
+      } else {
+        gl.uniformMatrix4fv(this.normalMatrixLocation, true, mesh.worldMatrix.inverse().toFloat32Array());
+        gl.uniformMatrix4fv(this.modelviewProjectionLocation, false, modelViewProjectionMatrix.toFloat32Array());
+        gl.drawElements(gl.TRIANGLES, mesh.geometry.getIndices()!.length, gl.UNSIGNED_SHORT, 0);
+      }
     }
 
     textureLoader.updateAnimatedTextures();

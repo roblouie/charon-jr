@@ -5,7 +5,7 @@ import { Mesh } from '@/engine/renderer/mesh';
 
 function indexToFaceVertexPoint(index: number, positionData: Float32Array, matrix: DOMMatrix): EnhancedDOMPoint {
   return new EnhancedDOMPoint().set(
-    matrix.transformPoint(new DOMPoint(positionData[index], positionData[index + 1], positionData[index + 2]))
+    matrix.transformPoint(new EnhancedDOMPoint(positionData[index], positionData[index + 1], positionData[index + 2]))
   )
 }
 

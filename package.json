@@ -20,7 +20,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "webpack serve --mode=development --host=0.0.0.0",
     "build": "webpack --config webpack.prod.js && npm run zip",
-    "minify-shaders": "shader_minifier.exe --format js src/engine/shaders/vertex.shader.glsl src/shaders/fragment.shader.glsl src/shaders/skybox.fragment.glsl src/shaders/skybox.vertex.glsl -o src/shaders/shaders.js",
+    "minify-shaders": "shader_minifier.exe --format js src/engine/shaders/vertex.shader.glsl src/shaders/fragment.shader.glsl src/shaders/skybox.fragment.glsl src/shaders/skybox.vertex.glsl src/engine/shaders/instanced.vertex.glsl -o src/shaders/shaders.js",
     "zip": "node zip.js"
   },
   "author": ""

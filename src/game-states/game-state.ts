@@ -27,7 +27,10 @@ import { getGameStateMachine } from '@/game-state-machine';
 import { menuState } from '@/game-states/menu-state';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
-import { getGridPosition } from '@/engine/physics/surface-collision';
+import { findFloorHeightAtPosition, getGridPosition } from '@/engine/physics/surface-collision';
+import { doTimes } from '@/engine/helpers';
+import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
+import { largeTree, leavesMesh, plant1 } from '@/modeling/flora.modeling';
 
 class GameState implements State {
   player: ThirdPersonPlayer;
@@ -147,7 +150,45 @@ class GameState implements State {
 //     drawCurrentTexture();
 // END TESTING
 
-    const levelParts = [ramp, floor, lake];
+    // Instanced drawing test add:
+    function getRandomArbitrary(min: number, max: number) {
+      return Math.random() * (max - min) + min;
+    }
+
+    const terrain = getGroupedFaces([floor]); // TODO: Allow passing in of threshold for walls. This will help with tree placement as anything too steep can be discarded.
+    const count = 243;
+    const transforms: DOMMatrix[] = [];
+    doTimes(count, () => {
+      const translateX = getRandomArbitrary(-127, 127);
+      const translateZ = getRandomArbitrary(-127, 127);
+      const translateY = findFloorHeightAtPosition(terrain.floorFaces, new EnhancedDOMPoint(translateX, 500, translateZ))!.height;
+
+      const transformMatrix = new DOMMatrix().translate(translateX, translateY, translateZ).rotate(0, getRandomArbitrary(-90, 90), 0);
+      // Using the transform matrix as the normal matrix is of course not strictly correct, but it largely works as long as the
+      // transform matrix doesn't heavily squash the mesh and this avoids having to write a matrix transpose method just for
+      // instanced drawing.
+      transforms.push(transformMatrix);
+    });
+    const instancedTest = new InstancedMesh(plant1.geometry, transforms, count, plant1.material);
+
+    const count2 = 43;
+    const transforms2: DOMMatrix[] = [];
+    doTimes(count2, () => {
+      const translateX = getRandomArbitrary(-127, 127);
+      const translateZ = getRandomArbitrary(-127, 127);
+      const translateY = findFloorHeightAtPosition(terrain.floorFaces, new EnhancedDOMPoint(translateX, 500, translateZ))!.height;
+
+      const transformMatrix = new DOMMatrix().translate(translateX, translateY, translateZ).rotate(0, getRandomArbitrary(-90, 90), 0);
+      // Using the transform matrix as the normal matrix is of course not strictly correct, but it largely works as long as the
+      // transform matrix doesn't heavily squash the mesh and this avoids having to write a matrix transpose method just for
+      // instanced drawing.
+      transforms2.push(transformMatrix);
+    });
+    const instancedTest2 = new InstancedMesh(largeTree.geometry, transforms2, count2, largeTree.material);
+    const treeLeaves = new InstancedMesh(leavesMesh.geometry, transforms2, count2, leavesMesh.material);
+    // End Instanced drawing test add.
+
+    const levelParts = [ramp, floor, lake, instancedTest, instancedTest2, treeLeaves];
 
     this.groupedFaces = getGroupedFaces([ramp, floor]);
 

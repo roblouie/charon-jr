@@ -14,7 +14,7 @@ import {
 } from '@/engine/physics/surface-collision';
 import { audioCtx } from '@/engine/audio/audio-player';
 import { Object3d } from '@/engine/renderer/object-3d';
-import { truck, TruckObject3d } from '@/modeling/truck.object-3d';
+import { truck, TruckObject3d } from '@/modeling/truck.modeling';
 import { clamp, moveValueTowardsTarget } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
 

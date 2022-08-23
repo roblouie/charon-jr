@@ -7,10 +7,9 @@ in vec4 vColor;
 in vec2 vTexCoord;
 in float vDepth;
 in vec3 vNormal;
-in vec4 vSkyboxPosition;
+in mat4 vNormalMatrix;
 
 uniform vec2 textureRepeat;
-uniform mat4 normalMatrix;
 uniform vec4 color;
 uniform vec4 emissive;
 uniform mediump sampler2DArray uSampler;
@@ -20,7 +19,7 @@ out vec4 outColor;
 vec3 light_direction = vec3(-1, 2, 1);
 
 void main() {
-    vec3 correctedNormals = normalize(mat3(normalMatrix) * vNormal);
+    vec3 correctedNormals = normalize(mat3(vNormalMatrix) * vNormal);
     vec3 normalizedLightPosition = normalize(light_direction);
     float litPercent = max(dot(normalizedLightPosition, correctedNormals), 0.0);
     float ambientLight = 0.4f;

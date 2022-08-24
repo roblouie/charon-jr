@@ -145,9 +145,9 @@ class GameState implements State {
     // Instanced drawing test add:
 
 
-    const levelParts = [ramp, ...level.meshesToRender];
+    const levelParts = [...level.meshesToRender];
 
-    this.groupedFaces = getGroupedFaces([ramp, level.floorMesh]);
+    this.groupedFaces = getGroupedFaces([level.floorMesh]);
 
     function onlyUnique(value: any, index: number, array: any[]) {
       return array.indexOf(value) === index;

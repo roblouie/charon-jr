@@ -57,12 +57,7 @@ export class Level {
     // Draw Sky
     this.skybox = new Skybox(...skyboxImages);
 
-    // Draw Grass
-    const grassPositionsTest: number[] = [];
-    const treePositions: number[] = [];
-    const rockPosition: number[] = [];
-
-    // const { floorFaces } = getGroupedFaces([this.floorMesh], 0.8); // TODO: Allow passing in of threshold for walls. This will help with tree placement as anything too steep can be discarded.
+    // Draw Scenery
     noiseMaker.seed(26);
     const landscapeItemPositionNoise = noiseMaker.noiseLandscape(256, 1 / 16, 4, NoiseType.Perlin,3);
     console.log(Math.max(...landscapeItemPositionNoise))
@@ -74,9 +69,6 @@ export class Level {
 
     doTimes(256 * 256, index => {
       const currentNoiseValue = landscapeItemPositionNoise[index];
-      if (currentNoiseValue < 1) {
-        return;
-      }
 
       const yPosition = heightmap[index];
 
@@ -86,28 +78,23 @@ export class Level {
       }
 
       // No landscape on the trail
-      if (path[index] <= 0.6) {
+      if (path[index] <= 0.7) {
         return;
       }
 
-      if (currentNoiseValue >= 2.0) {
-        rockTransforms.push(
-          new DOMMatrix()
-            // @ts-ignore
-            .translate(this.floorMesh.geometry.vertices[index].x + getRandomArbitrary(-2, 2), yPosition, this.floorMesh.geometry.vertices[index].z + getRandomArbitrary(-2, 2))
-            .scale(getRandomArbitrary(1, 2), getRandomArbitrary(1, 2), getRandomArbitrary(1, 2))
-            .rotate(0, getRandomArbitrary(0, 360), 0)
-        );
-        rockPosition.push(index);
-      } else if (currentNoiseValue >= 1 && currentNoiseValue < 1.4) {
-        grassPositionsTest.push(index);
-        grassTransforms.push(
-          new DOMMatrix()
-            // @ts-ignore
-            .translate(this.floorMesh.geometry.vertices[index].x + getRandomArbitrary(-2, 2), yPosition, this.floorMesh.geometry.vertices[index].z + getRandomArbitrary(-2, 2))
-            .scale(getRandomArbitrary(0.7, 1.5), getRandomArbitrary(0.7, 1.5), getRandomArbitrary(0.7, 1.5))
-            .rotate(0, getRandomArbitrary(0, 360), 0)
-        );
+      if (currentNoiseValue < 0 && currentNoiseValue >= -0.005) {
+        // @ts-ignore
+        rockTransforms.push(getMatrixForPosition(this.floorMesh.geometry.vertices[index], yPosition, 1, 2));
+        return;
+      }
+
+      if (currentNoiseValue < 1) {
+        return;
+      }
+
+      if (currentNoiseValue >= 1 && currentNoiseValue < 1.4) {
+        // @ts-ignore
+        grassTransforms.push(getMatrixForPosition(this.floorMesh.geometry.vertices[index], yPosition, 0.7, 1.5));
       } else {
         // @ts-ignore
         const treePosition = this.floorMesh.geometry.vertices[index] as EnhancedDOMPoint;
@@ -119,58 +106,23 @@ export class Level {
 
         if (!hasAClosePosition) {
           placedTreePositions.push(treePosition)
-            treeTransforms.push(
-              new DOMMatrix()
-                // @ts-ignore
-                .translate(treePosition.x + getRandomArbitrary(-2, 2), yPosition, treePosition.z + getRandomArbitrary(-2, 2))
-                .scale(getRandomArbitrary(1, 2), getRandomArbitrary(1, 2), getRandomArbitrary(1, 2))
-                .rotate(0, getRandomArbitrary(0, 360), 0)
-            );
-
-
-          treePositions.push(index);
+          treeTransforms.push(getMatrixForPosition(treePosition, yPosition, 1, 1));
         }
       }
     });
 
-    console.log(grassPositionsTest);
-    console.log(treePositions);
-    console.log(rockPosition);
-
-    // const count = 20;
-    // const transforms: DOMMatrix[] = [];
-    // doTimes(count, () => {
-    //   const translateX = getRandomArbitrary(-1023, 1023);
-    //   const translateZ = getRandomArbitrary(-1023, 1023);
-    //   const translateY = findFloorHeightAtPosition(terrain.floorFaces, new EnhancedDOMPoint(translateX, 500, translateZ))!.height;
-    //
-    //   const transformMatrix = new DOMMatrix().translate(translateX, translateY, translateZ).rotate(0, getRandomArbitrary(-90, 90), 0);
-    //   // Using the transform matrix as the normal matrix is of course not strictly correct, but it largely works as long as the
-    //   // transform matrix doesn't heavily squash the mesh and this avoids having to write a matrix transpose method just for
-    //   // instanced drawing.
-    //   transforms.push(transformMatrix);
-    // });
     const plants = new InstancedMesh(plant1.geometry, grassTransforms, grassTransforms.length, plant1.material);
-
-    // const count2 = 10;
-    // const transforms2: DOMMatrix[] = [];
-    // doTimes(count2, () => {
-    //   const translateX = getRandomArbitrary(-1023, 1023);
-    //   const translateZ = getRandomArbitrary(-1023, 1023);
-    //   const translateY = findFloorHeightAtPosition(terrain.floorFaces, new EnhancedDOMPoint(translateX, 500, translateZ))!.height;
-    //
-    //   const transformMatrix = new DOMMatrix().translate(translateX, translateY, translateZ).rotate(0, getRandomArbitrary(-90, 90), 0);
-    //   // Using the transform matrix as the normal matrix is of course not strictly correct, but it largely works as long as the
-    //   // transform matrix doesn't heavily squash the mesh and this avoids having to write a matrix transpose method just for
-    //   // instanced drawing.
-    //   transforms2.push(transformMatrix);
-    // });
     const trees = new InstancedMesh(largeTree.geometry, treeTransforms, treeTransforms.length, largeTree.material);
     const treeLeaves = new InstancedMesh(leavesMesh.geometry, treeTransforms, treeTransforms.length, leavesMesh.material);
-
     const rocks = new InstancedMesh(largeRock.geometry, rockTransforms, rockTransforms.length, largeRock.material);
-    // End Instanced drawing test add.
 
     this.meshesToRender.push(plants, trees, treeLeaves, rocks);
   }
+}
+
+function getMatrixForPosition(xzPosition: EnhancedDOMPoint, yPosition: number, minScale: number, maxScale: number) {
+  return new DOMMatrix()
+    .translate(xzPosition.x + getRandomArbitrary(-2, 2), yPosition, xzPosition.z + getRandomArbitrary(-2, 2))
+    .scale(getRandomArbitrary(minScale, maxScale), getRandomArbitrary(minScale, maxScale), getRandomArbitrary(minScale, maxScale))
+    .rotate(0, getRandomArbitrary(0, 360), 0)
 }

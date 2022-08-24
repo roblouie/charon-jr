@@ -120,7 +120,7 @@ export class ThirdPersonPlayer {
           // gas pedal percent is trinary, annoyingly. if you're already going forwards, right is gas,
           // if you're going backwards, left is gas, and if you're standing still, the triggers have to duke it out
           let gasPedalPercent;
-          if (Math.sign(this.speed) === 0) {
+          if (this.speed === 0) {
             // case going 0
             gasPedalPercent = Math.max(controls.rightTrigger, controls.leftTrigger);
           } else {

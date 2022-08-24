@@ -2,18 +2,14 @@ import { Camera } from '@/engine/renderer/camera';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { Face } from '@/engine/physics/face';
 import { controls } from '@/core/controls';
-import { Mesh } from '@/engine/renderer/mesh';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { drawVolcanicRock } from '@/texture-maker';
-import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
-import { Material } from '@/engine/renderer/material';
 import {
   findFloorHeightAtPosition,
   findWallCollisionsFromList,
   getGridPosition, halfLevelSize, maxHalfLevelValue
 } from '@/engine/physics/surface-collision';
 import { audioCtx } from '@/engine/audio/audio-player';
-import { Object3d } from '@/engine/renderer/object-3d';
 import { truck, TruckObject3d } from '@/modeling/truck.modeling';
 import { clamp, moveValueTowardsTarget } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
@@ -54,8 +50,6 @@ export class ThirdPersonPlayer {
 
   private lastPosition = new EnhancedDOMPoint();
   update(gridFaces: Face[][]) {
-    this.lastPosition.set(this.chassisCenter);
-
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.005; // gravity
     this.chassisCenter.add(this.velocity);  // move the player position by the velocity
@@ -74,19 +68,16 @@ export class ThirdPersonPlayer {
     this.velocity.y = clamp(this.velocity.y, -1, 1);
     this.collideWithLevel({ floorFaces: gridFaces[playerGridPosition], wallFaces: [] }); // do collision detection, if collision is found, feetCenter gets pushed out of the collision
 
+
     // 4 wheels in the right place
     this.frontLeftWheel.set(this.mesh.leftFrontWheel.worldMatrix.transformPoint(this.origin));
     this.frontRightWheel.set(this.mesh.rightFrontWheel.worldMatrix.transformPoint(this.origin));
 
-    debugElement.textContent = `
-    Front Left: ${this.frontLeftWheel.x}, ${this.frontLeftWheel.y},${this.frontLeftWheel.z}
-    Front Right: ${this.frontRightWheel.x}, ${this.frontRightWheel.y},${this.frontRightWheel.z}
-    Truck Center: ${this.chassisCenter.x}, ${this.chassisCenter.y},${this.chassisCenter.z}
-    `
+    debugElement.textContent = `${this.chassisCenter.y - this.lastPosition.y}`
 
     const heightTraveled = this.chassisCenter.y - this.lastPosition.y;
 
-    if (heightTraveled > 0.1 && !this.isJumping) {
+    if (!this.isJumping) {
       this.velocity.y += heightTraveled;
     }
 
@@ -110,6 +101,7 @@ export class ThirdPersonPlayer {
     this.camera.updateWorldMatrix();
 
     this.updateAudio()
+    this.lastPosition.set(this.chassisCenter);
   }
 
   private axis = new EnhancedDOMPoint();
@@ -128,11 +120,6 @@ export class ThirdPersonPlayer {
     const collisionDepth = floorData.height - this.chassisCenter.y;
 
     if (collisionDepth > 0) {
-      // const verticalDistanceTraveled = floorData.height - this.previousFloorHeight;
-      // debugElement.textContent = `${verticalDistanceTraveled}`;
-      // if (floorData.height)
-
-      this.lastPosition.set(this.chassisCenter);
       this.chassisCenter.y += collisionDepth;
       this.velocity.y = 0;
       this.isJumping = false;

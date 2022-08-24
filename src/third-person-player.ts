@@ -95,6 +95,9 @@ export class ThirdPersonPlayer {
 
     // earthbound physics
     if (!this.isJumping) {
+      const heightTraveled = this.chassisCenter.y - this.lastPosition.y;
+      this.componentVelocity.y += heightTraveled;
+
       // rolling resistance
       this.speed = moveValueTowardsTarget(this.speed, 0, Math.abs(this.speed) * .009);
 

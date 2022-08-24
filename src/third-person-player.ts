@@ -167,7 +167,7 @@ export class ThirdPersonPlayer {
           const isInsteer = Math.sign(inputAngle) === Math.sign(this.slipAngle);
           if (isInsteer) {
             // insteer increases angle
-            this.slipAngle = moveValueTowardsTarget(this.slipAngle, targetDriftAngle, .05);
+            this.slipAngle = moveValueTowardsTarget(this.slipAngle, targetDriftAngle, .03);
           } else {
             // countersteer decreases angle
             this.slipAngle = moveValueTowardsTarget(this.slipAngle, 0, .05);

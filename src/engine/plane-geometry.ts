@@ -7,7 +7,9 @@ export class PlaneGeometry extends MoldableCubeGeometry {
 
     if (heightmap) {
       this
-        .modifyEachVertex((vertex, index) => vertex.y = heightmap[index])
+        .modifyEachVertex((vertex, index) => {
+          vertex.y = heightmap[index]
+        })
         .computeNormalsPerPlane()
         .done();
     }

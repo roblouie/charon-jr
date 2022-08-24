@@ -18,7 +18,7 @@ const debugElement = document.querySelector('#debug')!;
 
 
 export class ThirdPersonPlayer {
-  isJumping = false;
+  isJumping = true;
   chassisCenter = new EnhancedDOMPoint(0, 0, 0);
   readonly origin = new EnhancedDOMPoint(0, 0, 0);
 
@@ -228,6 +228,8 @@ export class ThirdPersonPlayer {
     // all position updates here. This needs to be broken off in another method, as this is related to things
     // other than just collision
     const collisionDepth = floorData.height - this.chassisCenter.y;
+
+    debugElement.textContent = `collision: ${collisionDepth}`
 
     if (collisionDepth > -0.2) {
       this.chassisCenter.y += collisionDepth;

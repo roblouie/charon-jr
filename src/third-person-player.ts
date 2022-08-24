@@ -135,9 +135,9 @@ export class ThirdPersonPlayer {
           break;
       }
 
-      if (controls.direction) {
-        this.angle += this.steeringAngle * 0.05 * inversionFactor * Math.abs(this.speed);
-      }
+      // if no steering angle, controls do not change angle, as we're multiplying by 0
+      this.angle += this.steeringAngle * 0.05 * inversionFactor * Math.abs(this.speed);
+
 
       if (Math.abs(this.steeringAngle) > .65) {
         this.framesSpentAtHighSteeringAngle += 1

@@ -2,18 +2,14 @@ import { Camera } from '@/engine/renderer/camera';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { Face } from '@/engine/physics/face';
 import { controls } from '@/core/controls';
-import { Mesh } from '@/engine/renderer/mesh';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { drawVolcanicRock } from '@/texture-maker';
-import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
-import { Material } from '@/engine/renderer/material';
 import {
   findFloorHeightAtPosition,
   findWallCollisionsFromList,
   getGridPosition, halfLevelSize, maxHalfLevelValue
 } from '@/engine/physics/surface-collision';
 import { audioCtx } from '@/engine/audio/audio-player';
-import { Object3d } from '@/engine/renderer/object-3d';
 import { truck, TruckObject3d } from '@/modeling/truck.modeling';
 import { clamp, moveValueTowardsTarget } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
@@ -124,11 +120,6 @@ export class ThirdPersonPlayer {
     const collisionDepth = floorData.height - this.chassisCenter.y;
 
     if (collisionDepth > 0) {
-      // const verticalDistanceTraveled = floorData.height - this.previousFloorHeight;
-      // debugElement.textContent = `${verticalDistanceTraveled}`;
-      // if (floorData.height)
-
-      // this.lastPosition.set(this.chassisCenter);
       this.chassisCenter.y += collisionDepth;
       this.velocity.y = 0;
       this.isJumping = false;

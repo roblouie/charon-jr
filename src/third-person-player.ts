@@ -122,11 +122,14 @@ export class ThirdPersonPlayer {
 
       switch (controlState) {
         case ControlState.Accelerating:
-          // speed zero
+          // gas pedal percent is trinary, annoyingly. if you're already going forwards, right is gas,
+          // if you're going backwards, left is gas, and if you're standing still, the triggers have to duke it out
           let gasPedalPercent;
           if (Math.sign(this.speed) === 0) {
+            // case going 0
             gasPedalPercent = Math.max(controls.rightTrigger, controls.leftTrigger);
           } else {
+            // cases going forward or backward
             gasPedalPercent = this.speed >= 0 ? controls.rightTrigger : controls.leftTrigger
           }
           this.speed = moveValueTowardsTarget(this.speed, (2 * gasPedalPercent) * inversionFactor, 0.02 * gasPedalPercent);

@@ -21,8 +21,6 @@ export class ThirdPersonPlayer {
   isJumping = false;
   chassisCenter = new EnhancedDOMPoint(0, 0, 0);
   readonly origin = new EnhancedDOMPoint(0, 0, 0);
-  frontLeftWheel = new EnhancedDOMPoint();
-  frontRightWheel = new EnhancedDOMPoint();
 
   speed = 0;
   componentVelocity = new EnhancedDOMPoint(0, 0, 0);
@@ -95,9 +93,6 @@ export class ThirdPersonPlayer {
 
     // earthbound physics
     if (!this.isJumping) {
-      const heightTraveled = this.chassisCenter.y - this.lastPosition.y;
-      this.componentVelocity.y += heightTraveled;
-
       // rolling resistance
       this.speed = moveValueTowardsTarget(this.speed, 0, Math.abs(this.speed) * .009);
 
@@ -130,7 +125,7 @@ export class ThirdPersonPlayer {
             gasPedalPercent = Math.max(controls.rightTrigger, controls.leftTrigger);
           } else {
             // cases going forward or backward
-            gasPedalPercent = this.speed >= 0 ? controls.rightTrigger : controls.leftTrigger
+            gasPedalPercent = this.speed >= 0 ? controls.rightTrigger : controls.leftTrigger;
           }
           this.speed = moveValueTowardsTarget(this.speed, (2 * gasPedalPercent) * inversionFactor, 0.02 * gasPedalPercent);
           break;
@@ -166,7 +161,7 @@ export class ThirdPersonPlayer {
           // neutral steering decreases drift
           this.slipAngle = moveValueTowardsTarget(this.slipAngle, 0, .025)
         } else {
-          // makes for valid Math.sign comparison of slipAngle and inputAngle and makes the truck have some drift momentum
+          // makes for valid initial Math.sign comparison of slipAngle and inputAngle and makes the truck have some drift momentum
           this.slipAngle = moveValueTowardsTarget(this.slipAngle, targetDriftAngle, .01);
           // determine if in-steer or out-steer. insteer increases angle and out-steer decreases.
           const isInsteer = Math.sign(inputAngle) === Math.sign(this.slipAngle);
@@ -215,7 +210,6 @@ export class ThirdPersonPlayer {
 
     // gravity
     this.componentVelocity.y -= 0.005;
-
   }
 
   private axis = new EnhancedDOMPoint();

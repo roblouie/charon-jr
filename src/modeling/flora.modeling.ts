@@ -85,7 +85,7 @@ const smallLeavesGeo2 = makeLeaves(3, 2, 5, 0.8, 6, 0.3, 1.4, 1.3, 2.1).done();
 const smallLeaves2 = new Mesh(smallLeavesGeo2, materials.treeLeaves);
 
 export const smallTree = new Mesh(smallTreeBase, materials.wood);
-export const smallLeaves = new Object3d(smallLeaves1, smallLeaves2);
+export const smallLeaves = new Mesh(smallLeavesGeo1.merge(smallLeavesGeo2).done(), materials.treeLeaves);
 
 // Plant 1
 function makePlantLeaves(leafScaleX: number, leafScaleY: number, leafScaleZ: number) {

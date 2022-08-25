@@ -54,6 +54,7 @@ export class MoldableCubeGeometry extends BufferGeometry {
           // now apply vector to vertex buffer
           this.vertices.push(vector);
 
+
           uvs.push(ix);
           uvs.push(1 - (iy));
           // To make the texture spread across the whole plane regardless of subdivisions we can do this instead:

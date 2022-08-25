@@ -8,7 +8,7 @@ class Controls {
   isEnter = false;
   isSpace = false;
   isEscape = false;
-  direction: EnhancedDOMPoint;
+  direction = 0;
   isJumpPressed = false;
   leftTrigger = 0;
   rightTrigger = 0;
@@ -17,21 +17,20 @@ class Controls {
   constructor() {
     document.addEventListener('keydown', event => this.toggleKey(event, true));
     document.addEventListener('keyup', event => this.toggleKey(event, false));
-    this.direction = new EnhancedDOMPoint();
   }
 
   queryController() {
     const gamepad = navigator.getGamepads()[0];
     this.isGamepadAttached = !!gamepad;
     if (gamepad) {
-      this.direction.x = gamepad.axes[0];
-      this.direction.z = gamepad.axes[1];
+      // this.direction.x = gamepad.axes[0];
+      this.direction = gamepad.axes[1];
       this.leftTrigger = gamepad.buttons[6].value;
       this.rightTrigger = gamepad.buttons[7].value;
 
       const deadzone = 0.1;
-      if (this.direction.magnitude < deadzone) {
-        this.direction.x = 0; this.direction.z = 0;
+      if (this.direction < deadzone) {
+        this.direction = 0;
       }
       this.isJumpPressed = gamepad.buttons[0].pressed;
     }
@@ -60,8 +59,9 @@ class Controls {
       case 'Escape':
         this.isEscape = isPressed;
     }
-    this.direction.x = (Number(this.isLeft) * -1) + Number(this.isRight);
-    this.direction.z = (Number(this.isUp) * -1) + Number(this.isDown);
+    this.direction = (Number(this.isRight)) + (Number(this.isLeft) * -1);
+    this.leftTrigger = this.isDown ? 1 : 0;
+    this.rightTrigger = this.isUp ? 1 : 0;
   }
 }
 

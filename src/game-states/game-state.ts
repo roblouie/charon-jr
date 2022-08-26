@@ -20,7 +20,7 @@ import { Material } from '@/engine/renderer/material';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { AttributeLocation, renderer } from '@/engine/renderer/renderer';
 import { Staircase } from '@/staircase-geometry';
-import { getGroupedFaces } from '@/engine/physics/parse-faces';
+import { getGroupedFaces, meshToFaces } from '@/engine/physics/parse-faces';
 import { Face } from '@/engine/physics/face';
 import { controls } from '@/core/controls';
 import { getGameStateMachine } from '@/game-state-machine';
@@ -32,6 +32,7 @@ import { doTimes } from '@/engine/helpers';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 import { largeTree, leavesMesh, plant1 } from '@/modeling/flora.modeling';
 import { Level } from '@/Level';
+import { Spirit } from '@/spirit';
 
 
 const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 100);
@@ -40,34 +41,37 @@ const level = new Level(
   skyboxes.dayCloud,
   -47,
   39,
+  26,
   materials.grass.texture!,
   materials.dirtPath.texture!,
+  new EnhancedDOMPoint(907, -41, 148),
+  new EnhancedDOMPoint(-940, 45, -85),
+  new EnhancedDOMPoint(61, -26, -390),
 );
+
+const arrowGuide = new Mesh(new MoldableCubeGeometry(3, 3, 3), new Material({ color: '#fff' }));
+const arrowGuideWrapper = new Object3d();
+arrowGuide.position.y = 4.5;
+arrowGuide.position.z = -10;
+// arrowGuideWrapper.add(arrowGuide);
 
 class GameState implements State {
   player: ThirdPersonPlayer;
   scene: Scene;
-  groupedFaces?: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]};
+  groupedFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]};
 
-  gridFaces: Face[][];
+  gridFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]}[];
+  spirits: Spirit[] = [];
 
   constructor() {
     const camera = new Camera(Math.PI / 3, 16 / 9, 1, 400);
     camera.position = new EnhancedDOMPoint(0, 5, -17);
+    camera.add(arrowGuide);
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();
-    this.gridFaces = [[]];
+    this.gridFaces = [];
+    this.groupedFaces = { floorFaces: [], wallFaces: [], ceilingFaces: [] }
 
-    // const floor = new Mesh(
-    //   new PlaneGeometry(2047, 2047, 255, 255, sampleHeightMap),
-    //   materials.grass
-    // );
-    //
-    // const lake = new Mesh(
-    //   new PlaneGeometry(2047, 2047, 1, 1),
-    //   materials.lake
-    // );
-    // lake.position.y = -47;
 
     const rampGeometry = new MoldableCubeGeometry(16, 40, 40);
     rampGeometry
@@ -81,96 +85,50 @@ class GameState implements State {
     const ramp = new Mesh(rampGeometry, materials.marble);
     ramp.position.y += 8;
     ramp.updateWorldMatrix();
-    // const testShapeGeometry = new MoldableCube(5, 2, 2, 4);
-    //
-    // testShapeGeometry.selectVertices(0, 1, 2, 3, 12, 17, 22, 27, 32, 37, 38, 43)
-    //   .scale(1, 0.75)
-    //   .rotate(0, 0, 0.5)
-    //   .updateVerticesAttribute();
-
-
-
-   // const tree = makeTree();
-   //  tree.position.x += 10;
-   //  tree.position.z += 40;
-   //  tree.position.y += 10;
-   //  tree.updateWorldMatrix();
-    //
-
-    // function makeBridge() {
-    //   const supportArchGeo = new MoldableCubeGeometry(16, 1, 2, 10, 1, 1);
-    //   let start = 0; let end = 3;
-    //   // doTimes(10, index => {
-    //   //   supportArchGeo.selectVertices(...range(start, end))
-    //   //     .rotate(0, 0, 0.3)
-    //   //     .done();
-    //   //   start +=
-    //   // })
-    //   const supportArch = new Mesh(supportArchGeo, materials.tiles);
-    //   return supportArch;
-    // }
-    // const bridge = makeBridge();
-    // bridge.position.y += 4;
-    //
-    // const { cubes } = new Staircase(10, 0.3, 3, 1);
-    //
-    // const wall = new Mesh(
-    //   new MoldableCubeGeometry(3, 4, 4),
-    //   materials.bricks,
-    // );
-
-    // wall.position.x = -6;
-    // wall.updateWorldMatrix();
-
-    // const particleGeometry = new PlaneGeometry(2, 2);
-    // const particleTexture = textureLoader.load(drawParticle());
-    // const particleMaterial = new Material({emissive: '#fff', texture: particleTexture, isTransparent: true});
-    // const particle = new Mesh(
-    //   particleGeometry,
-    //   particleMaterial
-    // );
-    //
-    // const particle2 = new Mesh(
-    //   particleGeometry,
-    //   particleMaterial
-    // );
-    //
-    // particle.position.y += 5;
-    // particle2.position.y += 4.5;
-
-// TESTING
-//     drawCurrentTexture();
-// END TESTING
-
-    // Instanced drawing test add:
-
-
-    const levelParts = [...level.meshesToRender];
-
-    this.groupedFaces = getGroupedFaces([level.floorMesh]);
 
     function onlyUnique(value: any, index: number, array: any[]) {
       return array.indexOf(value) === index;
     }
 
 
-    this.groupedFaces.floorFaces.forEach(face => {
+    level.facesToCollideWith.floorFaces.forEach(face => {
       const gridPositions = face.points.map(getGridPosition);
 
       gridPositions.filter(onlyUnique).forEach(position => {
         if (!this.gridFaces[position]) {
-          this.gridFaces[position] = [];
+          this.gridFaces[position] = { floorFaces: [], wallFaces: [], ceilingFaces: [] };
         }
-        this.gridFaces[position].push(face);
+        this.gridFaces[position].floorFaces.push(face);
       });
     });
 
-    // levelParts.push(particle);
-    // levelParts.push(particle2);
+    level.facesToCollideWith.wallFaces.forEach(face => {
+      const gridPositions = face.points.map(getGridPosition);
 
-    this.scene.add(this.player.mesh);
-    this.scene.add(...levelParts);
+      gridPositions.filter(onlyUnique).forEach(position => {
+        if (!this.gridFaces[position]) {
+          this.gridFaces[position] = { floorFaces: [], wallFaces: [], ceilingFaces: [] };
+        }
+        this.gridFaces[position].wallFaces.push(face);
+      });
+    });
+
+    this.spirits = level.spiritPositions.map(position => new Spirit(position));
+
+    const dropOffGeo = new MoldableCubeGeometry(1, 140, 1, 4, 1, 4).cylindrify(30).done();
+    const redDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#f00c', emissive: '#f00c', isTransparent: true }));
+    redDropOffMesh.position.set(level.redDropOff);
+
+    const greenDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#0f0c', emissive: '#0f0c', isTransparent: true }));
+    greenDropOffMesh.position.set(level.greenDropOff);
+
+    const blueDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#00fc', emissive: '#00fc', isTransparent: true }));
+    blueDropOffMesh.position.set(level.blueDropOff);
+
+    this.scene.add(this.player.mesh, ...this.spirits, redDropOffMesh, greenDropOffMesh, blueDropOffMesh, arrowGuideWrapper, camera);
+    this.scene.add(...level.meshesToRender);
   }
+
   onEnter() {
     this.player.mesh.position.y = 1.5;
 
@@ -191,15 +149,53 @@ class GameState implements State {
 
   }
 
+  private spiritPlayerDistance = new EnhancedDOMPoint();
+  private dropOffPlayerDistance = new EnhancedDOMPoint();
+  handleDropOffPickUp() {
+    if (this.player.isCarryingSpirit) {
+      if (this.player.velocity.magnitude < 0.1) {
+        const carriedSpirit = this.spirits[this.player.carriedSpiritIndex];
+        const dropOffPosition = level[carriedSpirit.dropOffPoint];
+        this.dropOffPlayerDistance.subtractVectors(dropOffPosition, this.player.chassisCenter);
+        if (Math.abs(this.dropOffPlayerDistance.x) <= 30 && Math.abs(this.dropOffPlayerDistance.z) <= 30) {
+          console.log('DROPPED OFF!');
+          carriedSpirit.position.set(this.player.chassisCenter);
+          this.player.mesh.wrapper.remove(carriedSpirit);
+          this.scene.add(carriedSpirit);
+          this.player.isCarryingSpirit = false;
+        }
+      }
+    }
+    else {
+      if (this.player.velocity.magnitude < 0.1) {
+        level.spiritPositions.some((spiritPosition, index) => {
+          this.spiritPlayerDistance.subtractVectors(spiritPosition, this.player.chassisCenter)
+          if (Math.abs(this.spiritPlayerDistance.x) < 3 && Math.abs(this.spiritPlayerDistance.z) < 3) {
+            this.spirits[index].position.set(0, 0, -2);
+            this.player.mesh.wrapper.add(this.spirits[index]);
+            this.player.isCarryingSpirit = true;
+            this.player.carriedSpiritIndex = index;
+            return true;
+          }
+        });
+      }
+    }
+  }
+
   onUpdate(timeElapsed: number): void {
     this.player.update(this.gridFaces);
-
+    this.handleDropOffPickUp();
     // particle.lookAt(this.player.camera.position);
     // particle2.lookAt(this.player.camera.position);
     // particle.rotate(-1, 0, 0);
     // particle2.rotate(-1, 0, 0);
 
+    if (this.player.isCarryingSpirit) {
+      arrowGuide.lookAt(level[this.spirits[this.player.carriedSpiritIndex].dropOffPoint]);
+    }
+
     this.scene.updateWorldMatrix();
+
 
     renderer.render(this.player.camera, this.scene);
 

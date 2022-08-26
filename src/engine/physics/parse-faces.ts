@@ -9,8 +9,8 @@ function indexToFaceVertexPoint(index: number, positionData: Float32Array, matri
   )
 }
 
-export function getGroupedFaces(meshes: Mesh[]) {
-  const faces = meshes.flatMap(mesh => {
+export function meshToFaces(meshes: Mesh[], transformMatrix?: DOMMatrix) {
+  return meshes.flatMap(mesh => {
     const indices = mesh.geometry.getIndices()!; // assuming always having indices
 
     const positions = mesh.geometry.getAttribute(AttributeLocation.Positions);
@@ -20,9 +20,9 @@ export function getGroupedFaces(meshes: Mesh[]) {
       const secondIndex = indices[i + 1] * 3;
       const thirdIndex = indices[i + 2] * 3;
 
-      const point0 = indexToFaceVertexPoint(firstIndex, positions.data, mesh.worldMatrix);
-      const point1 = indexToFaceVertexPoint(secondIndex, positions.data, mesh.worldMatrix);
-      const point2 = indexToFaceVertexPoint(thirdIndex, positions.data, mesh.worldMatrix);
+      const point0 = indexToFaceVertexPoint(firstIndex, positions.data, transformMatrix ?? mesh.worldMatrix);
+      const point1 = indexToFaceVertexPoint(secondIndex, positions.data, transformMatrix ?? mesh.worldMatrix);
+      const point2 = indexToFaceVertexPoint(thirdIndex, positions.data, transformMatrix ?? mesh.worldMatrix);
 
       triangles.push([
         point0,
@@ -33,24 +33,16 @@ export function getGroupedFaces(meshes: Mesh[]) {
 
     return triangles.map(triangle => new Face(triangle));
   });
+}
 
-  const floorFaces: Face[] = [];
-  const wallFaces: Face[] = [];
-  const ceilingFaces: Face[] = [];
-
+export function getGroupedFaces(faces: Face[], destinationGroupedFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]}) {
   faces.forEach(face => {
     if (face.normal.y > 0.5) {
-      floorFaces.push(face);
+      destinationGroupedFaces.floorFaces.push(face);
     } else if (face.normal.y < -0.5) {
-      ceilingFaces.push(face);
+      destinationGroupedFaces.ceilingFaces.push(face);
     } else {
-      wallFaces.push(face);
+      destinationGroupedFaces.wallFaces.push(face);
     }
   });
-
-  return {
-    floorFaces,
-    wallFaces,
-    ceilingFaces,
-  };
 }

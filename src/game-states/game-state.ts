@@ -49,10 +49,15 @@ const level = new Level(
   new EnhancedDOMPoint(61, -26, -390),
 );
 
-const arrowGuide = new Mesh(new MoldableCubeGeometry(3, 3, 3), new Material({ color: '#fff' }));
-const arrowGuideWrapper = new Object3d();
-arrowGuide.position.y = 4.5;
-arrowGuide.position.z = -10;
+const arrowGuideGeo = new MoldableCubeGeometry(1, 0.5, 1)
+  .selectBy(vertex => vertex.z < 0)
+  .scale(0, 1, 0)
+  .merge(new MoldableCubeGeometry(0.5, 0.5, 1).translate(0, 0, 1).done())
+  .done();
+const arrowGuide = new Mesh(arrowGuideGeo, new Material({ color: '#fff' }));
+const arrowGuideWrapper = new Object3d(arrowGuide);
+arrowGuideWrapper.position.y = 3;
+arrowGuideWrapper.position.z = -8;
 // arrowGuideWrapper.add(arrowGuide);
 
 class GameState implements State {
@@ -66,8 +71,9 @@ class GameState implements State {
   constructor() {
     const camera = new Camera(Math.PI / 3, 16 / 9, 1, 400);
     camera.position = new EnhancedDOMPoint(0, 5, -17);
-    camera.add(arrowGuide);
+    // camera.add(arrowGuideWrapper);
     this.player = new ThirdPersonPlayer(camera);
+    // this.player.mesh.add(arrowGuideWrapper);
     this.scene = new Scene();
     this.gridFaces = [];
     this.groupedFaces = { floorFaces: [], wallFaces: [], ceilingFaces: [] }
@@ -182,7 +188,9 @@ class GameState implements State {
     }
   }
 
+  testLookAt = new EnhancedDOMPoint();
   onUpdate(timeElapsed: number): void {
+
     this.player.update(this.gridFaces);
     this.handleDropOffPickUp();
     // particle.lookAt(this.player.camera.position);
@@ -190,9 +198,12 @@ class GameState implements State {
     // particle.rotate(-1, 0, 0);
     // particle2.rotate(-1, 0, 0);
 
-    if (this.player.isCarryingSpirit) {
-      arrowGuide.lookAt(level[this.spirits[this.player.carriedSpiritIndex].dropOffPoint]);
-    }
+    // if (this.player.isCarryingSpirit) {
+    // }
+
+    arrowGuideWrapper.position.set(this.player.chassisCenter);
+    arrowGuideWrapper.position.y += 10;
+    arrowGuideWrapper.lookAt(level.redDropOff); //(level[this.spirits[this.player.carriedSpiritIndex].dropOffPoint]);
 
     this.scene.updateWorldMatrix();
 

@@ -49,16 +49,19 @@ const level = new Level(
   new EnhancedDOMPoint(61, -26, -390),
 );
 
-const arrowGuideGeo = new MoldableCubeGeometry(1, 0.5, 1)
+const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 3)
   .selectBy(vertex => vertex.z < 0)
   .scale(0, 1, 0)
-  .merge(new MoldableCubeGeometry(0.5, 0.5, 1).translate(0, 0, 1).done())
+  .merge(new MoldableCubeGeometry(1, 0.3, 1.5).translate(0, 0, 1.5).done())
+  .computeNormalsPerPlane()
   .done();
-const arrowGuide = new Mesh(arrowGuideGeo, new Material({ color: '#fff' }));
+
+const arrowMaterial = new Material();
+arrowMaterial.color = [1.7, 1.7, 1.7, 1];
+const arrowGuide = new Mesh(arrowGuideGeo, arrowMaterial);
 const arrowGuideWrapper = new Object3d(arrowGuide);
-arrowGuideWrapper.position.y = 3;
+arrowGuideWrapper.position.y = 2.8;
 arrowGuideWrapper.position.z = -8;
-// arrowGuideWrapper.add(arrowGuide);
 
 class GameState implements State {
   player: ThirdPersonPlayer;
@@ -131,7 +134,7 @@ class GameState implements State {
     const blueDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#00fc', emissive: '#00fc', isTransparent: true }));
     blueDropOffMesh.position.set(level.blueDropOff);
 
-    this.scene.add(this.player.mesh, ...this.spirits, redDropOffMesh, greenDropOffMesh, blueDropOffMesh, arrowGuideWrapper, camera);
+    this.scene.add(this.player.mesh, ...this.spirits, redDropOffMesh, greenDropOffMesh, blueDropOffMesh, arrowGuideWrapper);
     this.scene.add(...level.meshesToRender);
   }
 
@@ -168,6 +171,7 @@ class GameState implements State {
           carriedSpirit.position.set(this.player.chassisCenter);
           this.player.mesh.wrapper.remove(carriedSpirit);
           this.scene.add(carriedSpirit);
+          arrowGuideWrapper.remove(arrowGuide);
           this.player.isCarryingSpirit = false;
         }
       }
@@ -181,6 +185,8 @@ class GameState implements State {
             this.player.mesh.wrapper.add(this.spirits[index]);
             this.player.isCarryingSpirit = true;
             this.player.carriedSpiritIndex = index;
+            arrowGuideWrapper.add(arrowGuide);
+            arrowMaterial.color = this.spirits[index].material.color.map(val => val * 1.5);
             return true;
           }
         });
@@ -198,12 +204,14 @@ class GameState implements State {
     // particle.rotate(-1, 0, 0);
     // particle2.rotate(-1, 0, 0);
 
-    // if (this.player.isCarryingSpirit) {
-    // }
+    if (this.player.isCarryingSpirit) {
+      arrowGuideWrapper.position.set(this.player.chassisCenter);
+      arrowGuideWrapper.position.y += 10;
+      this.testLookAt = level[this.spirits[this.player.carriedSpiritIndex].dropOffPoint];
+      this.testLookAt.y = arrowGuideWrapper.position.y - 10;
+      arrowGuideWrapper.lookAt(this.testLookAt);
+    }
 
-    arrowGuideWrapper.position.set(this.player.chassisCenter);
-    arrowGuideWrapper.position.y += 10;
-    arrowGuideWrapper.lookAt(level.redDropOff); //(level[this.spirits[this.player.carriedSpiritIndex].dropOffPoint]);
 
     this.scene.updateWorldMatrix();
 

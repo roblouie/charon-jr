@@ -33,6 +33,8 @@ import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 import { largeTree, leavesMesh, plant1 } from '@/modeling/flora.modeling';
 import { Level } from '@/Level';
 import { Spirit } from '@/spirit';
+import { drawEngine } from '@/core/draw-engine';
+import { levelOverState } from '@/game-states/level-over-state';
 
 
 const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 100);
@@ -49,19 +51,14 @@ const level = new Level(
   new EnhancedDOMPoint(61, -26, -390),
 );
 
-const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 3)
+const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)
   .scale(0, 1, 0)
-  .merge(new MoldableCubeGeometry(1, 0.3, 1.5).translate(0, 0, 1.5).done())
+  .merge(new MoldableCubeGeometry(1, 0.3, 2.5).selectBy(vertex => vertex.z < 0).scale(0.6, 1, 1).all().translate(0, 0, 3.5).done())
   .computeNormalsPerPlane()
   .done();
 
-const arrowMaterial = new Material();
-arrowMaterial.color = [1.7, 1.7, 1.7, 1];
-const arrowGuide = new Mesh(arrowGuideGeo, arrowMaterial);
-const arrowGuideWrapper = new Object3d(arrowGuide);
-arrowGuideWrapper.position.y = 2.8;
-arrowGuideWrapper.position.z = -8;
+
 
 class GameState implements State {
   player: ThirdPersonPlayer;
@@ -71,15 +68,26 @@ class GameState implements State {
   gridFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]}[];
   spirits: Spirit[] = [];
 
+  arrowGuideWrapper: Object3d;
+  arrowGuide: Mesh;
+
+  timeRemaining = 0;
+  private timePerDistanceUnit = 0.023;
+  private timeReductionPerDropOff = 0.001;
+  private minimumTimePerDistanceUnit = 0.012;
+
   constructor() {
-    const camera = new Camera(Math.PI / 3, 16 / 9, 1, 400);
+    const camera = new Camera(Math.PI / 2, 16 / 9, 1, 700);
     camera.position = new EnhancedDOMPoint(0, 5, -17);
-    // camera.add(arrowGuideWrapper);
     this.player = new ThirdPersonPlayer(camera);
-    // this.player.mesh.add(arrowGuideWrapper);
     this.scene = new Scene();
     this.gridFaces = [];
     this.groupedFaces = { floorFaces: [], wallFaces: [], ceilingFaces: [] }
+
+    const arrowMaterial = new Material();
+    arrowMaterial.color = [1.7, 1.7, 1.7, 1];
+    this.arrowGuide = new Mesh(arrowGuideGeo, arrowMaterial);
+    this.arrowGuideWrapper = new Object3d(this.arrowGuide);
 
 
     const rampGeometry = new MoldableCubeGeometry(16, 40, 40);
@@ -122,8 +130,6 @@ class GameState implements State {
       });
     });
 
-    this.spirits = level.spiritPositions.map(position => new Spirit(position));
-
     const dropOffGeo = new MoldableCubeGeometry(1, 140, 1, 4, 1, 4).cylindrify(30).done();
     const redDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#f00c', emissive: '#f00c', isTransparent: true }));
     redDropOffMesh.position.set(level.redDropOff);
@@ -134,12 +140,15 @@ class GameState implements State {
     const blueDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#00fc', emissive: '#00fc', isTransparent: true }));
     blueDropOffMesh.position.set(level.blueDropOff);
 
-    this.scene.add(this.player.mesh, ...this.spirits, redDropOffMesh, greenDropOffMesh, blueDropOffMesh, arrowGuideWrapper);
+    this.scene.add(this.player.mesh, ...this.spirits, redDropOffMesh, greenDropOffMesh, blueDropOffMesh);
     this.scene.add(...level.meshesToRender);
   }
 
   onEnter() {
     this.player.mesh.position.y = 1.5;
+    this.player.isCarryingSpirit = false;
+    this.spirits = level.spiritPositions.map(position => new Spirit(position));
+
 
     const soundPlayer = getAudioPlayer();
 
@@ -153,40 +162,63 @@ class GameState implements State {
     // audio.start();
 
 
+    this.timeRemaining = 150;
+    this.timeReductionPerDropOff = 0.001;
+  }
 
-// @ts-ignore
-
+  onLeave() {
+    // this.scene = undefined;
+    drawEngine.clear();
   }
 
   private spiritPlayerDistance = new EnhancedDOMPoint();
   private dropOffPlayerDistance = new EnhancedDOMPoint();
+  private spiritDropOffDistance = new EnhancedDOMPoint();
+
   handleDropOffPickUp() {
+
+    // Drop Off
     if (this.player.isCarryingSpirit) {
       if (this.player.velocity.magnitude < 0.1) {
         const carriedSpirit = this.spirits[this.player.carriedSpiritIndex];
         const dropOffPosition = level[carriedSpirit.dropOffPoint];
         this.dropOffPlayerDistance.subtractVectors(dropOffPosition, this.player.chassisCenter);
         if (Math.abs(this.dropOffPlayerDistance.x) <= 30 && Math.abs(this.dropOffPlayerDistance.z) <= 30) {
-          console.log('DROPPED OFF!');
+
+          // Less buffer is given after each drop off, down until the exact time it takes
+          if (this.timePerDistanceUnit >= this.minimumTimePerDistanceUnit) {
+            this.timePerDistanceUnit -= this.timeReductionPerDropOff;
+          }
+
           carriedSpirit.position.set(this.player.chassisCenter);
           this.player.mesh.wrapper.remove(carriedSpirit);
           this.scene.add(carriedSpirit);
-          arrowGuideWrapper.remove(arrowGuide);
+          this.scene.remove(this.arrowGuideWrapper);
+          this.scene.remove(this.arrowGuide)
           this.player.isCarryingSpirit = false;
         }
       }
     }
     else {
+      // Pick Up
       if (this.player.velocity.magnitude < 0.1) {
         level.spiritPositions.some((spiritPosition, index) => {
           this.spiritPlayerDistance.subtractVectors(spiritPosition, this.player.chassisCenter)
-          if (Math.abs(this.spiritPlayerDistance.x) < 3 && Math.abs(this.spiritPlayerDistance.z) < 3) {
-            this.spirits[index].position.set(0, 0, -2);
-            this.player.mesh.wrapper.add(this.spirits[index]);
+          if (Math.abs(this.spiritPlayerDistance.x) < 15 && Math.abs(this.spiritPlayerDistance.z) < 15) {
+            const spirit = this.spirits[index];
+            const spiritPosition = spirit.position;
+
+            // Find distance from spirit pickup point to it's drop off point and add a relative amount of time
+            this.spiritDropOffDistance.subtractVectors(level[spirit.dropOffPoint], spiritPosition);
+            this.spiritDropOffDistance.y = 0;
+            this.timeRemaining += (this.spiritDropOffDistance.magnitude * this.timePerDistanceUnit);
+
+            spiritPosition.set(0, 0, -2);
+            this.player.mesh.wrapper.add(spirit);
             this.player.isCarryingSpirit = true;
             this.player.carriedSpiritIndex = index;
-            arrowGuideWrapper.add(arrowGuide);
-            arrowMaterial.color = this.spirits[index].material.color.map(val => val * 1.5);
+            this.scene.add(this.arrowGuideWrapper);
+            this.arrowGuide.material.color = spirit.material.color.map(val => val * 1.5);
             return true;
           }
         });
@@ -196,6 +228,9 @@ class GameState implements State {
 
   testLookAt = new EnhancedDOMPoint();
   onUpdate(timeElapsed: number): void {
+    this.timeRemaining -= (timeElapsed / 1000);
+
+    drawEngine.drawText(this.timeRemaining.toFixed(1), 60, 60, 60, 'white', 'left');
 
     this.player.update(this.gridFaces);
     this.handleDropOffPickUp();
@@ -205,11 +240,11 @@ class GameState implements State {
     // particle2.rotate(-1, 0, 0);
 
     if (this.player.isCarryingSpirit) {
-      arrowGuideWrapper.position.set(this.player.chassisCenter);
-      arrowGuideWrapper.position.y += 10;
+      this.arrowGuideWrapper.position.set(this.player.chassisCenter);
+      this.arrowGuideWrapper.position.y += 13;
       this.testLookAt = level[this.spirits[this.player.carriedSpiritIndex].dropOffPoint];
-      this.testLookAt.y = arrowGuideWrapper.position.y - 10;
-      arrowGuideWrapper.lookAt(this.testLookAt);
+      this.testLookAt.y = this.arrowGuideWrapper.position.y - 10;
+      this.arrowGuideWrapper.lookAt(this.testLookAt);
     }
 
 
@@ -220,6 +255,10 @@ class GameState implements State {
 
     if (controls.isEscape) {
       getGameStateMachine().setState(menuState);
+    }
+
+    if (this.timeRemaining <= 0) {
+      getGameStateMachine().setState(levelOverState);
     }
   }
 }

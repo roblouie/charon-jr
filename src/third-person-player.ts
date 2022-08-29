@@ -29,7 +29,7 @@ export class ThirdPersonPlayer {
 
   mesh: TruckObject3d;
   camera: Camera;
-  idealPosition = new EnhancedDOMPoint(0, 6, -17);
+  idealPosition = new EnhancedDOMPoint(0, 8, -17);
   idealLookAt = new EnhancedDOMPoint(0, 2, 0);
 
   listener: AudioListener;
@@ -54,7 +54,7 @@ export class ThirdPersonPlayer {
   private lastPosition = new EnhancedDOMPoint();
   update(gridFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]}[]) {
     this.updateVelocityFromControls();  // set x / z velocity based on input
-    this.velocity.y -= 0.005; // gravity
+    this.velocity.y -= 0.01; // gravity
     this.chassisCenter.add(this.velocity);  // move the player position by the velocity
 
     // don't let the player leave the level
@@ -152,7 +152,7 @@ export class ThirdPersonPlayer {
 // We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
     this.mesh.setDriveRotationRate(mag);
 
-    const speed = 0.6;
+    const speed = 1.3;
 
     const inputAngle = Math.atan2(-controls.direction.x, -controls.direction.z);
 

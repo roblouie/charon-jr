@@ -37,16 +37,21 @@ const debugElement = document.querySelector('#debug')!;
 
 createGameStateMachine(gameState);
 
-let lastTime = 0;
+let previousTime = 0;
+const maxFps = 60;
+const interval = 1000 / maxFps;
+
 draw(0);
 
-
-function draw(time: number) {
+function draw(currentTime: number) {
   controls.queryController();
-  debugElement.textContent = `${1 / ((time - lastTime) / 1000)} fps`;
-  lastTime = time;
+  const delta = currentTime - previousTime;
 
-  getGameStateMachine().getState().onUpdate(time);
+  if (delta >= interval || !previousTime) {
+    previousTime = currentTime - (delta % interval);
+
+    getGameStateMachine().getState().onUpdate(delta);
+  }
 
   requestAnimationFrame(draw);
 }

@@ -127,5 +127,5 @@ const rearWheels = createWheelPair();
 frontWheels.position.z += 4;
 rearWheels.position.z -= 4;
 const truckObject = new TruckObject3d(frontWheels, rearWheels, createChassis());
-truckObject.scale.set(0.3, 0.3, 0.3);
+truckObject.scale.set(0.7, 0.7, 0.7);
 export const truck = truckObject;

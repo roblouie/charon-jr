@@ -101,55 +101,51 @@ class GameState implements State {
   }
 
   onEnter(levelNumber: 0 | 1 | 2) {
-    switch (levelNumber) {
-      case 0:
-        noiseMaker.seed(2);
-        const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 100);
-        this.currentLevel = new Level(
-          sampleHeightMap,
-          skyboxes.dayCloud,
-          -47,
-          39,
-          26,
-          materials.grass.texture!,
-          materials.dirtPath.texture!,
-          new EnhancedDOMPoint(907, -41, 148),
-          new EnhancedDOMPoint(-940, 45, -85),
-          new EnhancedDOMPoint(61, -26, -390),
-        );
-        break;
-      case 1:
-        noiseMaker.seed(35);
-        const sampleHeightMap2 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
-        this.currentLevel = new Level(
-          sampleHeightMap2,
-          skyboxes.purpleCloud,
-          -47,
-          39,
-          26,
-          materials.grass.texture!,
-          materials.dirtPath.texture!,
-          new EnhancedDOMPoint(907, -41, 148),
-          new EnhancedDOMPoint(-940, 45, -85),
-          new EnhancedDOMPoint(61, -26, -390),
-        );
-        break;
-      case 2:
-        noiseMaker.seed(21);
-        const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
-        this.currentLevel = new Level(
-          sampleHeightMap3,
-          skyboxes.purpleCloud,
-          -47,
-          39,
-          26,
-          materials.grass.texture!,
-          materials.dirtPath.texture!,
-          new EnhancedDOMPoint(907, -41, 148),
-          new EnhancedDOMPoint(-940, 45, -85),
-          new EnhancedDOMPoint(61, -26, -390),
-        );
-        break;
+    if (levelNumber === 0) {
+      noiseMaker.seed(2);
+      const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 100);
+      this.currentLevel = new Level(
+        sampleHeightMap,
+        skyboxes.dayCloud,
+        -47,
+        39,
+        26,
+        materials.grass.texture!,
+        materials.dirtPath.texture!,
+        new EnhancedDOMPoint(907, -41, 148),
+        new EnhancedDOMPoint(-940, 45, -85),
+        new EnhancedDOMPoint(61, -26, -390),
+      );
+    } else if (levelNumber === 1) {
+      noiseMaker.seed(35);
+      const sampleHeightMap2 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
+      this.currentLevel = new Level(
+        sampleHeightMap2,
+        skyboxes.purpleCloud,
+        -47,
+        39,
+        26,
+        materials.grass.texture!,
+        materials.dirtPath.texture!,
+        new EnhancedDOMPoint(907, -41, 148),
+        new EnhancedDOMPoint(-940, 45, -85),
+        new EnhancedDOMPoint(61, -26, -390),
+      );
+    } else {
+      noiseMaker.seed(21);
+      const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
+      this.currentLevel = new Level(
+        sampleHeightMap3,
+        skyboxes.purpleCloud,
+        -47,
+        39,
+        26,
+        materials.grass.texture!,
+        materials.dirtPath.texture!,
+        new EnhancedDOMPoint(907, -41, 148),
+        new EnhancedDOMPoint(-940, 45, -85),
+        new EnhancedDOMPoint(61, -26, -390),
+      );
     }
 
     this.player.mesh.position.y = 1.5;

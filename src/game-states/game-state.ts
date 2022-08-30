@@ -195,10 +195,11 @@ class GameState implements State {
     this.scene.skybox = this.currentLevel.skybox;
     this.scene.skybox.bindGeometry();
 
-    const audio = soundPlayer(...[, , 925, .04, .3, .6, 1, .3, , 6.27, -184, .09, .17] as const);
+    // const audio = soundPlayer(...[, , 925, .04, .3, .6, 1, .3, , 6.27, -184, .09, .17] as const);
 
     // audio.loop = true;
-    audio.connect(panner).connect(audioCtx.destination);
+    // @ts-ignore
+    // audio.connect(panner).connect(audioCtx.destination);
     // audio.start();
 
 

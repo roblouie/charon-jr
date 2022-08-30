@@ -4,10 +4,28 @@ import { EnhancedDOMPoint, VectorLike } from '@/engine/enhanced-dom-point';
 import { doTimes } from "@/engine/helpers";
 import { calculateVertexNormals, radsToDegrees } from "@/engine/math-helpers";
 import { noiseMaker } from "@/engine/texture-creation/noise-maker";
+import { Texture } from '@/engine/renderer/texture';
+
+function getTextureForSide(uDivisions: number, vDivisions: number, texture: Texture) {
+  // @ts-ignore
+  return new Array((uDivisions + 1) * (vDivisions + 1)).fill().map(_ => texture.id);
+}
+
 
 export class MoldableCubeGeometry extends BufferGeometry {
   vertices: EnhancedDOMPoint[] = [];
   verticesToActOn: EnhancedDOMPoint[] = [];
+
+  static TexturePerSide(widthDivisions: number, heightDivisions: number, depthDivisions: number,
+                        left: Texture, right: Texture, top: Texture, bottom: Texture, back: Texture, front: Texture) {
+    const leftTexture = getTextureForSide(depthDivisions, heightDivisions, left);
+    const rightTexture = getTextureForSide(depthDivisions, heightDivisions, right);
+    const topTexture = getTextureForSide(widthDivisions, depthDivisions, top);
+    const bottomTexture = getTextureForSide(widthDivisions, depthDivisions, bottom);
+    const backTexture = getTextureForSide(widthDivisions, heightDivisions, back);
+    const frontTexture = getTextureForSide(widthDivisions, heightDivisions, front);
+    return [...topTexture, ...bottomTexture, ...leftTexture, ...rightTexture,  ...backTexture, ...frontTexture];
+  }
 
   constructor(width = 1, height = 1, depth = 1, widthSegments = 1, heightSegments = 1, depthSegments = 1, sidesToDraw = 6) {
     super();
@@ -55,11 +73,11 @@ export class MoldableCubeGeometry extends BufferGeometry {
           this.vertices.push(vector);
 
 
-          uvs.push(ix);
-          uvs.push(1 - (iy));
+          // uvs.push(ix);
+          // uvs.push(1 - (iy));
           // To make the texture spread across the whole plane regardless of subdivisions we can do this instead:
-          // uvs.push(ix / gridX);
-          // uvs.push(1 - (iy / gridY));
+          uvs.push(ix / gridX);
+          uvs.push(1 - (iy / gridY));
           // Currently I don't want this behavior but might in the future. Might be better to have it spread across
           // the whole mesh and handle texture repeat via the material repeat property.
         }

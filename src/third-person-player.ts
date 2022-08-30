@@ -38,7 +38,6 @@ export class ThirdPersonPlayer {
   carriedSpiritIndex = 0;
 
   constructor(camera: Camera) {
-    textureLoader.load(drawVolcanicRock())
     this.mesh = truck;
     this.chassisCenter.y = 10;
     this.camera = camera;
@@ -85,7 +84,7 @@ export class ThirdPersonPlayer {
     }
 
     this.mesh.position.set(this.chassisCenter); // at this point, feetCenter is in the correct spot, so draw the mesh there
-    this.mesh.position.y += 0.5; // move up by half height so mesh ends at feet position
+    this.mesh.position.y += 2; // move up by half height so mesh ends at feet position
 
     this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.1);
 

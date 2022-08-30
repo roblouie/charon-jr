@@ -111,9 +111,11 @@ export class Renderer {
 
     // Set the depthFunc to less than or equal so the skybox can be drawn at the absolute farthest depth. Without
     // this the skybox will be at the draw distance and so not drawn. After drawing set this back.
-    gl.depthFunc(gl.LEQUAL);
-    renderSkybox(scene.skybox!);
-    gl.depthFunc(gl.LESS);
+    if (scene.skybox) {
+      gl.depthFunc(gl.LEQUAL);
+      renderSkybox(scene.skybox!);
+      gl.depthFunc(gl.LESS);
+    }
 
     // Now render transparent items. For transparent items, stop writing to the depth mask. If we don't do this
     // the transparent portion of a transparent mesh will hide other transparent items. After rendering the

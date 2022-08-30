@@ -36,17 +36,12 @@ import { Spirit } from '@/spirit';
 import { drawEngine } from '@/core/draw-engine';
 import { levelOverState } from '@/game-states/level-over-state';
 
-
-
-
 const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)
   .scale(0, 1, 0)
   .merge(new MoldableCubeGeometry(1, 0.3, 2.5).selectBy(vertex => vertex.z < 0).scale(0.6, 1, 1).all().translate(0, 0, 3.5).done())
   .computeNormalsPerPlane()
   .done();
-
-
 
 class GameState implements State {
   player: ThirdPersonPlayer;

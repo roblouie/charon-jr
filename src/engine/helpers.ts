@@ -40,3 +40,22 @@ export function moveValueTowardsTarget(currentValue: number, maxValue: number, s
   }
   return Math.max(currentValue - step, maxValue);
 }
+
+export function setToIdentity(matrix: DOMMatrix) {
+   matrix.m11 = 1;
+   matrix.m12 = 0;
+   matrix.m13 = 0;
+   matrix.m14 = 0;
+   matrix.m21 = 0;
+   matrix.m22 = 1;
+   matrix.m23 = 0;
+   matrix.m24 = 0;
+   matrix.m31 = 0;
+   matrix.m32 = 0;
+   matrix.m33 = 1;
+   matrix.m34 = 0;
+   matrix.m41 = 0;
+   matrix.m42 = 0;
+   matrix.m43 = 0;
+   matrix.m44 = 1;
+}

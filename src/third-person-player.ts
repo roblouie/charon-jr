@@ -13,6 +13,7 @@ import { audioCtx } from '@/engine/audio/audio-player';
 import { truck, TruckObject3d } from '@/modeling/truck.modeling';
 import { clamp, moveValueTowardsTarget } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
+import { Spirit } from '@/spirit';
 
 const debugElement = document.querySelector('#debug')!;
 
@@ -35,7 +36,7 @@ export class ThirdPersonPlayer {
   listener: AudioListener;
 
   isCarryingSpirit = false;
-  carriedSpiritIndex = 0;
+  carriedSpirit?: Spirit;
 
   constructor(camera: Camera) {
     this.mesh = truck;
@@ -51,6 +52,7 @@ export class ThirdPersonPlayer {
   }
 
   private lastPosition = new EnhancedDOMPoint();
+  private distanceTraveled = new EnhancedDOMPoint();
   update(gridFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]}[]) {
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.01; // gravity
@@ -75,7 +77,6 @@ export class ThirdPersonPlayer {
     this.frontLeftWheel.set(this.mesh.leftFrontWheel.worldMatrix.transformPoint(this.origin));
     this.frontRightWheel.set(this.mesh.rightFrontWheel.worldMatrix.transformPoint(this.origin));
 
-    debugElement.textContent = `${this.chassisCenter.x}, ${this.chassisCenter.y}, ${this.chassisCenter.z}`;
 
     const heightTraveled = this.chassisCenter.y - this.lastPosition.y;
 

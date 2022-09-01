@@ -50,7 +50,12 @@ class MenuState implements State {
     drawEngine.drawText('A MONSTER TRUCK', 'bold italic 60px Times New Roman, serif-black', 640, 140, 1);
 
     if (controls.isEnter) {
-      getGameStateMachine().setState(gameState, 1);
+      drawEngine.context.fillStyle = '#111a';
+      drawEngine.context.fillRect(0, 0, 1920, 1080);
+      drawEngine.drawText('Loading...', 'bold italic 80px Times New Roman, serif-black', 640, 360, 1);
+      setTimeout(() => {
+        getGameStateMachine().setState(gameState, 0);
+      });
     }
   }
 

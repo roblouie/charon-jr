@@ -32,7 +32,7 @@ import { doTimes } from '@/engine/helpers';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 import { largeTree, leavesMesh, plant1 } from '@/modeling/flora.modeling';
 import { Level } from '@/Level';
-import { Spirit } from '@/spirit';
+import { dynamicBody, Spirit } from '@/spirit';
 import { drawEngine } from '@/core/draw-engine';
 import { levelOverState } from '@/game-states/level-over-state';
 
@@ -67,7 +67,7 @@ class GameState implements State {
   currentLevel: Level
 
   constructor() {
-    const camera = new Camera(Math.PI / 2, 16 / 9, 1, 700);
+    const camera = new Camera(Math.PI / 2, 16 / 9, 1, 1000);
     camera.position = new EnhancedDOMPoint(0, 5, -17);
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();
@@ -91,14 +91,17 @@ class GameState implements State {
       .done();
 
     const ramp = new Mesh(rampGeometry, materials.marble);
-    ramp.position.y += 8;
+    ramp.position.y += 100;
     ramp.updateWorldMatrix();
+    this.scene.add(ramp);
   }
 
+  private isLoaded = false;
   onEnter(levelNumber: 0 | 1 | 2) {
+    noiseMaker.seed(22);
+    const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 100);
     if (levelNumber === 0) {
       noiseMaker.seed(2);
-      const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 100);
       this.currentLevel = new Level(
         sampleHeightMap,
         skyboxes.dayCloud,
@@ -185,8 +188,8 @@ class GameState implements State {
     const blueDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#00fc', emissive: '#00fc', isTransparent: true }));
     blueDropOffMesh.position.set(this.currentLevel.blueDropOff);
 
-    this.scene.add(this.player.mesh, ...this.spirits, redDropOffMesh, greenDropOffMesh, blueDropOffMesh);
-    this.scene.add(...this.currentLevel.meshesToRender);
+    this.scene.add(this.player.mesh, ...this.spirits.map(spirit => spirit.bodyMesh), ...this.spirits.map(spirit => spirit.headMesh), redDropOffMesh, greenDropOffMesh, blueDropOffMesh);
+    this.scene.add(...this.currentLevel.meshesToRender, dynamicBody);
 
 
 
@@ -206,6 +209,8 @@ class GameState implements State {
     this.timeReductionPerDropOff = this.initialTimeReductionPerDropOff;
     this.spiritsTransported = 0;
     this.score = 0;
+    this.isLoaded = true;
+    drawEngine.clear();
   }
 
   onLeave() {
@@ -221,8 +226,7 @@ class GameState implements State {
     // Drop Off
     if (this.player.isCarryingSpirit) {
       if (this.player.velocity.magnitude < 0.1) {
-        const carriedSpirit = this.spirits[this.player.carriedSpiritIndex];
-        const dropOffPosition = this.currentLevel[carriedSpirit.dropOffPoint];
+        const dropOffPosition = this.currentLevel[this.player.carriedSpirit!.dropOffPoint];
         this.dropOffPlayerDistance.subtractVectors(dropOffPosition, this.player.chassisCenter);
         if (Math.abs(this.dropOffPlayerDistance.x) <= 30 && Math.abs(this.dropOffPlayerDistance.z) <= 30) {
 
@@ -231,9 +235,10 @@ class GameState implements State {
             this.timePerDistanceUnit -= this.timeReductionPerDropOff;
           }
 
-          carriedSpirit.position.set(this.player.chassisCenter);
-          this.player.mesh.wrapper.remove(carriedSpirit);
-          this.scene.add(carriedSpirit);
+          dynamicBody.position.set(this.player.chassisCenter);
+          dynamicBody.position.y += 3;
+          this.player.mesh.wrapper.remove(dynamicBody);
+          // this.scene.add(dynamicBody);
           this.scene.remove(this.arrowGuideWrapper);
           this.scene.remove(this.arrowGuide)
           this.player.isCarryingSpirit = false;
@@ -246,23 +251,25 @@ class GameState implements State {
     else {
       // Pick Up
       if (this.player.velocity.magnitude < 0.1) {
-        this.currentLevel.spiritPositions.some((spiritPosition, index) => {
-          this.spiritPlayerDistance.subtractVectors(spiritPosition, this.player.chassisCenter)
+        this.spirits.some((spirit, index) => {
+          this.spiritPlayerDistance.subtractVectors(spirit.position, this.player.chassisCenter)
           if (Math.abs(this.spiritPlayerDistance.x) < 15 && Math.abs(this.spiritPlayerDistance.z) < 15) {
-            const spirit = this.spirits[index];
-            const spiritPosition = spirit.position;
+            this.arrowGuide.material.color = spirit.color.map(val => val * 1.5);
 
             // Find distance from spirit pickup point to it's drop off point and add a relative amount of time
-            this.spiritDropOffDistance.subtractVectors(this.currentLevel[spirit.dropOffPoint], spiritPosition);
+            this.spiritDropOffDistance.subtractVectors(this.currentLevel[spirit.dropOffPoint], spirit.position);
             this.spiritDropOffDistance.y = 0;
             this.timeRemaining += (this.spiritDropOffDistance.magnitude * this.timePerDistanceUnit);
 
-            spiritPosition.set(0, 0, -2);
-            this.player.mesh.wrapper.add(spirit);
+            dynamicBody.position.set(0, 3, -3);
+            dynamicBody.setRotation(0, Math.PI, 0);
+            this.player.mesh.wrapper.add(dynamicBody);
             this.player.isCarryingSpirit = true;
-            this.player.carriedSpiritIndex = index;
+            this.player.carriedSpirit = spirit;
             this.scene.add(this.arrowGuideWrapper);
-            this.arrowGuide.material.color = spirit.material.color.map(val => val * 1.5);
+            this.scene.remove(spirit.bodyMesh);
+            this.scene.remove(spirit.headMesh);
+            this.spirits.splice(index, 1);
             return true;
           }
         });
@@ -272,7 +279,11 @@ class GameState implements State {
 
   testLookAt = new EnhancedDOMPoint();
   onUpdate(timeElapsed: number): void {
-    this.timeRemaining -= (timeElapsed / 1000);
+    if (!this.isLoaded) {
+      return;
+    }
+
+    this.timeRemaining -= 0.0166;
 
     drawEngine.clear();
     drawEngine.drawText(this.timeRemaining.toFixed(1), 'bold italic 70px Times New Roman, serif-black', 110, 90, 2);
@@ -287,7 +298,7 @@ class GameState implements State {
     if (this.player.isCarryingSpirit) {
       this.arrowGuideWrapper.position.set(this.player.chassisCenter);
       this.arrowGuideWrapper.position.y += 14;
-      this.testLookAt = this.currentLevel[this.spirits[this.player.carriedSpiritIndex].dropOffPoint];
+      this.testLookAt = this.currentLevel[this.player.carriedSpirit!.dropOffPoint];
       this.testLookAt.y = this.arrowGuideWrapper.position.y - 10;
       this.arrowGuideWrapper.lookAt(this.testLookAt);
     }

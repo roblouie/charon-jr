@@ -15,6 +15,7 @@ import { largeRock, smallRock } from '@/modeling/rocks.modeling';
 import { Face } from '@/engine/physics/face';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
+import { staticBodyGeo } from '@/spirit';
 
 function getRandomArbitrary(min: number, max: number) {
   return Math.random() * (max - min) + min;
@@ -87,7 +88,6 @@ export class Level {
     const grassTransforms: DOMMatrix[] = [];
     const treeTransforms: DOMMatrix[] = [];
     const rockTransforms: DOMMatrix[] = [];
-    const spiritTransforms: DOMMatrix[] = [];
 
     const placedTreePositions: EnhancedDOMPoint[] = [];
 
@@ -123,7 +123,9 @@ export class Level {
         || (currentNoiseValue < -2.0 && currentNoiseValue > -2.02)
       ) {
         // @ts-ignore
-        this.spiritPositions.push(new EnhancedDOMPoint(this.floorMesh.geometry.vertices[index].x, yPosition, this.floorMesh.geometry.vertices[index].z));
+        const spiritPosition = new EnhancedDOMPoint(this.floorMesh.geometry.vertices[index].x, yPosition + 2, this.floorMesh.geometry.vertices[index].z)
+        this.spiritPositions.push(spiritPosition);
+        // spiritTransforms.push(new DOMMatrix().translateSelf(spiritPosition.x, spiritPosition.y, spiritPosition.z))
       }
 
       // With rocks and spirits drawn, filter out all other values less than 1 before continuing.
@@ -161,10 +163,8 @@ export class Level {
     const treeLeaves = new InstancedMesh(leavesMesh.geometry, treeTransforms, treeTransforms.length, leavesMesh.material);
     const rocks = new InstancedMesh(largeRock.geometry, rockTransforms, rockTransforms.length, largeRock.material);
 
-    const spirits = new InstancedMesh(treeCollision, spiritTransforms, spiritTransforms.length, new Material({ color: '#f0f'}));
-
     console.log(this.spiritPositions.length);
-    this.meshesToRender.push(plants, trees, treeLeaves, rocks, spirits);
+    this.meshesToRender.push(plants, trees, treeLeaves, rocks);
   }
 }
 

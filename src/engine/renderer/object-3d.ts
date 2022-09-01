@@ -1,6 +1,7 @@
 import { Mesh } from './mesh';
 import { radsToDegrees } from '@/engine/math-helpers';
 import { EnhancedDOMPoint } from "@/engine/enhanced-dom-point";
+import { setToIdentity } from '@/engine/helpers';
 
 export class Object3d {
   position: EnhancedDOMPoint;
@@ -65,7 +66,7 @@ export class Object3d {
       this.worldMatrix = DOMMatrix.fromMatrix(this.localMatrix);
     }
 
-    this.children.forEach(child => child.updateWorldMatrix());
+      this.children.forEach(child => child.updateWorldMatrix());
   }
 
   allChildren(): Object3d[] {

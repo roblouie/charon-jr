@@ -7,11 +7,11 @@ import { drawVolcanicRock } from '@/texture-maker';
 import {
   findFloorHeightAtPosition,
   findWallCollisionsFromList,
-  getGridPosition, halfLevelSize, maxHalfLevelValue
+  getGridPosition, halfLevelSize, maxHalfLevelValue, rayCastCollision
 } from '@/engine/physics/surface-collision';
-import { audioCtx } from '@/engine/audio/audio-player';
+import { audioCtx, enginePlayer } from '@/engine/audio/audio-player';
 import { truck, TruckObject3d } from '@/modeling/truck.modeling';
-import { clamp, moveValueTowardsTarget } from '@/engine/helpers';
+import { clamp, linearMovement, moveValueTowardsTarget, wrap } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
 import { Spirit } from '@/spirit';
 
@@ -25,8 +25,7 @@ export class ThirdPersonPlayer {
   frontLeftWheel = new EnhancedDOMPoint();
   frontRightWheel = new EnhancedDOMPoint();
   velocity = new EnhancedDOMPoint(0, 0, 0);
-  angle = 0;
-  steeringAngle = 0;
+
 
   mesh: TruckObject3d;
   camera: Camera;
@@ -43,6 +42,13 @@ export class ThirdPersonPlayer {
     this.chassisCenter.y = 10;
     this.camera = camera;
     this.listener = audioCtx.listener;
+
+    enginePlayer.loop = true;
+    enginePlayer.playbackRate.value = 1;
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = 0.4;
+    enginePlayer.connect(gainNode).connect(audioCtx.destination);
+    enginePlayer.start();
   }
 
   private transformIdeal(ideal: EnhancedDOMPoint): EnhancedDOMPoint {
@@ -57,6 +63,9 @@ export class ThirdPersonPlayer {
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.01; // gravity
     this.chassisCenter.add(this.velocity);  // move the player position by the velocity
+
+    this.updateEngineSound();
+
 
     // don't let the player leave the level
     this.chassisCenter.x = clamp(this.chassisCenter.x, -maxHalfLevelValue, maxHalfLevelValue);
@@ -110,9 +119,20 @@ export class ThirdPersonPlayer {
   private axis = new EnhancedDOMPoint();
   private previousFloorHeight = 0;
   collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
-    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 0.8, 0.8);
+    const rayCollisions = rayCastCollision(groupedFaces.wallFaces, this.lastPosition, this.chassisCenter);
+    if (rayCollisions) {
+      this.chassisCenter.set(rayCollisions.collision);
+    }
+
+    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 0.1, 3.5);
+    // debugElement.textContent = `${rayCollisions?.x}, ${rayCollisions?.y}, ${rayCollisions?.z}`;
+
     this.chassisCenter.x += wallCollisions.xPush;
     this.chassisCenter.z += wallCollisions.zPush;
+
+    if (wallCollisions.numberOfWallsHit > 0) {
+      this.speed = 0;
+    }
 
     const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, this.chassisCenter);
 
@@ -136,8 +156,61 @@ export class ThirdPersonPlayer {
     }
   }
 
+
+  private angleTraveling = 0;
+  private anglePointing = 0;
+
+  private steeringAngle = 0;
+  private baseTurningAbility = 0.1;
+  private currentTurningAbility = 0.1;
+
+  private fullTractionStep = 0.05;
+  private tractionPercent = 0.5;
+
+  private speed = 0;
+  private maxSpeed = 3.3;
+  private accelerationRate = 0.03;
+
+  private decelerationRate = 0.02;
+
+  private gearMultipliers = [3.3, 2.2, 1.5, 1.1];
+  private gear = 0;
+
+  private updateEngineSound() {
+    if (this.speed < 1.5) {
+      this.gear = 0;
+    } else if (this.speed >= 1.5 && this.speed < 2.5) {
+      this.gear = 1;
+    } else if (this.speed >= 2.5 && this.speed < 2.8) {
+      this.gear = 2;
+    } else {
+      this.gear = 3;
+    }
+
+    enginePlayer.playbackRate.value = Math.max((this.speed) * this.gearMultipliers[this.gear], 0.7);
+  }
+
   protected updateVelocityFromControls() {
-    const mag = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
+    const baseDrag = 0.01;
+    const drag = clamp(this.speed * baseDrag, 0, 0.08);
+
+
+    const acceleratorValue = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
+    const brakeValue = controls.isGamepadAttached ? controls.leftTrigger : Number(controls.isDown);
+
+    this.speed += acceleratorValue * this.accelerationRate;
+    this.speed = Math.min(this.speed, this.maxSpeed);
+
+    this.speed -= brakeValue * this.decelerationRate;
+
+    this.speed -= drag;
+
+    this.speed = Math.max(0, this.speed);
+
+    debugElement.textContent = `${this.speed}`;
+
+
+
 
     // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
     // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
@@ -150,20 +223,42 @@ export class ThirdPersonPlayer {
     // need button assignments on the controller. angle assignment should happen from calculated steering angle, and
     // eventually, update of truck angle should be contingent on a ground collision check with front wheels.
 // We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
-    this.mesh.setDriveRotationRate(mag);
+    this.mesh.setDriveRotationRate(this.speed);
 
-    const speed = 1.3;
+    this.currentTurningAbility = this.baseTurningAbility;
 
-    const inputAngle = Math.atan2(-controls.direction.x, -controls.direction.z);
+    // limit turning ability to between zero and base
+    this.currentTurningAbility = clamp(this.currentTurningAbility, 0, this.baseTurningAbility);
 
-    if (controls.direction.x !== 0 || controls.direction.z !== 0) {
-      this.angle += inputAngle * 0.05;
+    // Don't allow the car to rotate at low speed
+    if (this.speed === 0) {
+      this.currentTurningAbility = 0;
     }
+    this.anglePointing += this.steeringAngle * this.currentTurningAbility;
+    const quarterTurn = Math.PI / 2;
+    this.anglePointing = clamp(this.anglePointing, this.angleTraveling - quarterTurn, this.angleTraveling + quarterTurn);
+    // Never exceed full circle value
 
-    this.velocity.z = Math.cos(this.angle) * mag * speed;
-    this.velocity.x = Math.sin(this.angle) * mag * speed;
 
-    this.mesh.wrapper.setRotation(0, this.angle, 0);
+    this.angleTraveling = moveValueTowardsTarget(this.angleTraveling, this.anglePointing, this.fullTractionStep * this.tractionPercent);
+
+    this.angleTraveling = clamp(this.angleTraveling, this.anglePointing - quarterTurn, this.anglePointing + quarterTurn);
+
+    const slipAngle = this.angleTraveling - this.anglePointing;
+
+    // Once you've drifted up to 90 degrees, just start turning more
+    // if (Math.abs(slipAngle) >= Math.PI / 2) {
+    //   const difference = slipAngle - (Math.PI / 2);
+    //   debugElement.textContent = `${slipAngle} / ${difference}`;
+    //
+    //   this.angleTraveling += difference;
+    // }
+
+
+    this.velocity.z = Math.cos(this.angleTraveling) * this.speed;
+    this.velocity.x = Math.sin(this.angleTraveling) * this.speed;
+
+    this.mesh.wrapper.setRotation(0, this.anglePointing, 0);
 
     if (controls.isSpace || controls.isJumpPressed) {
       if (!this.isJumping) {

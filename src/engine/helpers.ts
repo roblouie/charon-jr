@@ -41,6 +41,18 @@ export function moveValueTowardsTarget(currentValue: number, maxValue: number, s
   return Math.max(currentValue - step, maxValue);
 }
 
+export function linearMovement(currentValue: number, maxValue: number, percent: number) {
+  const percentOfMax = currentValue * percent;
+  const amountToMoveBy = percentOfMax * percentOfMax;
+  const result = currentValue + amountToMoveBy;
+  return result >= maxValue ? Math.min(result, maxValue) : Math.max(result, maxValue);
+}
+
+export function wrap(num: number, min: number, max: number): number {
+  return ((((num - min) % (max - min)) + (max - min)) % (max - min)) + min;
+}
+
+
 export function setToIdentity(matrix: DOMMatrix) {
    matrix.m11 = 1;
    matrix.m12 = 0;

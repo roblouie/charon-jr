@@ -1,5 +1,5 @@
 import { State } from '@/core/state';
-import { audioCtx, getAudioPlayer, panner } from '@/engine/audio/audio-player';
+import { audioCtx, enginePlayer, getAudioPlayer, panner } from '@/engine/audio/audio-player';
 import { Skybox } from '@/skybox';
 import {
   drawBricks, drawCurrentTexture,
@@ -99,7 +99,7 @@ class GameState implements State {
   private isLoaded = false;
   onEnter(levelNumber: 0 | 1 | 2) {
     noiseMaker.seed(22);
-    const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 100);
+    const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 30);
     if (levelNumber === 0) {
       noiseMaker.seed(2);
       this.currentLevel = new Level(
@@ -130,8 +130,10 @@ class GameState implements State {
         new EnhancedDOMPoint(61, -26, -390),
       );
     } else {
-      noiseMaker.seed(21);
-      const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
+      // noiseMaker.seed(21);
+      // const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
+      // @ts-ignore
+      const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
       this.currentLevel = new Level(
         sampleHeightMap3,
         skyboxes.purpleCloud,
@@ -212,10 +214,12 @@ class GameState implements State {
     this.score = 0;
     this.isLoaded = true;
     drawEngine.clear();
+    enginePlayer.start();
   }
 
   onLeave() {
     drawEngine.clear();
+    enginePlayer.stop();
   }
 
   private spiritPlayerDistance = new EnhancedDOMPoint();

@@ -146,6 +146,10 @@ class NoiseMaker {
     const imageData = new ImageData(size, size);
     let imageDataIndex = 0;
 
+    // TESTING
+    //return imageData;
+    // END TESTING
+
     const position = new EnhancedDOMPoint();
     const flipBase = size - 1;
     for (let verticalPosition = 0; verticalPosition < size; verticalPosition++) {

@@ -147,7 +147,7 @@ class NoiseMaker {
     let imageDataIndex = 0;
 
     // TESTING
-    //return imageData;
+    return imageData;
     // END TESTING
 
     const position = new EnhancedDOMPoint();

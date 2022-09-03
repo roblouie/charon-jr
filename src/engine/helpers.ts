@@ -52,6 +52,15 @@ export function wrap(num: number, min: number, max: number): number {
   return ((((num - min) % (max - min)) + (max - min)) % (max - min)) + min;
 }
 
+export function easeInOut(x: number) {
+  if (x < 0.5) {
+    return Math.min(8 * x * x * x + x * 1.5, 1);
+  } else {
+    return Math.min(1 - ((x - 0.5) **2), 1);
+  }
+}
+
+
 
 export function setToIdentity(matrix: DOMMatrix) {
    matrix.m11 = 1;

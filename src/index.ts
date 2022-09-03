@@ -35,7 +35,7 @@ const debugElement = document.querySelector('#debug')!;
 
 
 
-createGameStateMachine(menuState);
+createGameStateMachine(gameState);
 
 let previousTime = 0;
 const maxFps = 60;

@@ -11,7 +11,7 @@ import {
 } from '@/engine/physics/surface-collision';
 import { audioCtx, enginePlayer } from '@/engine/audio/audio-player';
 import { truck, TruckObject3d } from '@/modeling/truck.modeling';
-import { clamp, linearMovement, moveValueTowardsTarget, wrap } from '@/engine/helpers';
+import { clamp, easeInOut, linearMovement, moveValueTowardsTarget, wrap } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
 import { Spirit } from '@/spirit';
 
@@ -48,7 +48,6 @@ export class ThirdPersonPlayer {
     const gainNode = audioCtx.createGain();
     gainNode.gain.value = 0.4;
     enginePlayer.connect(gainNode).connect(audioCtx.destination);
-    enginePlayer.start();
   }
 
   private transformIdeal(ideal: EnhancedDOMPoint): EnhancedDOMPoint {
@@ -156,16 +155,37 @@ export class ThirdPersonPlayer {
     }
   }
 
+  private gearMultipliers = [3.2, 2.2, 1.5, 1.2];
+  private gear = 0;
+
+  private updateEngineSound() {
+    if (this.speed < 1.5) {
+      this.gear = 0;
+    } else if (this.speed >= 1.5 && this.speed < 2.2) {
+      this.gear = 1;
+    } else if (this.speed >= 2.2 && this.speed < 2.7) {
+      this.gear = 2;
+    } else {
+      this.gear = 3;
+    }
+
+    enginePlayer.playbackRate.value = Math.max(Math.abs(this.speed) * this.gearMultipliers[this.gear], 0.7);
+  }
+
 
   private angleTraveling = 0;
   private anglePointing = 0;
+  private slipAngle = 0;
 
   private steeringAngle = 0;
   private baseTurningAbility = 0.1;
-  private currentTurningAbility = 0.1;
+  private turningAbilityPercent = 1;
 
-  private fullTractionStep = 0.05;
-  private tractionPercent = 0.5;
+  private fullTractionStep = 0.07;
+  private tractionPercent = 0.6;
+
+  private acceleratorValue = 0;
+  private brakeValue = 0;
 
   private speed = 0;
   private maxSpeed = 3.3;
@@ -173,44 +193,75 @@ export class ThirdPersonPlayer {
 
   private decelerationRate = 0.02;
 
-  private gearMultipliers = [3.3, 2.2, 1.5, 1.1];
-  private gear = 0;
+  private determineAbilityToRotateCar() {
+    // this.rearTireGrip = 0.9;
+    this.turningAbilityPercent = 1;
 
-  private updateEngineSound() {
-    if (this.speed < 1.5) {
-      this.gear = 0;
-    } else if (this.speed >= 1.5 && this.speed < 2.5) {
-      this.gear = 1;
-    } else if (this.speed >= 2.5 && this.speed < 2.8) {
-      this.gear = 2;
-    } else {
-      this.gear = 3;
-    }
+    const percentOfMaxSpeed = this.speed / this.maxSpeed;
+    const throttleVsMaxSpeed = this.acceleratorValue - percentOfMaxSpeed;
 
-    enginePlayer.playbackRate.value = Math.max((this.speed) * this.gearMultipliers[this.gear], 0.7);
+    this.turningAbilityPercent = easeInOut(percentOfMaxSpeed);
+
+    // In first gear, high throttle causes over-steer
+    // if (this.gear === 0) {
+    //   const throttleVsSpeedImpact = 0.4;
+    //   const throttleEffect = throttleVsMaxSpeed * throttleVsSpeedImpact;
+    //
+    //   this.tractionPercent -= throttleEffect;
+    // }
+
+
+    // At a base level, you can rotate the car more the faster you go
+    // const percentOfMaxSpeed = this.speed / this.maxSpeed;
+    // this.currentTurningAbility = this.baseTurningAbility * percentOfMaxSpeed;
+    //
+    // // The more you press the accelerator at lower speeds, the higher your ability to rotate the car
+    // let acceleratorInfluenceOnSteering = 0.01;
+    // if (percentOfMaxSpeed > 0) {
+    //   this.currentTurningAbility += (this.acceleratorValue / percentOfMaxSpeed) * acceleratorInfluenceOnSteering;
+    // }
+    //
+    // debugElement.textContent = this.acceleratorValue.toString();
+
+    clamp(this.tractionPercent, 0, 1);
+    clamp(this.turningAbilityPercent, 0, 1);
   }
 
+  private reverseTimer = 0;
+  private isReversing = false;
   protected updateVelocityFromControls() {
     const baseDrag = 0.01;
     const drag = clamp(this.speed * baseDrag, 0, 0.08);
 
 
-    const acceleratorValue = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
-    const brakeValue = controls.isGamepadAttached ? controls.leftTrigger : Number(controls.isDown);
+    this.acceleratorValue = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
+    this.brakeValue = controls.isGamepadAttached ? controls.leftTrigger : Number(controls.isDown);
 
-    this.speed += acceleratorValue * this.accelerationRate;
+    this.speed += this.acceleratorValue * this.accelerationRate;
     this.speed = Math.min(this.speed, this.maxSpeed);
 
-    this.speed -= brakeValue * this.decelerationRate;
+    this.speed -= this.brakeValue * this.decelerationRate;
 
     this.speed -= drag;
 
-    this.speed = Math.max(0, this.speed);
-
-    debugElement.textContent = `${this.speed}`;
 
 
+    debugElement.textContent = this.reverseTimer.toString() + ' / ' + this.speed.toString();
+    if (this.speed <= 0 && this.brakeValue > 0.1) {
+      this.reverseTimer++;
 
+      if (this.reverseTimer > 20) {
+        this.speed -= this.brakeValue * this.decelerationRate;
+        this.isReversing = true;
+      }
+    }
+
+    if (this.speed > 0) {
+      this.reverseTimer = 0;
+      this.isReversing = false;
+    }
+
+    this.speed = Math.max(this.isReversing ? -1 : 0, this.speed);
 
     // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
     // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
@@ -225,16 +276,9 @@ export class ThirdPersonPlayer {
 // We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
     this.mesh.setDriveRotationRate(this.speed);
 
-    this.currentTurningAbility = this.baseTurningAbility;
+    this.determineAbilityToRotateCar();
 
-    // limit turning ability to between zero and base
-    this.currentTurningAbility = clamp(this.currentTurningAbility, 0, this.baseTurningAbility);
-
-    // Don't allow the car to rotate at low speed
-    if (this.speed === 0) {
-      this.currentTurningAbility = 0;
-    }
-    this.anglePointing += this.steeringAngle * this.currentTurningAbility;
+    this.anglePointing += this.steeringAngle * this.baseTurningAbility * this.turningAbilityPercent;
     const quarterTurn = Math.PI / 2;
     this.anglePointing = clamp(this.anglePointing, this.angleTraveling - quarterTurn, this.angleTraveling + quarterTurn);
     // Never exceed full circle value
@@ -244,7 +288,7 @@ export class ThirdPersonPlayer {
 
     this.angleTraveling = clamp(this.angleTraveling, this.anglePointing - quarterTurn, this.anglePointing + quarterTurn);
 
-    const slipAngle = this.angleTraveling - this.anglePointing;
+    this.slipAngle = this.angleTraveling - this.anglePointing;
 
     // Once you've drifted up to 90 degrees, just start turning more
     // if (Math.abs(slipAngle) >= Math.PI / 2) {

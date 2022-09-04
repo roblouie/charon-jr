@@ -36,7 +36,7 @@ export function findFloorHeightAtPosition(floorFaces: Face[], position: Enhanced
 
     height = -(position.x * floor.normal.x + floor.normal.z * position.z + floor.originOffset) / floor.normal.y;
 
-    const buffer = -1; // original mario 64 code uses a 78 unit buffer, but mario is 160 units tall compared to our presently much smaller sizes
+    const buffer = -3; // original mario 64 code uses a 78 unit buffer, but mario is 160 units tall compared to our presently much smaller sizes
     if (position.y - (height + buffer) < 0) {
       continue;
     }

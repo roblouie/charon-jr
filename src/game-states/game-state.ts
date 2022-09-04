@@ -28,7 +28,7 @@ import { menuState } from '@/game-states/menu-state';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { findFloorHeightAtPosition, getGridPosition } from '@/engine/physics/surface-collision';
-import { doTimes } from '@/engine/helpers';
+import { clamp, doTimes } from '@/engine/helpers';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 import { largeTree, leavesMesh, plant1 } from '@/modeling/flora.modeling';
 import { Level } from '@/Level';
@@ -99,7 +99,7 @@ class GameState implements State {
   private isLoaded = false;
   onEnter(levelNumber: 0 | 1 | 2) {
     noiseMaker.seed(22);
-    const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 30);
+    const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 80);
     if (levelNumber === 0) {
       noiseMaker.seed(2);
       this.currentLevel = new Level(
@@ -115,13 +115,26 @@ class GameState implements State {
         new EnhancedDOMPoint(61, -26, -390),
       );
     } else if (levelNumber === 1) {
-      noiseMaker.seed(35);
-      const sampleHeightMap2 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
+      noiseMaker.seed(75);
+      const sampleHeightMap2 = noiseMaker.noiseLandscape(256, 1 / 64, 2, NoiseType.Perlin, 30)
+        .map(val => {
+          if (val > 0) {
+            return val + 40;
+          }
+          else if (val > 1) {
+            return val + 50;
+          } else {
+            return val;
+          }
+        })
+        .map(val => clamp(val, -50, 50))
+      // noiseMaker.seed(35);
+      // const sampleHeightMap2 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
       this.currentLevel = new Level(
         sampleHeightMap2,
         skyboxes.purpleCloud,
         -47,
-        39,
+        41,
         26,
         materials.grass.texture!,
         materials.dirtPath.texture!,

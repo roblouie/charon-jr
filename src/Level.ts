@@ -164,6 +164,8 @@ export class Level {
     const rocks = new InstancedMesh(largeRock.geometry, rockTransforms, rockTransforms.length, largeRock.material);
 
     console.log(this.spiritPositions.length);
+    this.facesToCollideWith.floorFaces.sort((faceA, faceB) => faceB.upperY - faceA.upperY);
+    console.log(this.facesToCollideWith.ceilingFaces);
     this.meshesToRender.push(plants, trees, treeLeaves, rocks);
   }
 }

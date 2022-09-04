@@ -117,6 +117,7 @@ export class ThirdPersonPlayer {
 
   private axis = new EnhancedDOMPoint();
   private previousFloorHeight = 0;
+  private jumpTimer = 0;
   collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
     const rayCollisions = rayCastCollision(groupedFaces.wallFaces, this.lastPosition, this.chassisCenter);
     if (rayCollisions) {
@@ -145,6 +146,7 @@ export class ThirdPersonPlayer {
       this.chassisCenter.y += collisionDepth;
       this.velocity.y = 0;
       this.isJumping = false;
+      this.jumpTimer = 0;
       this.axis = this.axis.crossVectors(this.mesh.up, floorData.floor.normal);
       const radians = Math.acos(floorData.floor.normal.dot(this.mesh.up));
       this.mesh.rotationMatrix = new DOMMatrix();
@@ -152,6 +154,7 @@ export class ThirdPersonPlayer {
       this.previousFloorHeight = floorData.height;
     } else {
       this.isJumping = true;
+      this.jumpTimer++;
     }
   }
 
@@ -186,15 +189,17 @@ export class ThirdPersonPlayer {
 
   private acceleratorValue = 0;
   private brakeValue = 0;
+  private readonly baseDecelerationRate = 0.02;
+  private decelerationRate = 0.02;
 
   private speed = 0;
   private maxSpeed = 3.3;
+  private readonly baseAccelerationRate = 0.03;
   private accelerationRate = 0.03;
 
-  private decelerationRate = 0.02;
 
   private determineAbilityToRotateCar() {
-    // this.rearTireGrip = 0.9;
+    this.tractionPercent = 0.6;
     this.turningAbilityPercent = 1;
 
     const percentOfMaxSpeed = this.speed / this.maxSpeed;
@@ -223,6 +228,11 @@ export class ThirdPersonPlayer {
     //
     // debugElement.textContent = this.acceleratorValue.toString();
 
+    if (this.jumpTimer > 30) {
+      this.tractionPercent = 0.2;
+      this.turningAbilityPercent = 0.2;
+    }
+
     clamp(this.tractionPercent, 0, 1);
     clamp(this.turningAbilityPercent, 0, 1);
   }
@@ -230,6 +240,10 @@ export class ThirdPersonPlayer {
   private reverseTimer = 0;
   private isReversing = false;
   protected updateVelocityFromControls() {
+    this.accelerationRate = (this.jumpTimer > 30) ? this.baseAccelerationRate / 3 : this.baseAccelerationRate;
+    this.decelerationRate = (this.jumpTimer > 30) ? this.baseDecelerationRate / 3 : this.baseDecelerationRate;
+
+
     const baseDrag = 0.01;
     const drag = clamp(this.speed * baseDrag, 0, 0.08);
 
@@ -243,8 +257,6 @@ export class ThirdPersonPlayer {
     this.speed -= this.brakeValue * this.decelerationRate;
 
     this.speed -= drag;
-
-
 
     debugElement.textContent = this.reverseTimer.toString() + ' / ' + this.speed.toString();
     if (this.speed <= 0 && this.brakeValue > 0.1) {

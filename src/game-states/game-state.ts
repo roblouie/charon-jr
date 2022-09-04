@@ -111,6 +111,7 @@ class GameState implements State {
         materials.dirtPath,
         true,
         materials.grass,
+        materials.lake,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),
@@ -141,25 +142,27 @@ class GameState implements State {
         undefined,
         false,
         materials.pergatoryGrass,
+        materials.lake,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),
       );
     } else {
-      // noiseMaker.seed(21);
-      // const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
+      noiseMaker.seed(99);
+      const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
       // @ts-ignore
-      const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
+      //const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
       this.currentLevel = new Level(
         sampleHeightMap3,
         underworldSky,
-        -47,
+        -17,
         39,
         26,
-        materials.grass,
-        materials.dirtPath,
+        materials.underworldGround,
+        materials.underworldPath,
         false,
         materials.grass,
+        materials.lake,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),

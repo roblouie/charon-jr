@@ -265,6 +265,44 @@ export function drawTruckCabRear() {
 }
 const truckCabRear = new Material({texture: textureLoader.load(drawTruckCabRear())});
 
+
+// *********************
+// Underworld Path
+// *********************
+export function drawVolcanicRock() {
+  clearWith('#172d41');
+  noiseMaker.seed(4);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#00b63e', 180, true, 'x', 'y', 'z', 0), 0, 0);
+  drawContext.filter = 'contrast(500%)';
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  noisify(drawContext, 5);
+  return mainImageData();
+}
+const underworldPathTexture = textureLoader.load(drawVolcanicRock());
+underworldPathTexture.repeat.x = 60; underworldPathTexture.repeat.y = 60;
+const underworldPath = new Material({texture: underworldPathTexture});
+
+
+// *********************
+// Underworld Ground
+// *********************
+export function drawUnderworldGround() {
+  clearWith('#172d41');
+  noiseMaker.seed(4);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#090511', 180, true, 'x', 'y', 'z', 0), 0, 0);
+  drawContext.filter = 'contrast(500%)';
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  noisify(drawContext, 8);
+  return mainImageData();
+}
+
+const underworldGroundTexture = textureLoader.load(drawUnderworldGround());
+underworldGroundTexture.repeat.x = 60; underworldGroundTexture.repeat.y = 60;
+const underworldGround = new Material({texture: underworldGroundTexture});
+
+
+
+
 textureLoader.bindTextures();
 
 export const materials = {
@@ -285,7 +323,11 @@ export const materials = {
   truckCabRear,
   dirtPath,
   pergatoryGrass,
+  underworldPath,
+  underworldGround,
 };
+
+console.log(materials)
 
 // export const skyboxes = {
 //   earthSky: createSkybox(drawEarthSky),
@@ -332,7 +374,7 @@ export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimensio
 export function drawSkyPurple(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
   clearWith('#4c009a');
   noiseMaker.seed(100);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 6, NoiseType.Perlin, '#000', 210, true, firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 6, NoiseType.Perlin, '#1a1741', 210, true, firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   tileDrawn();
   return tileContext.getImageData(0, 0, 256, 256);
@@ -369,14 +411,6 @@ export function drawStoneWalkway() {
 
   noiseMaker.seed(34);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#115', 220, true, 'x', 'y', 'z', 0), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  return mainImageData();
-}
-
-export function drawVolcanicRock() {
-  clearWith('#000000');
-  noiseMaker.seed(462);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#f00', 130, true, 'x', 'y', 'z', 0), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   return mainImageData();
 }

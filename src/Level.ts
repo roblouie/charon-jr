@@ -44,6 +44,7 @@ export class Level {
     pathMaterial: Material | undefined,
     isTreeLeavesShowing: boolean,
     plantMaterial: Material,
+    waterMaterial: Material,
     redDropOff: EnhancedDOMPoint,
     greenDropOff: EnhancedDOMPoint,
     blueDropOff: EnhancedDOMPoint
@@ -57,7 +58,7 @@ export class Level {
     this.facesToCollideWith = { floorFaces: [], wallFaces: [], ceilingFaces: [] };
 
     this.floorMesh = new Mesh(
-      new PlaneGeometry(2047, 2047, 255, 255, heightmap),
+      new PlaneGeometry(2047, 2047, 255, 255, heightmap.map(val => Math.max(val, waterLevel - 3))),
       groundMaterial
     );
 
@@ -71,7 +72,7 @@ export class Level {
         return clamp(noiseValue * 4, 0, 1);
       }
 
-      const pathTextureIds = path.map(val => val + groundMaterial.texture!.id);
+      const pathTextureIds = path.map(val => val + pathMaterial!.texture!.id);
       this.floorMesh.geometry.setAttribute(AttributeLocation.TextureDepth, new Float32Array(pathTextureIds), 1);
     }
 
@@ -81,7 +82,7 @@ export class Level {
     // Draw water
     const lake = new Mesh(
       new PlaneGeometry(2047, 2047, 1, 1),
-      materials.lake
+      waterMaterial
     );
     lake.position.y = waterLevel;
     this.waterLevel = waterLevel;

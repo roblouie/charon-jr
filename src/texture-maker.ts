@@ -68,7 +68,8 @@ const grass = new Material({texture: floorTexture});
 
 const treeTexture = textureLoader.load(drawGrass());
 treeTexture.repeat.set(2, 2);
-const treeLeaves = new Material({texture: treeTexture});
+const treeLeaves = new Material({texture: treeTexture });
+const pergatoryGrass = new Material({texture: treeTexture, color: '#f4f' });
 
 // *********************
 // Bricks
@@ -283,12 +284,16 @@ export const materials = {
   truckCabLeftSide,
   truckCabRear,
   dirtPath,
+  pergatoryGrass,
 };
 
-export const skyboxes = {
-  dayCloud: createSkybox(drawSky),
-  purpleCloud: createSkybox(drawSkyPurple)
-}
+// export const skyboxes = {
+//   earthSky: createSkybox(drawEarthSky),
+//   purgatorySky: createSkybox(drawPurgatorySky),
+//   underworldSky: createSkybox(drawSkyPurple)
+// }
+
+export const underworldSky = createSkybox(drawSkyPurple);
 
 
 export function drawCurrentTexture() {
@@ -296,12 +301,31 @@ export function drawCurrentTexture() {
     tileDrawn();
 }
 
-export function drawSky(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
+export function drawEarthSky(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
   clearWith('#2d75fa');
   noiseMaker.seed(100);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 6, NoiseType.Perlin, '#fff', 210, true, firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   tileDrawn();
+  return tileContext.getImageData(0, 0, 256, 256);
+}
+
+export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
+  clearWith('#f53c00');
+
+  noiseMaker.seed(100);
+
+  const noiseImage = noiseMaker.noiseImage(128, 1 / 64, 2, NoiseType.Perlin, '#6e16ff', 180, true, firstDimension, secondDimension, sliceDimension, slice, flip);
+  noiseContext.putImageData(noiseImage, 0, 0);
+  drawContext.globalCompositeOperation = 'difference';
+
+  noiseContext.putImageData(noiseImage, 0, 0, 0, 0, 256, 256);
+
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  tileContext.save();
+  tileContext.scale(4, 1);
+  tileDrawn();
+  tileContext.restore();
   return tileContext.getImageData(0, 0, 256, 256);
 }
 
@@ -430,7 +454,7 @@ function tileDrawn() {
 //
 // This is functionally equivalent to the code-golfed version below.
 // @ts-ignore
-function createSkybox(callback: (firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip: boolean) => ImageData) {
+export function createSkybox(callback: (firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip: boolean) => ImageData) {
   return ['zyx', 'zyx', 'xzy', 'xzy', 'xyz', 'xyz'].map((coordinates, i) => {
     // @ts-ignore
     return callback(...coordinates.split(''), i % 2 === 0 ? 0 : 127, i === 0 || i === 5);

@@ -1,7 +1,7 @@
 import { Scene } from '@/engine/renderer/scene';
 import { State } from '@/core/state';
 import { Skybox } from '@/skybox';
-import { canvasPatterns, materials, skyboxes } from '@/texture-maker';
+import { canvasPatterns, materials } from '@/texture-maker';
 import { Camera } from '@/engine/renderer/camera';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { renderer } from '@/engine/renderer/renderer';

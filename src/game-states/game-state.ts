@@ -1,13 +1,12 @@
 import { State } from '@/core/state';
 import { audioCtx, enginePlayer, getAudioPlayer, panner } from '@/engine/audio/audio-player';
-import { Skybox } from '@/skybox';
 import {
   drawBricks, drawCurrentTexture,
   drawGrass,
   drawLandscape,
   drawMarble, drawParticle,
-  drawSky,
-  drawWater, materials, skyboxes,
+  drawEarthSky,
+  drawWater, materials, createSkybox, drawPurgatorySky, drawSkyPurple, underworldSky,
 } from '@/texture-maker';
 import { Scene } from '@/engine/renderer/scene';
 import { Camera } from '@/engine/renderer/camera';
@@ -104,12 +103,14 @@ class GameState implements State {
       noiseMaker.seed(2);
       this.currentLevel = new Level(
         sampleHeightMap,
-        skyboxes.dayCloud,
+        createSkybox(drawEarthSky),
         -47,
         39,
         26,
-        materials.grass.texture!,
-        materials.dirtPath.texture!,
+        materials.grass,
+        materials.dirtPath,
+        true,
+        materials.grass,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),
@@ -127,17 +128,19 @@ class GameState implements State {
             return val;
           }
         })
-        .map(val => clamp(val, -50, 50))
+        .map(val => clamp(val, -50, 50));
       // noiseMaker.seed(35);
       // const sampleHeightMap2 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
       this.currentLevel = new Level(
         sampleHeightMap2,
-        skyboxes.purpleCloud,
+        createSkybox(drawPurgatorySky),
         -47,
-        41,
-        26,
-        materials.grass.texture!,
-        materials.dirtPath.texture!,
+        undefined,
+        4,
+        materials.dirtPath,
+        undefined,
+        false,
+        materials.pergatoryGrass,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),
@@ -149,12 +152,14 @@ class GameState implements State {
       const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
       this.currentLevel = new Level(
         sampleHeightMap3,
-        skyboxes.purpleCloud,
+        underworldSky,
         -47,
         39,
         26,
-        materials.grass.texture!,
-        materials.dirtPath.texture!,
+        materials.grass,
+        materials.dirtPath,
+        false,
+        materials.grass,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),

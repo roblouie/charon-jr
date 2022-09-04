@@ -12,7 +12,7 @@ import {
   drawCurrentTexture,
   drawGrass,
   drawLandscape,
-  drawMarble, drawParticle, drawSky,
+  drawMarble, drawParticle, drawEarthSky,
   drawStoneWalkway, drawVolcanicRock, drawWater
 } from '@/texture-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';

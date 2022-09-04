@@ -38,10 +38,12 @@ export class Level {
     heightmap: number[],
     skyboxImages: ImageData[],
     waterLevel: number,
-    pathSeed: number,
+    pathSeed: number | undefined,
     scenerySeed: number,
-    groundTexture: Texture,
-    pathTexture: Texture,
+    groundMaterial: Material,
+    pathMaterial: Material | undefined,
+    isTreeLeavesShowing: boolean,
+    plantMaterial: Material,
     redDropOff: EnhancedDOMPoint,
     greenDropOff: EnhancedDOMPoint,
     blueDropOff: EnhancedDOMPoint
@@ -54,18 +56,25 @@ export class Level {
     const treeCollisionMesh = new Mesh(treeCollision, new Material({color: '#0000'}));
     this.facesToCollideWith = { floorFaces: [], wallFaces: [], ceilingFaces: [] };
 
-    // Draw Paths
-    noiseMaker.seed(pathSeed);
-    const path = noiseMaker.noiseLandscape(256, 1 / 128, 2, NoiseType.Lines,8).map(modifyNoiseValue);
-    // TODO: This will need modified for new levels to fix the textures to within the ground / path id range
-    function modifyNoiseValue(noiseValue: number) {
-      return clamp(noiseValue * 4, 0, 1);
-    }
     this.floorMesh = new Mesh(
       new PlaneGeometry(2047, 2047, 255, 255, heightmap),
-      materials.grass
+      groundMaterial
     );
-    this.floorMesh.geometry.setAttribute(AttributeLocation.TextureDepth, new Float32Array(path), 1);
+
+    let path: number[] = [];
+    // Draw Paths
+    if (pathSeed) {
+      noiseMaker.seed(pathSeed);
+      path = noiseMaker.noiseLandscape(256, 1 / 128, 2, NoiseType.Lines,8).map(modifyNoiseValue);
+      // TODO: This will need modified for new levels to fix the textures to within the ground / path id range
+      function modifyNoiseValue(noiseValue: number) {
+        return clamp(noiseValue * 4, 0, 1);
+      }
+
+      const pathTextureIds = path.map(val => val + groundMaterial.texture!.id);
+      this.floorMesh.geometry.setAttribute(AttributeLocation.TextureDepth, new Float32Array(pathTextureIds), 1);
+    }
+
     const floorFaces = meshToFaces([this.floorMesh]);
     getGroupedFaces(floorFaces, this.facesToCollideWith);
 
@@ -102,7 +111,7 @@ export class Level {
       }
 
       // No landscape on the trail
-      if (path[index] <= 0.7) {
+      if (path.length && path[index] <= 0.7) {
         return;
       }
 
@@ -158,15 +167,18 @@ export class Level {
       }
     });
 
-    const plants = new InstancedMesh(plant1.geometry, grassTransforms, grassTransforms.length, plant1.material);
+    const plants = new InstancedMesh(plant1.geometry, grassTransforms, grassTransforms.length, plantMaterial);
     const trees = new InstancedMesh(largeTree.geometry, treeTransforms, treeTransforms.length, largeTree.material);
-    const treeLeaves = new InstancedMesh(leavesMesh.geometry, treeTransforms, treeTransforms.length, leavesMesh.material);
+    if (isTreeLeavesShowing) {
+      const treeLeaves = new InstancedMesh(leavesMesh.geometry, treeTransforms, treeTransforms.length, leavesMesh.material);
+      this.meshesToRender.push(treeLeaves);
+    }
     const rocks = new InstancedMesh(largeRock.geometry, rockTransforms, rockTransforms.length, largeRock.material);
 
     console.log(this.spiritPositions.length);
     this.facesToCollideWith.floorFaces.sort((faceA, faceB) => faceB.upperY - faceA.upperY);
     console.log(this.facesToCollideWith.ceilingFaces);
-    this.meshesToRender.push(plants, trees, treeLeaves, rocks);
+    this.meshesToRender.push(plants, trees, rocks);
   }
 }
 

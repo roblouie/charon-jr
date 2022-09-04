@@ -1,7 +1,7 @@
 import { Scene } from '@/engine/renderer/scene';
 import { State } from '@/core/state';
 import { Skybox } from '@/skybox';
-import { drawSky, drawSkyPurple, materials, skyboxes } from '@/texture-maker';
+import { drawEarthSky, drawSkyPurple, materials, underworldSky } from '@/texture-maker';
 import { Camera } from '@/engine/renderer/camera';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { renderer } from '@/engine/renderer/renderer';
@@ -33,7 +33,7 @@ class MenuState implements State {
     this.camera.position.y += 2;
     this.camera.updateWorldMatrix();
     this.scene = new Scene();
-    this.scene.skybox = new Skybox(...skyboxes.purpleCloud);
+    this.scene.skybox = new Skybox(...underworldSky);
     this.scene.skybox.bindGeometry();
     this.scene.add(truck);
   }

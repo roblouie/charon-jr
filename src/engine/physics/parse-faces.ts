@@ -37,9 +37,9 @@ export function meshToFaces(meshes: Mesh[], transformMatrix?: DOMMatrix) {
 
 export function getGroupedFaces(faces: Face[], destinationGroupedFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]}) {
   faces.forEach(face => {
-    if (face.normal.y > 0.1) {
+    if (face.normal.y > 0.2) {
       destinationGroupedFaces.floorFaces.push(face);
-    } else if (face.normal.y < -0.1) {
+    } else if (face.normal.y < -0.2) {
       destinationGroupedFaces.ceilingFaces.push(face);
     } else {
       destinationGroupedFaces.wallFaces.push(face);

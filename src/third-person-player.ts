@@ -9,7 +9,7 @@ import {
   findWallCollisionsFromList,
   getGridPosition, halfLevelSize, maxHalfLevelValue, rayCastCollision
 } from '@/engine/physics/surface-collision';
-import { audioCtx, enginePlayer } from '@/engine/audio/audio-player';
+import { audioCtx, engineAudio, hit1Audio, hit2Audio, landingAudio } from '@/engine/audio/audio-player';
 import { truck, TruckObject3d } from '@/modeling/truck.modeling';
 import { clamp, easeInOut, linearMovement, moveValueTowardsTarget, wrap } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
@@ -43,11 +43,11 @@ export class ThirdPersonPlayer {
     this.camera = camera;
     this.listener = audioCtx.listener;
 
-    enginePlayer.loop = true;
-    enginePlayer.playbackRate.value = 1;
+    engineAudio.loop = true;
+    engineAudio.playbackRate.value = 1;
     const gainNode = audioCtx.createGain();
     gainNode.gain.value = 0.4;
-    enginePlayer.connect(gainNode).connect(audioCtx.destination);
+    engineAudio.connect(gainNode).connect(audioCtx.destination);
   }
 
   private transformIdeal(ideal: EnhancedDOMPoint): EnhancedDOMPoint {
@@ -125,13 +125,15 @@ export class ThirdPersonPlayer {
     }
 
     const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 0.1, 3.5);
-    // debugElement.textContent = `${rayCollisions?.x}, ${rayCollisions?.y}, ${rayCollisions?.z}`;
 
     this.chassisCenter.x += wallCollisions.xPush;
     this.chassisCenter.z += wallCollisions.zPush;
 
     if (wallCollisions.numberOfWallsHit > 0) {
-      this.speed = 0;
+      this.angleTravelingVector.normalize();
+      const collisionDot = this.angleTravelingVector.x * wallCollisions.walls[0].normal.x + this.angleTravelingVector.z * wallCollisions.walls[0].normal.z;
+
+      this.speed -= this.speed * (1 - Math.abs(collisionDot));
     }
 
     const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, this.chassisCenter);
@@ -143,6 +145,10 @@ export class ThirdPersonPlayer {
     const collisionDepth = floorData.height - this.chassisCenter.y;
 
     if (collisionDepth > 0) {
+      if (this.jumpTimer > 20) {
+        landingAudio().start();
+      }
+
       this.chassisCenter.y += collisionDepth;
       this.velocity.y = 0;
       this.isJumping = false;
@@ -172,11 +178,12 @@ export class ThirdPersonPlayer {
       this.gear = 3;
     }
 
-    enginePlayer.playbackRate.value = Math.max(Math.abs(this.speed) * this.gearMultipliers[this.gear], 0.7);
+    engineAudio.playbackRate.value = Math.max(Math.abs(this.speed) * this.gearMultipliers[this.gear], 0.7);
   }
 
 
   private angleTraveling = 0;
+  private angleTravelingVector = new EnhancedDOMPoint();
   private anglePointing = 0;
   private slipAngle = 0;
 
@@ -258,12 +265,12 @@ export class ThirdPersonPlayer {
 
     this.speed -= drag;
 
-    debugElement.textContent = this.reverseTimer.toString() + ' / ' + this.speed.toString();
     if (this.speed <= 0 && this.brakeValue > 0.1) {
       this.reverseTimer++;
 
       if (this.reverseTimer > 20) {
         this.speed -= this.brakeValue * this.decelerationRate;
+        this.speed += drag * 2;
         this.isReversing = true;
       }
     }
@@ -282,10 +289,6 @@ export class ThirdPersonPlayer {
     this.steeringAngle = moveValueTowardsTarget(this.steeringAngle, controls.direction.x * wheelTurnScale, .05)
     this.mesh.setSteeringAngle(this.steeringAngle);
 
-    // logic to set angle should use controller z input only. Gas and brake can be 'w' and 's' on keyboard, but
-    // need button assignments on the controller. angle assignment should happen from calculated steering angle, and
-    // eventually, update of truck angle should be contingent on a ground collision check with front wheels.
-// We really need like accelerator vs brake to set the rotation speed of the wheels, this is haggard placeholder
     this.mesh.setDriveRotationRate(this.speed);
 
     this.determineAbilityToRotateCar();
@@ -299,6 +302,12 @@ export class ThirdPersonPlayer {
     this.angleTraveling = moveValueTowardsTarget(this.angleTraveling, this.anglePointing, this.fullTractionStep * this.tractionPercent);
 
     this.angleTraveling = clamp(this.angleTraveling, this.anglePointing - quarterTurn, this.anglePointing + quarterTurn);
+
+    this.angleTravelingVector.set(Math.cos(this.angleTraveling), 0, Math.sin(this.angleTraveling));
+
+
+
+
 
     this.slipAngle = this.angleTraveling - this.anglePointing;
 

@@ -1,5 +1,5 @@
 import { State } from '@/core/state';
-import { audioCtx, enginePlayer, getAudioPlayer, panner } from '@/engine/audio/audio-player';
+import { audioCtx, engineAudio, getAudioPlayer, panner } from '@/engine/audio/audio-player';
 import {
   drawBricks, drawCurrentTexture,
   drawGrass,
@@ -80,19 +80,7 @@ class GameState implements State {
 
     this.currentLevel = {} as Level;
 
-    const rampGeometry = new MoldableCubeGeometry(16, 40, 40);
-    rampGeometry
-      .selectBy(vertex => {
-        return vertex.y > 5 && vertex.z > 1;
-      })
-      .translate(0, -30)
-      .computeNormalsPerPlane()
-      .done();
 
-    const ramp = new Mesh(rampGeometry, materials.marble);
-    ramp.position.y += 100;
-    ramp.updateWorldMatrix();
-    this.scene.add(ramp);
   }
 
   private isLoaded = false;
@@ -175,6 +163,7 @@ class GameState implements State {
 
     this.scene = new Scene();
 
+
     function onlyUnique(value: any, index: number, array: any[]) {
       return array.indexOf(value) === index;
     }
@@ -235,12 +224,12 @@ class GameState implements State {
     this.score = 0;
     this.isLoaded = true;
     drawEngine.clear();
-    enginePlayer.start();
+    engineAudio.start();
   }
 
   onLeave() {
     drawEngine.clear();
-    enginePlayer.stop();
+    engineAudio.stop();
   }
 
   private spiritPlayerDistance = new EnhancedDOMPoint();

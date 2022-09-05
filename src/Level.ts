@@ -168,6 +168,16 @@ export class Level {
       }
     });
 
+    // TESTING
+    const rampGeometry = new MoldableCubeGeometry(16, 40, 40);
+    const ramp = new Mesh(rampGeometry, materials.marble);
+    ramp.position.y += 10;
+    ramp.position.z += 10;
+    ramp.updateWorldMatrix();
+    this.meshesToRender.push(ramp);
+    getGroupedFaces(meshToFaces([ramp], ramp.worldMatrix), this.facesToCollideWith);
+    // END TESTING
+
     const plants = new InstancedMesh(plant1.geometry, grassTransforms, grassTransforms.length, plantMaterial);
     const trees = new InstancedMesh(largeTree.geometry, treeTransforms, treeTransforms.length, largeTree.material);
     if (isTreeLeavesShowing) {

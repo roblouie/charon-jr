@@ -32,7 +32,7 @@ export function getAudioPlayer(): () => void {
 }
 
 
-const pannerModel = 'HRTF';
+const pannerModel = 'equalpower';
 
 const innerCone = 360;
 const outerCone = 360;
@@ -70,7 +70,7 @@ const explosion = zzfxG(...[,,333,.01,0,.9,4,1.9,,,,,,.5,,.6]);
 
 const test = zzfxP(explosion);
 test.loop = true;
-test.playbackRate.value = 2;
+// test.playbackRate.value = 2;
 test.connect(panner).connect(audioCtx.destination);
 test.start();
 
@@ -92,11 +92,18 @@ zzfx(...[2.03,0,48,,2.91,-1,2,.3,,,,,.07,.3,,.1,.19,.6,,.43]); // Powerup 78
 
 // BETTER ENGINE
 const engine = zzfxG(...[2.03,0,48,,2.91,0,2,.4,,,,,.03,,1.5,,,.6,,.59]);
-export const enginePlayer = zzfxP(engine);
+export const engineAudio = zzfxP(engine);
 
 
 // Possible landing sound
-zzfx(...[1.68,,97,,.01,.05,1,.73,2.2,,,,,,,,.04,.57,.1,.38]); // Shoot 151
+const landingBuffer = zzfxG(...[,,135,.01,.09,.05,1,1.7,-3.9,-1.5,,,.17,.6,,.1,,.59,.01]); // Hit 761 // Shoot 151
+export const landingAudio = createAudioNode(landingBuffer);
+
+const hit1Buffer = zzfxG(...[1.74,.2,164.8138,.01,.08,.04,4,4.4,-1,-2,-400,,,.2,,.1,.01,.5,.06,.08]); // Hit 242
+export const hit1Audio = createAudioNode(hit1Buffer);
+
+const hit2Buffer = zzfxG(...[,,243,.01,.02,.19,4,.42,-0.1,,,,,.9,,.4,,.59,.04,.03]); // Hit 251
+export const hit2Audio = createAudioNode(hit2Buffer);
 
 // Happy Ghost Thank You ?
 zzfx(...[2.11,.85,101,.25,.4,.56,1,,.4,.5,270,,,,.1,.1,.43,-0.6,.26,.29]); // Pickup 61 - Copy 14
@@ -107,3 +114,12 @@ zzfx(...[,,264,,.08,0,,1.99,-1.3,-5.8,1150,-0.12,-0.01,2.1,11,.1,.01,.62,.07,.33
 
 // Cool Beat
 zzfx(...[2.03,0,65.40639,.01,.34,.07,2,1.9,,,,,,,,,.16,.23,.19]); // Music 103
+
+
+function createAudioNode(buffer: number[]) {
+  return () => {
+    const node = zzfxP(buffer)
+    node.connect(audioCtx.destination);
+    return node; //a
+  }
+}

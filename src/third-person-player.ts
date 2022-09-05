@@ -9,7 +9,14 @@ import {
   findWallCollisionsFromList,
   getGridPosition, halfLevelSize, maxHalfLevelValue, rayCastCollision
 } from '@/engine/physics/surface-collision';
-import { audioCtx, engineAudio, hit1Audio, hit2Audio, landingAudio } from '@/engine/audio/audio-player';
+import {
+  audioCtx,
+  drivingThroughWaterAudio,
+  engineAudio,
+  hit1Audio,
+  hit2Audio,
+  landingAudio
+} from '@/engine/audio/audio-player';
 import { truck, TruckObject3d } from '@/modeling/truck.modeling';
 import { clamp, easeInOut, linearMovement, moveValueTowardsTarget, wrap } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
@@ -37,6 +44,8 @@ export class ThirdPersonPlayer {
   isCarryingSpirit = false;
   carriedSpirit?: Spirit;
 
+  private drivingThroughWaterGain: GainNode;
+
   constructor(camera: Camera) {
     this.mesh = truck;
     this.chassisCenter.y = 10;
@@ -48,6 +57,12 @@ export class ThirdPersonPlayer {
     const gainNode = audioCtx.createGain();
     gainNode.gain.value = 0.4;
     engineAudio.connect(gainNode).connect(audioCtx.destination);
+
+    drivingThroughWaterAudio.loop = true;
+    drivingThroughWaterAudio.playbackRate.value = 1;
+    this.drivingThroughWaterGain = audioCtx.createGain();
+    this.drivingThroughWaterGain.gain.value = 0;
+    drivingThroughWaterAudio.connect(this.drivingThroughWaterGain).connect(audioCtx.destination);
   }
 
   private transformIdeal(ideal: EnhancedDOMPoint): EnhancedDOMPoint {
@@ -58,7 +73,21 @@ export class ThirdPersonPlayer {
 
   private lastPosition = new EnhancedDOMPoint();
   private distanceTraveled = new EnhancedDOMPoint();
-  update(gridFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]}[]) {
+  private dragRate = 0.99;
+  update(gridFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]}[], waterLevel: number) {
+    this.dragRate = 0.99;
+    this.drivingThroughWaterGain.gain.value = 0;
+
+    // If we are diving through water
+    if (this.chassisCenter.y - waterLevel < -1) {
+      this.dragRate = 0.96;
+      this.drivingThroughWaterGain.gain.value = this.speed;
+      drivingThroughWaterAudio.playbackRate.value = Math.min(Math.abs(this.speed * 2), 1.2);
+    }
+
+    this.dragRate = (this.chassisCenter.y - waterLevel < -1) ? 0.96 : 0.99;
+    debugElement.textContent = (this.chassisCenter.y - waterLevel).toString();
+
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.01; // gravity
     this.chassisCenter.add(this.velocity);  // move the player position by the velocity
@@ -250,8 +279,6 @@ export class ThirdPersonPlayer {
     this.accelerationRate = (this.jumpTimer > 30) ? this.baseAccelerationRate / 3 : this.baseAccelerationRate;
     this.decelerationRate = (this.jumpTimer > 30) ? this.baseDecelerationRate / 3 : this.baseDecelerationRate;
 
-    const dragRate = 0.99
-
     this.acceleratorValue = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
     this.brakeValue = controls.isGamepadAttached ? controls.leftTrigger : Number(controls.isDown);
 
@@ -260,7 +287,7 @@ export class ThirdPersonPlayer {
 
     this.speed -= this.brakeValue * this.decelerationRate;
 
-    this.speed *= dragRate;
+    this.speed *= this.dragRate;
 
     if (this.speed <= 0 && this.brakeValue > 0.1) {
       this.reverseTimer++;

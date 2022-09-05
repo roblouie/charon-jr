@@ -58,7 +58,7 @@ export class Level {
     this.facesToCollideWith = { floorFaces: [], wallFaces: [], ceilingFaces: [] };
 
     this.floorMesh = new Mesh(
-      new PlaneGeometry(2047, 2047, 255, 255, heightmap.map(val => Math.max(val, waterLevel - 3))),
+      new PlaneGeometry(2047, 2047, 255, 255, heightmap.map(val => Math.max(val, waterLevel - 2))),
       groundMaterial
     );
 

@@ -95,6 +95,8 @@ zzfx(...[2.03,0,48,,2.91,-1,2,.3,,,,,.07,.3,,.1,.19,.6,,.43]); // Powerup 78
 const engine = zzfxG(...[2.03,0,48,,2.91,0,2,.4,,,,,.03,,,,,.6,,.59]);
 export const engineAudio = zzfxP(engine);
 
+const drivingThroughWaterBuffer = zzfxG(...[.8,0,109,,2.91,0,4,0,,,,,,,-5,.2,.01,.4]);
+export const drivingThroughWaterAudio = zzfxP(drivingThroughWaterBuffer);
 
 // Possible landing sound
 const landingBuffer = zzfxG(...[,,135,.01,.09,.05,1,1.7,-3.9,-1.5,,,.17,.6,,.1,,.59,.01]); // Hit 761 // Shoot 151

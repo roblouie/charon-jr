@@ -1,5 +1,11 @@
 import { State } from '@/core/state';
-import { audioCtx, engineAudio, ghostFlyAwayAudio, ghostThankYouAudio } from '@/engine/audio/audio-player';
+import {
+  audioCtx,
+  drivingThroughWaterAudio,
+  engineAudio,
+  ghostFlyAwayAudio,
+  ghostThankYouAudio
+} from '@/engine/audio/audio-player';
 import {
   drawBricks, drawCurrentTexture,
   drawGrass,
@@ -137,9 +143,9 @@ class GameState implements State {
       );
     } else {
       noiseMaker.seed(99);
-      // const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
+      const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
       // @ts-ignore
-      const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
+      // const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
       this.currentLevel = new Level(
         sampleHeightMap3,
         underworldSky,
@@ -217,11 +223,13 @@ class GameState implements State {
     this.isLoaded = true;
     drawEngine.clear();
     engineAudio.start();
+    drivingThroughWaterAudio.start();
   }
 
   onLeave() {
     drawEngine.clear();
     engineAudio.stop();
+    drivingThroughWaterAudio.stop();
     this.spirits.forEach(spirit => spirit.audioPlayer.stop());
   }
 
@@ -301,7 +309,7 @@ class GameState implements State {
     drawEngine.clear();
     drawEngine.drawText(this.timeRemaining.toFixed(1), 'bold italic 70px Times New Roman, serif-black', 110, 90, 2);
 
-    this.player.update(this.gridFaces);
+    this.player.update(this.gridFaces, this.currentLevel.waterLevel);
     this.handleDropOffPickUp();
     // particle.lookAt(this.player.camera.position);
     // particle2.lookAt(this.player.camera.position);

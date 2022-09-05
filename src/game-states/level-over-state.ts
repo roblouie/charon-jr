@@ -8,43 +8,44 @@ import { renderer } from '@/engine/renderer/renderer';
 import { controls } from '@/core/controls';
 import { getGameStateMachine } from '@/game-state-machine';
 import { gameState } from '@/game-states/game-state';
-import { drawEngine } from '@/core/draw-engine';
+import { draw2dEngine } from '@/core/draw2d-engine';
 import { menuState } from '@/game-states/menu-state';
 
 class LevelOverState implements State {
   spiritsTransported = 0;
+  payment = 0;
   score = 0;
-  rank: 'F' | 'D' | 'C' | 'B' | 'A' | 'S' | 'SS' = 'F';
+  rank = 'F';
 
-  onEnter(spiritsTransported: number, score: number) {
+  onEnter(spiritsTransported: number, payment: number) {
     this.spiritsTransported = spiritsTransported;
-    this.score = score;
+    this.payment = payment;
+    this.score = this.payment * this.spiritsTransported;
+    const scoreThresholds = [0, 500, 1_000, 50_000, 100_000, 200_000, 500_000].reverse(); // reverse to make searching easier
+    const ranks: string[] = ['F', 'D', 'C', 'B', 'A', 'S', 'SS'].reverse();
+    this.rank = ranks.find((rank, index) => this.score >= scoreThresholds[index])!;
   }
 
   onUpdate() {
-    drawEngine.clear();
+    draw2dEngine.clear();
+    draw2dEngine.context.fillStyle = 'black';
+    draw2dEngine.context.fillRect(0, 80, 1280, 140);
+    draw2dEngine.context.fillStyle = '#0008';
+    draw2dEngine.context.fillRect(0, 0, 1280, 720);
 
-    drawEngine.context.globalCompositeOperation = 'source-over';
-    drawEngine.context.fillStyle = canvasPatterns.dirt;
-    drawEngine.context.fillRect(0, 0, 1280, 720);
-    drawEngine.context.globalCompositeOperation = 'destination-atop';
+    draw2dEngine.drawText('TIME UP','Times New Roman', 80, 640, 170, 0);
 
-    drawEngine.drawText('TIME UP','bold italic 80px Times New Roman, serif-black', 640, 170, 0, 'white');
+    draw2dEngine.drawText('SPIRITS TRANSPORTED','monospace', 30,320, 300, 1, 'left');
+    draw2dEngine.drawText(this.spiritsTransported.toString(), 'monospace', 30, 960, 300, 1, 'right');
+    draw2dEngine.drawText('PAYMENT COLLECTED', 'monospace', 30, 320, 350, 1, 'left');
+    draw2dEngine.drawText(this.payment.toString(), 'monospace', 30, 960, 350,  1, 'right');
 
-    drawEngine.context.globalCompositeOperation = 'source-over';
-    drawEngine.drawText('SPIRITS TRANSPORTED','bold italic 30px monospace',320, 350, 1, 'black', 'left');
-    drawEngine.drawText(this.spiritsTransported.toString(), 'bold italic 30px monospace', 960, 350, 1, 'black', 'right');
-    drawEngine.drawText('PAYMENT COLLECTED', 'bold italic 30px monospace', 320, 400, 1, 'black', 'left');
-    drawEngine.drawText(this.score.toString(), 'bold italic 30px monospace', 960, 400,  1, 'black', 'right');
+    draw2dEngine.drawText('TOTAL SCORE', 'monospace', 30, 320, 400, 1, 'left');
+    draw2dEngine.drawText(this.score.toString(), 'monospace', 30, 960, 400,  1, 'right');
 
-    drawEngine.drawText('RANK', 'bold italic 30px monospace', 640, 500, 1);
-    drawEngine.drawText(this.rank, 'bold italic 120px Times New Roman, serif-black', 640, 620, 1);
+    draw2dEngine.drawText('RANK', 'monospace', 30, 640, 500, 1);
+    draw2dEngine.drawText(this.rank, 'Times New Roman', 120, 640, 620, 1);
 
-    drawEngine.context.globalCompositeOperation = 'destination-over';
-    drawEngine.context.fillStyle = 'black';
-    drawEngine.context.fillRect(0, 80, 1280, 140);
-    drawEngine.context.fillStyle = '#0008';
-    drawEngine.context.fillRect(0, 0, 1280, 720);
 
     if (controls.isSpace) {
       getGameStateMachine().setState(menuState);
@@ -52,7 +53,7 @@ class LevelOverState implements State {
   }
 
   onLeave() {
-    drawEngine.clear();
+    draw2dEngine.clear();
   }
 }
 

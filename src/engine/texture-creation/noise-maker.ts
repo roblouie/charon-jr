@@ -129,7 +129,7 @@ class NoiseMaker {
     return values;
   }
 
-  noiseCache: Map<string, number> = new Map();
+  noiseCache: {[key: string]: number} = {};
   noiseImage(
     size: number,
     frequency: number,
@@ -148,7 +148,7 @@ class NoiseMaker {
     let imageDataIndex = 0;
 
     // TESTING
-    // return imageData;
+    return imageData;
     // END TESTING
 
     const position = new EnhancedDOMPoint();
@@ -161,11 +161,11 @@ class NoiseMaker {
 
         const per = Math.trunc(size * frequency);
         const cacheKey = `${position.toArray()}${per}${octals}${noiseType}`;
-        const cachedNoise = this.noiseCache.get(cacheKey);
+        const cachedNoise = this.noiseCache[cacheKey];
 
         const noiseValue = cachedNoise ?? this.fBm(position, per, octals, noiseType);
         if (!cachedNoise) {
-          this.noiseCache.set(cacheKey, noiseValue);
+          this.noiseCache[cacheKey] = noiseValue;
         }
         const computed = noiseValue * colorScale + colorScale;
         imageData.data[imageDataIndex] = red;

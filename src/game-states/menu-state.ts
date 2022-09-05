@@ -9,7 +9,7 @@ import { controls } from '@/core/controls';
 import { getGameStateMachine } from '@/game-state-machine';
 import { gameState } from '@/game-states/game-state';
 import { truck } from '@/modeling/truck.modeling';
-import { drawEngine } from '@/core/draw-engine';
+import { draw2dEngine } from '@/core/draw2d-engine';
 import { Mesh } from '@/engine/renderer/mesh';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { textureLoader } from '@/engine/renderer/texture-loader';
@@ -46,13 +46,13 @@ class MenuState implements State {
 
     renderer.render(this.camera, this.scene);
 
-    drawEngine.drawText('DEATH DRIVES', 'bold italic 80px Times New Roman, serif-black', 640, 80, 1);
-    drawEngine.drawText('A MONSTER TRUCK', 'bold italic 60px Times New Roman, serif-black', 640, 140, 1);
+    draw2dEngine.drawText('DEATH DRIVES', 'Times New Roman', 80, 640, 80, 1);
+    draw2dEngine.drawText('A MONSTER TRUCK', 'Times New Roman', 60, 640, 140, 1);
 
     if (controls.isEnter) {
-      drawEngine.context.fillStyle = '#111a';
-      drawEngine.context.fillRect(0, 0, 1920, 1080);
-      drawEngine.drawText('Loading...', 'bold italic 80px Times New Roman, serif-black', 640, 360, 1);
+      draw2dEngine.context.fillStyle = '#111a';
+      draw2dEngine.context.fillRect(0, 0, 1920, 1080);
+      draw2dEngine.drawText('Loading...', 'Times New Roman', 80, 640, 360, 1);
       setTimeout(() => {
         getGameStateMachine().setState(gameState, 0);
       });

@@ -38,7 +38,7 @@ import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 import { largeTree, leavesMesh, plant1 } from '@/modeling/flora.modeling';
 import { Level } from '@/Level';
 import { dynamicBody, Spirit } from '@/spirit';
-import { drawEngine } from '@/core/draw-engine';
+import { draw2dEngine } from '@/core/draw2d-engine';
 import { levelOverState } from '@/game-states/level-over-state';
 
 const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
@@ -60,7 +60,7 @@ class GameState implements State {
   arrowGuide: Mesh;
 
   timeRemaining = 0;
-  private readonly initialTimeRemaining = 150;
+  private readonly initialTimeRemaining = 1;
   private readonly initialTimeReductionPerDropOff = 0.001;
   private timePerDistanceUnit = 0.023;
   private timeReductionPerDropOff = 0.001;
@@ -221,13 +221,13 @@ class GameState implements State {
     this.spiritsTransported = 0;
     this.score = 0;
     this.isLoaded = true;
-    drawEngine.clear();
+    draw2dEngine.clear();
     engineAudio.start();
     drivingThroughWaterAudio.start();
   }
 
   onLeave() {
-    drawEngine.clear();
+    draw2dEngine.clear();
     engineAudio.stop();
     drivingThroughWaterAudio.stop();
     this.spirits.forEach(spirit => spirit.audioPlayer.stop());
@@ -306,8 +306,8 @@ class GameState implements State {
 
     this.timeRemaining -= 0.0166;
 
-    drawEngine.clear();
-    drawEngine.drawText(this.timeRemaining.toFixed(1), 'bold italic 70px Times New Roman, serif-black', 110, 90, 2);
+    draw2dEngine.clear();
+    draw2dEngine.drawText(this.timeRemaining.toFixed(1), 'Times New Roman', 70, 110, 90, 2);
 
     this.player.update(this.gridFaces, this.currentLevel.waterLevel);
     this.handleDropOffPickUp();

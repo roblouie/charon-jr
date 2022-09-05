@@ -2,7 +2,7 @@ import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
-import { drawEngine } from '@/core/draw-engine';
+import { draw2dEngine } from '@/core/draw2d-engine';
 import { doTimes } from '@/engine/helpers';
 
 interface CanvasPatterns {

@@ -25,6 +25,7 @@ import { audioCtx } from '@/engine/audio/audio-player';
 import { createGameStateMachine, getGameStateMachine } from '@/game-state-machine';
 import { gameState } from '@/game-states/game-state';
 import { menuState } from '@/game-states/menu-state';
+import { levelOverState } from '@/game-states/level-over-state';
 
 const debugElement = document.querySelector('#debug')!;
 
@@ -35,7 +36,7 @@ const debugElement = document.querySelector('#debug')!;
 
 
 
-createGameStateMachine(gameState, 2);
+createGameStateMachine(levelOverState, 1, 100);
 
 let previousTime = 0;
 const maxFps = 60;

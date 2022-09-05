@@ -7,7 +7,7 @@ import { Object3d } from '@/engine/renderer/object-3d';
 import { materials } from '@/texture-maker';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { hexToWebgl } from '@/engine/helpers';
-import { createPannerNode, sadGhostAudio } from '@/engine/audio/audio-player';
+import { createPannerNode, sadGhostAudio, sadGhostAudio2 } from '@/engine/audio/audio-player';
 
 const spiritMaterial = new Material({ texture: materials.marble.texture, color: '#fff9', emissive: '#fff9', isTransparent: true })
 
@@ -115,8 +115,10 @@ export class Spirit {
     this.color = ['#f00', '#0f0', '#00f'].map(hexToWebgl)[dropOffIndex];
     this.bodyMesh.position.set(position);
     this.headMesh.position.set(position);
-    this.audioPlayer = sadGhostAudio(position);
+    const randomBetween0and1 = Math.random() * 2
+    const audioCreator = [sadGhostAudio, sadGhostAudio2][Math.floor(randomBetween0and1)];
+    this.audioPlayer = audioCreator(position);
     this.audioPlayer.loop = true;
-    this.audioPlayer.start();
+    this.audioPlayer.start(randomBetween0and1 * 2);
   }
 }

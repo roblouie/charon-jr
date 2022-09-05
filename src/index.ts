@@ -21,7 +21,7 @@ import { ThirdPersonPlayer } from '@/third-person-player';
 import { Scene } from '@/engine/renderer/scene';
 import { Skybox } from '@/skybox';
 import { doTimes } from '@/engine/helpers';
-import { audioCtx, getAudioPlayer } from '@/engine/audio/audio-player';
+import { audioCtx } from '@/engine/audio/audio-player';
 import { createGameStateMachine, getGameStateMachine } from '@/game-state-machine';
 import { gameState } from '@/game-states/game-state';
 import { menuState } from '@/game-states/menu-state';
@@ -35,7 +35,7 @@ const debugElement = document.querySelector('#debug')!;
 
 
 
-createGameStateMachine(gameState, 2);
+createGameStateMachine(gameState, 0);
 
 let previousTime = 0;
 const maxFps = 60;

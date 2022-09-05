@@ -1,5 +1,5 @@
 import { State } from '@/core/state';
-import { audioCtx, engineAudio, getAudioPlayer } from '@/engine/audio/audio-player';
+import { audioCtx, engineAudio, ghostFlyAwayAudio, ghostThankYouAudio } from '@/engine/audio/audio-player';
 import {
   drawBricks, drawCurrentTexture,
   drawGrass,
@@ -205,17 +205,9 @@ class GameState implements State {
 
 
 
-    const soundPlayer = getAudioPlayer();
 
     this.scene.skybox = this.currentLevel.skybox;
     this.scene.skybox.bindGeometry();
-
-    // const audio = soundPlayer(...[, , 925, .04, .3, .6, 1, .3, , 6.27, -184, .09, .17] as const);
-
-    // audio.loop = true;
-    // @ts-ignore
-    // audio.connect(panner).connect(audioCtx.destination);
-    // audio.start();
 
 
     this.timeRemaining = this.initialTimeRemaining;
@@ -251,6 +243,8 @@ class GameState implements State {
             this.timePerDistanceUnit -= this.timeReductionPerDropOff;
           }
 
+          ghostFlyAwayAudio().start();
+
           dynamicBody.position.set(this.player.chassisCenter);
           dynamicBody.position.y += 3;
           this.player.mesh.wrapper.remove(dynamicBody);
@@ -276,6 +270,8 @@ class GameState implements State {
             this.spiritDropOffDistance.subtractVectors(this.currentLevel[spirit.dropOffPoint], spirit.position);
             this.spiritDropOffDistance.y = 0;
             this.timeRemaining += (this.spiritDropOffDistance.magnitude * this.timePerDistanceUnit);
+
+            ghostThankYouAudio().start();
 
             dynamicBody.position.set(0, 3, -3);
             dynamicBody.setRotation(0, Math.PI, 0);

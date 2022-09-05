@@ -1,5 +1,5 @@
 import { State } from '@/core/state';
-import { audioCtx, engineAudio, getAudioPlayer, panner } from '@/engine/audio/audio-player';
+import { audioCtx, engineAudio, getAudioPlayer } from '@/engine/audio/audio-player';
 import {
   drawBricks, drawCurrentTexture,
   drawGrass,
@@ -230,6 +230,7 @@ class GameState implements State {
   onLeave() {
     drawEngine.clear();
     engineAudio.stop();
+    this.spirits.forEach(spirit => spirit.audioPlayer.stop());
   }
 
   private spiritPlayerDistance = new EnhancedDOMPoint();
@@ -281,6 +282,7 @@ class GameState implements State {
             this.player.mesh.wrapper.add(dynamicBody);
             this.player.isCarryingSpirit = true;
             this.player.carriedSpirit = spirit;
+            spirit.audioPlayer.stop();
             this.scene.add(this.arrowGuideWrapper);
             this.scene.remove(spirit.bodyMesh);
             this.scene.remove(spirit.headMesh);

@@ -1,4 +1,6 @@
 // @ts-nocheck
+import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
+
 export const audioCtx = new AudioContext();
 
 type AudioPlayer = (p?: number,k?:number,b?: number,e?: number,r?: number,t?: number,q?: number,D?: number,u?: number,y?: number,v?: number,z?: number,l?: number,E?: number,A?: number,F?: number,c?: number,w?: number,m?: number,B?: number) => AudioBufferSourceNode
@@ -33,53 +35,57 @@ export function getAudioPlayer(): () => void {
 
 
 const pannerModel = 'equalpower';
-
 const innerCone = 360;
 const outerCone = 360;
 const outerGain = 0.4;
-
 const distanceModel = 'linear';
-
 const maxDistance = 80;
-
 const refDistance = 1;
-
 const rollOff = 30;
 
 
 // let's use the class method for creating our panner node and pass in all those parameters we've set.
 
-export const panner = new PannerNode(audioCtx, {
-  panningModel: pannerModel,
-  distanceModel: distanceModel,
-  positionX: 102,
-  positionY: 0,
-  positionZ: 0,
-  orientationX: 0,
-  orientationY: 0,
-  orientationZ: 0,
-  refDistance: refDistance,
-  maxDistance: maxDistance,
-  rolloffFactor: rollOff,
-  coneInnerAngle: innerCone,
-  coneOuterAngle: outerCone,
-  coneOuterGain: outerGain
-});
+export function createPannerNode(buffer: number[]) {
+  const pannerModel = 'equalpower'; // "HRTF" | "equalpower"
+  const innerCone = 360;
+  const outerCone = 360;
+  const outerGain = 0.4;
+  const distanceModel = 'linear'; // "exponential" | "inverse" | "linear"
+  const maxDistance = 80;
+  const refDistance = 1;
+  const rollOff = 30;
 
-const explosion = zzfxG(...[,,333,.01,0,.9,4,1.9,,,,,,.5,,.6]);
-
-const test = zzfxP(explosion);
-test.loop = true;
-// test.playbackRate.value = 2;
-test.connect(panner).connect(audioCtx.destination);
-test.start();
-
+  return (position: EnhancedDOMPoint) => {
+    const panner = new PannerNode(audioCtx, {
+      panningModel: pannerModel,
+      distanceModel: distanceModel,
+      positionX: position.x,
+      positionY: position.y,
+      positionZ: position.z,
+      orientationX: 0,
+      orientationY: 0,
+      orientationZ: 0,
+      refDistance: refDistance,
+      maxDistance: maxDistance,
+      rolloffFactor: rollOff,
+      coneInnerAngle: innerCone,
+      coneOuterAngle: outerCone,
+      coneOuterGain: outerGain
+    });
+    const node = zzfxP(buffer);
+    node.loop = true;
+    node.connect(panner).connect(audioCtx.destination);
+    return node;
+  }
+}
 
 // Sad Ghost 1:
 zzfx(...[2.11,.85,100,.25,.58,.08,1,,-0.1,-0.2,350,,,,,.1,.23,-0.6,.26,.17]); // Pickup 61 - Copy 13
 
 // Sad Ghost 2:
-zzfx(...[2.11,.85,100,.25,.58,.08,1,,-0.1,-0.2,350,,,,1,-0.1,.23,-0.6,.26,.17]); // Pickup 61 - Copy 12
+const sadGhostBuffer = zzfxG(...[2.11,.85,100,.25,.58,.08,1,,-0.1,-0.2,350,,,,1,-0.1,.23,-0.6,.26,.17]); // Pickup 61 - Copy 12
+export const sadGhostAudio = createPannerNode(sadGhostBuffer);
 
 // Ghost fly away?:
 zzfx(...[2.11,.85,300,.37,.56,.2,1,1.1,.2,.1,,.14,,,3,.1,.08,.6,.2,.08]); // Pickup 61 - Copy 14

@@ -250,10 +250,7 @@ export class ThirdPersonPlayer {
     this.accelerationRate = (this.jumpTimer > 30) ? this.baseAccelerationRate / 3 : this.baseAccelerationRate;
     this.decelerationRate = (this.jumpTimer > 30) ? this.baseDecelerationRate / 3 : this.baseDecelerationRate;
 
-
-    const baseDrag = 0.01;
-    const drag = clamp(this.speed * baseDrag, 0, 0.08);
-
+    const dragRate = 0.99
 
     this.acceleratorValue = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
     this.brakeValue = controls.isGamepadAttached ? controls.leftTrigger : Number(controls.isDown);
@@ -263,14 +260,13 @@ export class ThirdPersonPlayer {
 
     this.speed -= this.brakeValue * this.decelerationRate;
 
-    this.speed -= drag;
+    this.speed *= dragRate;
 
     if (this.speed <= 0 && this.brakeValue > 0.1) {
       this.reverseTimer++;
 
       if (this.reverseTimer > 20) {
         this.speed -= this.brakeValue * this.decelerationRate;
-        this.speed += drag * 2;
         this.isReversing = true;
       }
     }
@@ -304,9 +300,6 @@ export class ThirdPersonPlayer {
     this.angleTraveling = clamp(this.angleTraveling, this.anglePointing - quarterTurn, this.anglePointing + quarterTurn);
 
     this.angleTravelingVector.set(Math.cos(this.angleTraveling), 0, Math.sin(this.angleTraveling));
-
-
-
 
 
     this.slipAngle = this.angleTraveling - this.anglePointing;

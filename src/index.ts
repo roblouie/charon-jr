@@ -31,11 +31,11 @@ const debugElement = document.querySelector('#debug')!;
 
 // TESTING
 // drawCurrentTexture();
-// END TESTING
+// END TESTINGs
 
 
 
-createGameStateMachine(gameState, 0);
+createGameStateMachine(gameState, 2);
 
 let previousTime = 0;
 const maxFps = 60;

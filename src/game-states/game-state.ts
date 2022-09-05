@@ -137,9 +137,9 @@ class GameState implements State {
       );
     } else {
       noiseMaker.seed(99);
-      const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
+      // const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
       // @ts-ignore
-      //const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
+      const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
       this.currentLevel = new Level(
         sampleHeightMap3,
         underworldSky,

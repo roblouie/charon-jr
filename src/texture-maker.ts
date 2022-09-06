@@ -117,22 +117,6 @@ export function drawWater() {
 }
 
 // *********************
-// Font Style
-// *********************
-export function drawFontStyle() {
-  clearWith('#fff');
-  noiseMaker.seed(33);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 4, NoiseType.Perlin, '#000', 80), 0, 0);
-  drawContext.filter = 'contrast(400%)'
-  // drawContext.globalCompositeOperation = 'screen';
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  // drawContext.globalCompositeOperation = 'source-over';
-  canvasPatterns.dirt = drawContext.createPattern(drawContext.canvas, 'repeat')!;
-  return mainImageData();
-}
-drawFontStyle();
-
-// *********************
 // Marble
 // *********************
 export function drawMarble() {
@@ -148,7 +132,7 @@ const marble = new Material({texture: textureLoader.load(drawMarble())})
 // *********************
 // Wood
 // *********************
-export function drawRockWall() {
+export function drawWood() {
   clearWith('#933d00');
   drawContext.globalCompositeOperation = 'overlay';
   noiseMaker.seed(33);
@@ -157,7 +141,10 @@ export function drawRockWall() {
   noisify(drawContext, 2);
   return mainImageData();
 }
-const wood = new Material({texture: textureLoader.load(drawRockWall())});
+
+const woodTexture = textureLoader.load(drawWood())
+const underworldBark = new Material({texture: woodTexture, color: '#238'});
+const wood = new Material({texture: woodTexture});
 
 // *********************
 // Tiles
@@ -270,9 +257,9 @@ const truckCabRear = new Material({texture: textureLoader.load(drawTruckCabRear(
 // Underworld Path
 // *********************
 export function drawVolcanicRock() {
-  clearWith('#172d41');
+  clearWith('#0c2134');
   noiseMaker.seed(4);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#00b63e', 180, true, 'x', 'y', 'z', 0), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#51926c', 180, true, 'x', 'y', 'z', 0), 0, 0);
   drawContext.filter = 'contrast(500%)';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   noisify(drawContext, 5);
@@ -287,12 +274,12 @@ const underworldPath = new Material({texture: underworldPathTexture});
 // Underworld Ground
 // *********************
 export function drawUnderworldGround() {
-  clearWith('#172d41');
+  clearWith('#0c2134');
   noiseMaker.seed(4);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#090511', 180, true, 'x', 'y', 'z', 0), 0, 0);
   drawContext.filter = 'contrast(500%)';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  noisify(drawContext, 8);
+  // noisify(drawContext, 8);
   return mainImageData();
 }
 
@@ -300,8 +287,50 @@ const underworldGroundTexture = textureLoader.load(drawUnderworldGround());
 underworldGroundTexture.repeat.x = 60; underworldGroundTexture.repeat.y = 60;
 const underworldGround = new Material({texture: underworldGroundTexture});
 
+// *********************
+// Underworld Sky
+// *********************
+export function drawSkyPurple(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
+  clearWith('#170531');
+  noiseMaker.seed(100);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 128, 6, NoiseType.Perlin, '#3c1163', 70, false, firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
+  drawContext.globalCompositeOperation = 'color-burn';
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  tileDrawn();
+  return tileContext.getImageData(0, 0, 256, 256);
+}
 
 
+// *********************
+// Underworld Rocks
+// *********************
+export function drawUnderworldRocks() {
+  clearWith('#384658');
+  drawContext.globalCompositeOperation = 'color-dodge';
+  noiseMaker.seed(23);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 2, NoiseType.Edge, '#82826e', 220, true, 'x', 'y', 'z', 0), 0, 0);
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  return mainImageData();
+}
+const underworldRocks = new Material({texture: textureLoader.load(drawUnderworldRocks())})
+
+// *********************
+// Underworld Water
+// *********************
+export function drawUnderworldWater() {
+  clearWith('#3bca6c'); // '#16e868'
+  noiseMaker.seed(10);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Edge, '#2d9f52', 220), 0, 0);
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+
+  return mainImageData();
+}
+
+const underworldWaterTexture = textureLoader.load(drawUnderworldWater());
+underworldWaterTexture.repeat.x = 10; underworldWaterTexture.repeat.y = 10;
+const underworldWater = new Material({texture: underworldWaterTexture, isTransparent: true, color: '#fffc'})
+
+const underworldGrassMaterial = new Material({emissive: '#2bb7c2', isTransparent: true, color: '#fffb'})
 
 textureLoader.bindTextures();
 
@@ -325,9 +354,11 @@ export const materials = {
   pergatoryGrass,
   underworldPath,
   underworldGround,
+  underworldRocks,
+  underworldWater,
+  underworldGrassMaterial,
+  underworldBark,
 };
-
-console.log(materials)
 
 // export const skyboxes = {
 //   earthSky: createSkybox(drawEarthSky),
@@ -336,12 +367,6 @@ console.log(materials)
 // }
 
 export const underworldSky = createSkybox(drawSkyPurple);
-
-
-export function drawCurrentTexture() {
-  drawVolcanicRock();
-    tileDrawn();
-}
 
 export function drawEarthSky(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
   clearWith('#2d75fa');
@@ -371,32 +396,12 @@ export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimensio
   return tileContext.getImageData(0, 0, 256, 256);
 }
 
-export function drawSkyPurple(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
-  clearWith('#4c009a');
-  noiseMaker.seed(100);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 6, NoiseType.Perlin, '#1a1741', 210, true, firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  tileDrawn();
-  return tileContext.getImageData(0, 0, 256, 256);
-}
-
 export function drawParticle() {
   drawContext.clearRect(0, 0, 128, 128);
   drawContext.fillStyle = 'red';
   drawContext.fillRect(32, 32, 32, 32);
   return mainImageData();
 }
-
-export function drawLandscape() {
-  clearWith('black');
-  noiseContext.putImageData(
-    noiseMaker.noiseImage(256, 1 / 64, 3, NoiseType.Perlin, '#fff', 170, true, 'x', 'y', 'z', 134), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  return mainImageData();
-}
-
-
-
 
 
 

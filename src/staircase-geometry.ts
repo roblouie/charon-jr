@@ -2,14 +2,14 @@ import { MoldableCubeGeometry } from './engine/moldable-cube-geometry';
 import { Mesh } from './engine/renderer/mesh';
 import { Material } from './engine/renderer/material';
 import { textureLoader } from '@/engine/renderer/texture-loader';
-import { drawRockWall } from '@/texture-maker';
+import { drawWood } from '@/texture-maker';
 
 export class Staircase {
   cubes: Mesh[];
 
   constructor(numberOfSteps: number, stepHeight: number, stepWidth: number, stepDepth: number) {
     this.cubes = [];
-    const texture = textureLoader.load(drawRockWall());
+    const texture = textureLoader.load(drawWood());
     texture.repeat.y = 2;
     const material = new Material({ texture });
     const offset = new DOMPoint(40, -11, -15);

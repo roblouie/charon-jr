@@ -7,9 +7,8 @@ import {
   ghostThankYouAudio
 } from '@/engine/audio/audio-player';
 import {
-  drawBricks, drawCurrentTexture,
+  drawBricks,
   drawGrass,
-  drawLandscape,
   drawMarble, drawParticle,
   drawEarthSky,
   drawWater, materials, createSkybox, drawPurgatorySky, drawSkyPurple, underworldSky,
@@ -60,7 +59,7 @@ class GameState implements State {
   arrowGuide: Mesh;
 
   timeRemaining = 0;
-  private readonly initialTimeRemaining = 1;
+  private readonly initialTimeRemaining = 150;
   private readonly initialTimeReductionPerDropOff = 0.001;
   private timePerDistanceUnit = 0.023;
   private timeReductionPerDropOff = 0.001;
@@ -105,6 +104,7 @@ class GameState implements State {
         materials.dirtPath,
         true,
         materials.grass,
+        materials.marble,
         materials.lake,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
@@ -136,6 +136,7 @@ class GameState implements State {
         undefined,
         false,
         materials.pergatoryGrass,
+        materials.marble,
         materials.lake,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
@@ -155,8 +156,9 @@ class GameState implements State {
         materials.underworldGround,
         materials.underworldPath,
         false,
-        materials.grass,
-        materials.lake,
+        materials.underworldGrassMaterial,
+        materials.underworldRocks,
+        materials.underworldWater,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),

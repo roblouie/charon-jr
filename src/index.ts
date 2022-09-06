@@ -9,9 +9,7 @@ import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { AttributeLocation, Renderer } from "@/engine/renderer/renderer";
 import {
   drawBricks,
-  drawCurrentTexture,
   drawGrass,
-  drawLandscape,
   drawMarble, drawParticle, drawEarthSky,
   drawStoneWalkway, drawVolcanicRock, drawWater
 } from '@/texture-maker';
@@ -36,7 +34,7 @@ const debugElement = document.querySelector('#debug')!;
 
 
 
-createGameStateMachine(levelOverState, 1, 100);
+createGameStateMachine(gameState, 2);
 
 let previousTime = 0;
 const maxFps = 60;

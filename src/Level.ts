@@ -44,6 +44,7 @@ export class Level {
     pathMaterial: Material | undefined,
     isTreeLeavesShowing: boolean,
     plantMaterial: Material,
+    rockMaterial: Material,
     waterMaterial: Material,
     redDropOff: EnhancedDOMPoint,
     greenDropOff: EnhancedDOMPoint,
@@ -169,22 +170,22 @@ export class Level {
     });
 
     // TESTING
-    const rampGeometry = new MoldableCubeGeometry(16, 40, 40);
-    const ramp = new Mesh(rampGeometry, materials.marble);
-    ramp.position.y += 10;
-    ramp.position.z += 10;
-    ramp.updateWorldMatrix();
-    this.meshesToRender.push(ramp);
-    getGroupedFaces(meshToFaces([ramp], ramp.worldMatrix), this.facesToCollideWith);
+    // const rampGeometry = new MoldableCubeGeometry(16, 40, 40);
+    // const ramp = new Mesh(rampGeometry, materials.marble);
+    // ramp.position.y += 10;
+    // ramp.position.z += 10;
+    // ramp.updateWorldMatrix();
+    // this.meshesToRender.push(ramp);
+    // getGroupedFaces(meshToFaces([ramp], ramp.worldMatrix), this.facesToCollideWith);
     // END TESTING
 
     const plants = new InstancedMesh(plant1.geometry, grassTransforms, grassTransforms.length, plantMaterial);
-    const trees = new InstancedMesh(largeTree.geometry, treeTransforms, treeTransforms.length, largeTree.material);
+    const trees = new InstancedMesh(largeTree.geometry, treeTransforms, treeTransforms.length, materials.underworldBark);
     if (isTreeLeavesShowing) {
       const treeLeaves = new InstancedMesh(leavesMesh.geometry, treeTransforms, treeTransforms.length, leavesMesh.material);
       this.meshesToRender.push(treeLeaves);
     }
-    const rocks = new InstancedMesh(largeRock.geometry, rockTransforms, rockTransforms.length, largeRock.material);
+    const rocks = new InstancedMesh(largeRock.geometry, rockTransforms, rockTransforms.length, rockMaterial);
 
     console.log(this.spiritPositions.length);
     this.facesToCollideWith.floorFaces.sort((faceA, faceB) => faceB.upperY - faceA.upperY);

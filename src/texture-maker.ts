@@ -330,7 +330,7 @@ const underworldWaterTexture = textureLoader.load(drawUnderworldWater());
 underworldWaterTexture.repeat.x = 10; underworldWaterTexture.repeat.y = 10;
 const underworldWater = new Material({texture: underworldWaterTexture, isTransparent: true, color: '#fffc'})
 
-const underworldGrassMaterial = new Material({emissive: '#2bb7c2', isTransparent: true, color: '#fffb'})
+const underworldGrassMaterial = new Material({isTransparent: true, color: '#00D9FFBA'})
 
 textureLoader.bindTextures();
 

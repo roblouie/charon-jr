@@ -17,13 +17,17 @@ class LevelOverState implements State {
   score = 0;
   rank = 'F';
 
-  onEnter(spiritsTransported: number, payment: number) {
+  onEnter(spiritsTransported: number, payment: number, levelNumber: number) {
     this.spiritsTransported = spiritsTransported;
     this.payment = payment;
     this.score = this.payment * this.spiritsTransported;
     const scoreThresholds = [0, 500, 1_000, 50_000, 100_000, 200_000, 500_000].reverse(); // reverse to make searching easier
     const ranks: string[] = ['F', 'D', 'C', 'B', 'A', 'S', 'SS'].reverse();
     this.rank = ranks.find((rank, index) => this.score >= scoreThresholds[index])!;
+    const pastScore = window.localStorage.get(`ddamt_score-${levelNumber}`);
+    if (!pastScore || this.score > parseInt(pastScore)) {
+      window.localStorage.setItem(`ddamt_score-${levelNumber}`, this.score.toString()); //s
+    }
   }
 
   onUpdate() {

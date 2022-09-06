@@ -88,12 +88,13 @@ class GameState implements State {
 
   }
 
+  private levelNumber = 0;
   private isLoaded = false;
   onEnter(levelNumber: 0 | 1 | 2) {
-    noiseMaker.seed(22);
-    const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 80);
+    this.levelNumber = levelNumber;
     if (levelNumber === 0) {
-      noiseMaker.seed(2);
+      noiseMaker.seed(22);
+      const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 80);
       this.currentLevel = new Level(
         sampleHeightMap,
         createSkybox(drawEarthSky),
@@ -337,7 +338,7 @@ class GameState implements State {
     }
 
     if (this.timeRemaining <= 0) {
-      getGameStateMachine().setState(levelOverState, this.spiritsTransported, this.score);
+      getGameStateMachine().setState(levelOverState, this.spiritsTransported, this.score, this.levelNumber);
     }
   }
 }

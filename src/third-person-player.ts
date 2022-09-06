@@ -21,6 +21,7 @@ import { truck, TruckObject3d } from '@/modeling/truck.modeling';
 import { clamp, easeInOut, linearMovement, moveValueTowardsTarget, wrap } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
 import { Spirit } from '@/spirit';
+import { hud } from '@/hud';
 
 const debugElement = document.querySelector('#debug')!;
 
@@ -74,9 +75,17 @@ export class ThirdPersonPlayer {
   private lastPosition = new EnhancedDOMPoint();
   private distanceTraveled = new EnhancedDOMPoint();
   private dragRate = 0.99;
+  private jumpTimer = 0;
+  private lastIntervalJumpTimer = 0;
+
   update(gridFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]}[], waterLevel: number) {
     this.dragRate = 0.99;
     this.drivingThroughWaterGain.gain.value = 0;
+
+    if (this.isCarryingSpirit && this.jumpTimer - this.lastIntervalJumpTimer > 40) {
+      hud.addToScoreBonus();
+      this.lastIntervalJumpTimer = this.jumpTimer;
+    }
 
     // If we are diving through water
     if (this.chassisCenter.y - waterLevel < -1) {
@@ -86,7 +95,7 @@ export class ThirdPersonPlayer {
     }
 
     this.dragRate = (this.chassisCenter.y - waterLevel < -1) ? 0.96 : 0.99;
-    debugElement.textContent = (this.chassisCenter.y - waterLevel).toString();
+    debugElement.textContent = this.speed.toString();
 
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.01; // gravity
@@ -124,7 +133,7 @@ export class ThirdPersonPlayer {
     this.mesh.position.set(this.chassisCenter); // at this point, feetCenter is in the correct spot, so draw the mesh there
     this.mesh.position.y += 2; // move up by half height so mesh ends at feet position
 
-    this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.1);
+    this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.07);
 
     // Keep camera away regardless of lerp
     const distanceToKeep = 17;
@@ -146,7 +155,6 @@ export class ThirdPersonPlayer {
 
   private axis = new EnhancedDOMPoint();
   private previousFloorHeight = 0;
-  private jumpTimer = 0;
   collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
     const rayCollisions = rayCastCollision(groupedFaces.wallFaces, this.lastPosition, this.chassisCenter);
     if (rayCollisions) {
@@ -182,6 +190,7 @@ export class ThirdPersonPlayer {
       this.velocity.y = 0;
       this.isJumping = false;
       this.jumpTimer = 0;
+      this.lastIntervalJumpTimer = 0;
       this.axis = this.axis.crossVectors(this.mesh.up, floorData.floor.normal);
       const radians = Math.acos(floorData.floor.normal.dot(this.mesh.up));
       this.mesh.rotationMatrix = new DOMMatrix();
@@ -217,7 +226,7 @@ export class ThirdPersonPlayer {
   private slipAngle = 0;
 
   private steeringAngle = 0;
-  private baseTurningAbility = 0.1;
+  private baseTurningAbility = 0.08;
   private turningAbilityPercent = 1;
 
   private fullTractionStep = 0.07;
@@ -229,9 +238,9 @@ export class ThirdPersonPlayer {
   private decelerationRate = 0.02;
 
   private speed = 0;
-  private maxSpeed = 3.3;
-  private readonly baseAccelerationRate = 0.03;
-  private accelerationRate = 0.03;
+  private maxSpeed = 2.5;
+  private readonly baseAccelerationRate = 0.025;
+  private accelerationRate = 0.025;
 
 
   private determineAbilityToRotateCar() {
@@ -239,30 +248,7 @@ export class ThirdPersonPlayer {
     this.turningAbilityPercent = 1;
 
     const percentOfMaxSpeed = this.speed / this.maxSpeed;
-    const throttleVsMaxSpeed = this.acceleratorValue - percentOfMaxSpeed;
-
     this.turningAbilityPercent = easeInOut(percentOfMaxSpeed);
-
-    // In first gear, high throttle causes over-steer
-    // if (this.gear === 0) {
-    //   const throttleVsSpeedImpact = 0.4;
-    //   const throttleEffect = throttleVsMaxSpeed * throttleVsSpeedImpact;
-    //
-    //   this.tractionPercent -= throttleEffect;
-    // }
-
-
-    // At a base level, you can rotate the car more the faster you go
-    // const percentOfMaxSpeed = this.speed / this.maxSpeed;
-    // this.currentTurningAbility = this.baseTurningAbility * percentOfMaxSpeed;
-    //
-    // // The more you press the accelerator at lower speeds, the higher your ability to rotate the car
-    // let acceleratorInfluenceOnSteering = 0.01;
-    // if (percentOfMaxSpeed > 0) {
-    //   this.currentTurningAbility += (this.acceleratorValue / percentOfMaxSpeed) * acceleratorInfluenceOnSteering;
-    // }
-    //
-    // debugElement.textContent = this.acceleratorValue.toString();
 
     if (this.jumpTimer > 30) {
       this.tractionPercent = 0.2;
@@ -331,15 +317,6 @@ export class ThirdPersonPlayer {
 
     this.slipAngle = this.angleTraveling - this.anglePointing;
 
-    // Once you've drifted up to 90 degrees, just start turning more
-    // if (Math.abs(slipAngle) >= Math.PI / 2) {
-    //   const difference = slipAngle - (Math.PI / 2);
-    //   debugElement.textContent = `${slipAngle} / ${difference}`;
-    //
-    //   this.angleTraveling += difference;
-    // }
-
-
     this.velocity.z = Math.cos(this.angleTraveling) * this.speed;
     this.velocity.x = Math.sin(this.angleTraveling) * this.speed;
 
@@ -358,15 +335,11 @@ export class ThirdPersonPlayer {
     this.listener.positionY.value = this.mesh.position.y;
     this.listener.positionZ.value = this.mesh.position.z;
 
-    // const cameraDireciton = new EnhancedDOMPoint();
-    // cameraDireciton.setFromRotationMatrix(this.camera.rotationMatrix);
-
     const {x, z} = this.mesh.position.clone()
       .subtract(this.camera.position) // distance from camera to player
       .normalize() // direction of camera to player
 
     this.listener.forwardX.value = x;
-    // this.listener.forwardY.value = cameraDireciton.y;
     this.listener.forwardZ.value = z;
   }
 }

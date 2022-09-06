@@ -11,6 +11,9 @@ module.exports = {
     hot: true,
     host: '0.0.0.0'
   },
+  experiments: {
+    topLevelAwait: true
+  },
   plugins: [
     new HtmlWebpackPlugin({
       template: './index.html'

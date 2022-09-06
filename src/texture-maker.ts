@@ -4,11 +4,15 @@ import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 import { draw2dEngine } from '@/core/draw2d-engine';
 import { doTimes } from '@/engine/helpers';
+import { getData, storeData } from '@/core/data-storage';
 
 interface CanvasPatterns {
   [key: string]: CanvasPattern;
 }
 export const canvasPatterns: CanvasPatterns = {};
+
+// @ts-ignore
+noiseMaker.noiseCache = await getData();
 
 const [drawContext, tileContext, noiseContext] = ['draw', 'tile', 'noise'].map(id => {
   const canvas = document.createElement('canvas');
@@ -143,7 +147,7 @@ export function drawWood() {
 }
 
 const woodTexture = textureLoader.load(drawWood())
-const underworldBark = new Material({texture: woodTexture, color: '#238'});
+const underworldBark = new Material({texture: woodTexture, color: '#2cf'});
 const wood = new Material({texture: woodTexture});
 
 // *********************
@@ -257,7 +261,7 @@ const truckCabRear = new Material({texture: textureLoader.load(drawTruckCabRear(
 // Underworld Path
 // *********************
 export function drawVolcanicRock() {
-  clearWith('#0c2134');
+  clearWith('#143454');
   noiseMaker.seed(4);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#51926c', 180, true, 'x', 'y', 'z', 0), 0, 0);
   drawContext.filter = 'contrast(500%)';
@@ -274,12 +278,12 @@ const underworldPath = new Material({texture: underworldPathTexture});
 // Underworld Ground
 // *********************
 export function drawUnderworldGround() {
-  clearWith('#0c2134');
+  clearWith('#143454');
   noiseMaker.seed(4);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#090511', 180, true, 'x', 'y', 'z', 0), 0, 0);
   drawContext.filter = 'contrast(500%)';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  // noisify(drawContext, 8);
+  noisify(drawContext, 8);
   return mainImageData();
 }
 
@@ -291,9 +295,9 @@ const underworldGround = new Material({texture: underworldGroundTexture});
 // Underworld Sky
 // *********************
 export function drawSkyPurple(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
-  clearWith('#170531');
+  clearWith('#3c1163');
   noiseMaker.seed(100);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 128, 6, NoiseType.Perlin, '#3c1163', 70, false, firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 128, 6, NoiseType.Perlin, '#561791', 70, false, firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
   drawContext.globalCompositeOperation = 'color-burn';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   tileDrawn();
@@ -499,3 +503,6 @@ export function createSkybox(callback: (firstDimension: 'x' | 'y' | 'z', secondD
     return callback(...coordinates.split(''), i % 2 === 0 ? 0 : 127, i === 0 || i === 5);
   });
 }
+
+storeData(noiseMaker.noiseCache);
+getData();

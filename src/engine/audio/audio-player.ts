@@ -108,6 +108,9 @@ export const hit1Audio = createAudioNode(hit1Buffer);
 const hit2Buffer = zzfxG(...[,,243,.01,.02,.19,4,.42,-0.1,,,,,.9,,.4,,.59,.04,.03]); // Hit 251
 export const hit2Audio = createAudioNode(hit2Buffer);
 
+const coinBuffer = zzfxG(...[0.8,0,1123,,.05,.18,,.73,.5,-2.3,187,.09,,,,.1,,.54,.01]);
+export const coinAudio = createAudioNode(coinBuffer);
+
 // Happy Ghost Thank You ?
 zzfx(...[2.11,.85,101,.25,.4,.56,1,,.4,.5,270,,,,.1,.1,.43,-0.6,.26,.29]); // Pickup 61 - Copy 14
 

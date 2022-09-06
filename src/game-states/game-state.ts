@@ -39,6 +39,7 @@ import { Level } from '@/Level';
 import { dynamicBody, Spirit } from '@/spirit';
 import { draw2dEngine } from '@/core/draw2d-engine';
 import { levelOverState } from '@/game-states/level-over-state';
+import { hud } from '@/hud';
 
 const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)
@@ -58,20 +59,16 @@ class GameState implements State {
   arrowGuideWrapper: Object3d;
   arrowGuide: Mesh;
 
-  timeRemaining = 0;
-  private readonly initialTimeRemaining = 150;
   private readonly initialTimeReductionPerDropOff = 0.001;
   private timePerDistanceUnit = 0.023;
   private timeReductionPerDropOff = 0.001;
   private minimumTimePerDistanceUnit = 0.012;
 
   spiritsTransported = 0;
-  score = 0;
-
   currentLevel: Level
 
   constructor() {
-    const camera = new Camera(Math.PI / 2, 16 / 9, 1, 1000);
+    const camera = new Camera(1.74533, 16 / 9, 1, 1000);
     camera.position = new EnhancedDOMPoint(0, 5, -17);
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();
@@ -125,8 +122,6 @@ class GameState implements State {
           }
         })
         .map(val => clamp(val, -50, 50));
-      // noiseMaker.seed(35);
-      // const sampleHeightMap2 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
       this.currentLevel = new Level(
         sampleHeightMap2,
         createSkybox(drawPurgatorySky),
@@ -219,10 +214,10 @@ class GameState implements State {
     this.scene.skybox.bindGeometry();
 
 
-    this.timeRemaining = this.initialTimeRemaining;
+
     this.timeReductionPerDropOff = this.initialTimeReductionPerDropOff;
     this.spiritsTransported = 0;
-    this.score = 0;
+    hud.reset();
     this.isLoaded = true;
     draw2dEngine.clear();
     engineAudio.start();
@@ -259,13 +254,11 @@ class GameState implements State {
           dynamicBody.position.set(this.player.chassisCenter);
           dynamicBody.position.y += 3;
           this.player.mesh.wrapper.remove(dynamicBody);
-          // this.scene.add(dynamicBody);
           this.scene.remove(this.arrowGuideWrapper);
           this.scene.remove(this.arrowGuide)
           this.player.isCarryingSpirit = false;
 
           this.spiritsTransported++;
-          this.score += 10; // TODO: Make this a real value
         }
       }
     }
@@ -280,7 +273,9 @@ class GameState implements State {
             // Find distance from spirit pickup point to it's drop off point and add a relative amount of time
             this.spiritDropOffDistance.subtractVectors(this.currentLevel[spirit.dropOffPoint], spirit.position);
             this.spiritDropOffDistance.y = 0;
-            this.timeRemaining += (this.spiritDropOffDistance.magnitude * this.timePerDistanceUnit);
+            const bonus = this.spiritDropOffDistance.magnitude * this.timePerDistanceUnit;
+            hud.setTimeBonus(bonus);
+            hud.score += Math.round(bonus);
 
             ghostThankYouAudio().start();
 
@@ -301,16 +296,13 @@ class GameState implements State {
     }
   }
 
-  testLookAt = new EnhancedDOMPoint();
-  onUpdate(timeElapsed: number): void {
+  arrowLookAtDropOff = new EnhancedDOMPoint();
+  onUpdate(): void {
     if (!this.isLoaded) {
       return;
     }
 
-    this.timeRemaining -= 0.0166;
-
-    draw2dEngine.clear();
-    draw2dEngine.drawText(this.timeRemaining.toFixed(1), 'Times New Roman', 70, 110, 90, 2);
+    hud.draw();
 
     this.player.update(this.gridFaces, this.currentLevel.waterLevel);
     this.handleDropOffPickUp();
@@ -322,9 +314,9 @@ class GameState implements State {
     if (this.player.isCarryingSpirit) {
       this.arrowGuideWrapper.position.set(this.player.chassisCenter);
       this.arrowGuideWrapper.position.y += 14;
-      this.testLookAt = this.currentLevel[this.player.carriedSpirit!.dropOffPoint];
-      this.testLookAt.y = this.arrowGuideWrapper.position.y - 10;
-      this.arrowGuideWrapper.lookAt(this.testLookAt);
+      this.arrowLookAtDropOff = this.currentLevel[this.player.carriedSpirit!.dropOffPoint];
+      this.arrowLookAtDropOff.y = this.arrowGuideWrapper.position.y - 10;
+      this.arrowGuideWrapper.lookAt(this.arrowLookAtDropOff);
     }
 
 
@@ -337,8 +329,8 @@ class GameState implements State {
       getGameStateMachine().setState(menuState);
     }
 
-    if (this.timeRemaining <= 0) {
-      getGameStateMachine().setState(levelOverState, this.spiritsTransported, this.score, this.levelNumber);
+    if (hud.timeRemaining <= 0) {
+      getGameStateMachine().setState(levelOverState, this.spiritsTransported, hud.score, this.levelNumber);
     }
   }
 }

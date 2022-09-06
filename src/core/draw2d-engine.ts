@@ -9,11 +9,12 @@ class DrawEngine {
     this.context.clearRect(0, 0, 1920, 1080);
   }
 
-  drawText(text: string, font: string, size: number, x: number, y: number, lineWidth: number, textAlign: 'center' | 'left' | 'right' = 'center', fillStyle = 'black') {
+  drawText(text: string, font: string, size: number, x: number, y: number, lineWidth: number, textAlign: 'center' | 'left' | 'right' = 'center', isItalic = true) {
     const context = this.context;
-    context.font = `bold italic ${size}px ${font}, serif-black`;
+    context.font = `bold ${isItalic ? 'italic' : ''} ${size}px ${font}, serif-black`;
     context.textAlign = textAlign;
-    context.fillStyle = fillStyle;
+    context.textBaseline="middle";
+    context.fillStyle = 'black';
     context.fillText(text, x, y);
     context.strokeStyle = 'white';
     context.lineWidth = lineWidth;

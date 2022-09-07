@@ -65,6 +65,6 @@ export class BufferGeometry {
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
     }
 
-    gl.bindVertexArray(null);
+    // gl.bindVertexArray(null);
   }
 }

@@ -45,7 +45,6 @@ export class Renderer {
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     this.modelviewProjectionLocation = gl.getUniformLocation(lilgl.program, MODELVIEWPROJECTION)!;
     this.normalMatrixLocation =  gl.getUniformLocation(lilgl.program, NORMALMATRIX)!;
     this.colorLocation =  gl.getUniformLocation(lilgl.program, COLOR)!;
@@ -83,6 +82,7 @@ export class Renderer {
       // @ts-ignore
       const isInstancedMesh = mesh.count !== undefined;
       gl.useProgram(isInstancedMesh ? lilgl.instancedProgram : lilgl.program);
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
       const modelViewProjectionMatrix = viewProjectionMatrix.multiply(mesh.worldMatrix);
 
       gl.uniform4fv(isInstancedMesh ? instancedColorLocation : this.colorLocation, mesh.material.color);
@@ -124,7 +124,7 @@ export class Renderer {
 
     // Unbinding the vertex array being used to make sure the last item drawn isn't still bound on the next draw call.
     // In theory this isn't necessary but avoids bugs.
-    gl.bindVertexArray(null);
+    // gl.bindVertexArray(null);
   }
 }
 

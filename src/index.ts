@@ -6,10 +6,6 @@ import { MenuState } from '@/game-states/menu-state';
 import { LevelOverState } from '@/game-states/level-over-state';
 import { State } from '@/core/state';
 
-// TESTING
-// drawCurrentTexture();
-// END TESTINGs
-
 export const gameStates = {
   gameState: {} as State,
   menuState: {} as State,
@@ -26,8 +22,7 @@ async function startGame() {
   createGameStateMachine(gameStates.menuState, 2);
 
   let previousTime = 0;
-  const maxFps = 60;
-  const interval = 1000 / maxFps;
+  const interval = 1000 / 60;
 
   draw(0);
 
@@ -35,7 +30,7 @@ async function startGame() {
     controls.queryController();
     const delta = currentTime - previousTime;
 
-    if (delta >= interval || !previousTime) {
+    if (delta >= interval) {
       previousTime = currentTime - (delta % interval);
 
       getGameStateMachine().getState().onUpdate(delta);

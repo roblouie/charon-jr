@@ -1,5 +1,5 @@
 import { draw2dEngine } from '@/core/draw2d-engine';
-import { coinAudio, ghostThankYouAudio } from '@/engine/audio/audio-player';
+import { coinAudio } from '@/engine/audio/audio-player';
 
 class Hud {
   timeRemaining = 0;

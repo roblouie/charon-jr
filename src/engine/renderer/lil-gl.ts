@@ -12,8 +12,8 @@ export class LilGl {
 
  constructor() {
    this.canvas = document.querySelector('#c')!;
-   this.canvas.width  = 1280;
-   this.canvas.height = 720;
+   this.canvas.width  = 1920;
+   this.canvas.height = 1080;
    this.gl = this.canvas.getContext('webgl2')!;
    const vertex = this.createShader(this.gl.VERTEX_SHADER, vertex_shader_glsl);
    const fragment = this.createShader(this.gl.FRAGMENT_SHADER, fragment_shader_glsl);

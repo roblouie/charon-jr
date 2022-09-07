@@ -87,18 +87,25 @@ export const staticBodyGeo = makeBody().merge(staticLeftArm).merge(staticRightAr
 
 
 
-export class Spirit {
+export class Spirit extends Object3d {
   bodyMesh: Mesh;
   headMesh: Mesh;
   position: EnhancedDOMPoint;
   color: number[];
 
   dropOffPoint: number;
-  audioPlayer: AudioBufferSourceNode;
+  audioPlayer?: AudioBufferSourceNode;
+
+  cachedMatrixData: Float32Array;
+
+  static isSpirit(object3d: Object3d): object3d is Spirit  {
+    return (object3d as Spirit).color !== undefined;
+  }
 
   constructor(position: EnhancedDOMPoint) {
-    this.bodyMesh = new Mesh(staticBodyGeo, materials.spiritMaterial);
-    this.headMesh = new Mesh(head, materials.spiritMaterial);
+    super(new Mesh(staticBodyGeo, materials.spiritMaterial), new Mesh(head, materials.spiritMaterial))
+    this.bodyMesh = this.children[0] as Mesh;
+    this.headMesh = this.children[1] as Mesh;
     this.position = position;
     // const bodyMesh = new Mesh(body, materials.marble);
     // const leftArm = createArm(true);
@@ -108,13 +115,18 @@ export class Spirit {
     const dropOffs: number[] = [0, 1, 2];
     const dropOffIndex = Math.abs(Math.floor(noiseMaker.randomNumber(position.x + position.z) * 2));
     this.dropOffPoint = dropOffs[dropOffIndex];
+
+    this.position.set(position);
+    this.updateWorldMatrix();
     this.color = ['#f00', '#0f0', '#00f'].map(hexToWebgl)[dropOffIndex];
-    this.bodyMesh.position.set(position);
-    this.headMesh.position.set(position);
-    const randomBetween0and1 = Math.random() * 2
-    const audioCreator = [sadGhostAudio, sadGhostAudio2][Math.floor(randomBetween0and1)];
-    this.audioPlayer = audioCreator(position);
-    this.audioPlayer.loop = true;
-    this.audioPlayer.start(randomBetween0and1 * 2);
+    this.cachedMatrixData = this.worldMatrix.inverse().toFloat32Array()
+    const randomBetween0and3 = Math.random() * 4;
+    const intBetween0and3 = Math.floor(randomBetween0and3);
+    if (intBetween0and3 <= 1) {
+      const audioCreator = [sadGhostAudio, sadGhostAudio2][Math.floor(intBetween0and3)];
+      this.audioPlayer = audioCreator(position);
+      this.audioPlayer.loop = true;
+      this.audioPlayer.start(randomBetween0and3);
+    }
   }
 }

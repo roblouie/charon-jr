@@ -133,10 +133,18 @@ export class Level {
         || (currentNoiseValue < 1.8 && currentNoiseValue > 1.82)
         || (currentNoiseValue < -2.0 && currentNoiseValue > -2.02)
       ) {
+
         // @ts-ignore
         const spiritPosition = new EnhancedDOMPoint(this.floorMesh.geometry.vertices[index].x, yPosition + 2, this.floorMesh.geometry.vertices[index].z)
-        this.spiritPositions.push(spiritPosition);
-        spiritTransforms.push(new DOMMatrix().translateSelf(spiritPosition.x, spiritPosition.y, spiritPosition.z))
+        const hasAClosePosition = this.spiritPositions.find(placedPosition => {
+          const distance = new EnhancedDOMPoint().subtractVectors(spiritPosition, placedPosition);
+          return distance.magnitude < 50;
+        });
+
+        if (!hasAClosePosition) {
+          this.spiritPositions.push(spiritPosition);
+        }
+        // spiritTransforms.push(new DOMMatrix().translateSelf(spiritPosition.x, spiritPosition.y, spiritPosition.z))
       }
 
       // With rocks and spirits drawn, filter out all other values less than 1 before continuing.
@@ -187,9 +195,10 @@ export class Level {
     }
     const rocks = new InstancedMesh(largeRock.geometry, rockTransforms, rockTransforms.length, rockMaterial);
 
-    const spirits = new InstancedMesh(staticBodyGeo, spiritTransforms, spiritTransforms.length, materials.spiritMaterial);
+    // const spirits = new InstancedMesh(staticBodyGeo, spiritTransforms, spiritTransforms.length, materials.spiritMaterial);
     this.facesToCollideWith.floorFaces.sort((faceA, faceB) => faceB.upperY - faceA.upperY);
-    this.meshesToRender.push(plants, trees, rocks, spirits);
+    this.meshesToRender.push(plants, trees, rocks);
+    console.log(this.spiritPositions.length);
   }
 }
 

@@ -48,11 +48,6 @@ class Hud {
   draw() {
     this.timeRemaining -= 0.0166;
 
-    if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-        document.querySelector('#debug')!.textContent = `Time Remaining: ${Math.round(this.timeRemaining)} - Score: ${this.score}`;
-        return;
-    }
-
     draw2dEngine.clear();
 
     draw2dEngine.context.filter = 'grayscale(100%)';

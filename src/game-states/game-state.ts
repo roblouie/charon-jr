@@ -53,10 +53,7 @@ export class GameState implements State {
   arrowGuideWrapper: Object3d;
   arrowGuide: Mesh;
 
-  private readonly initialTimeReductionPerDropOff = 0.001;
-  private timePerDistanceUnit = 0.023;
-  private timeReductionPerDropOff = 0.001;
-  private minimumTimePerDistanceUnit = 0.012;
+  private timePerDistanceUnit = 0.018;
 
   spiritsTransported = 0;
   currentLevel: Level;
@@ -199,15 +196,13 @@ export class GameState implements State {
     const blueDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#00fc', emissive: '#00fc', isTransparent: true }));
     blueDropOffMesh.position.set(this.currentLevel.dropOffs[2]);
 
-    this.scene.add(this.player.mesh, redDropOffMesh, greenDropOffMesh, blueDropOffMesh);
+    this.scene.add(this.player.mesh, ...this.spirits, redDropOffMesh, greenDropOffMesh, blueDropOffMesh);
     this.scene.add(...this.currentLevel.meshesToRender, this.dynamicBody);
 
     this.scene.skybox = this.currentLevel.skybox;
     this.scene.skybox.bindGeometry();
 
 
-
-    this.timeReductionPerDropOff = this.initialTimeReductionPerDropOff;
     this.spiritsTransported = 0;
     hud.reset();
     this.isLoaded = true;
@@ -220,7 +215,7 @@ export class GameState implements State {
     draw2dEngine.clear();
     engineAudio.stop();
     drivingThroughWaterAudio.stop();
-    this.spirits.forEach(spirit => spirit.audioPlayer.stop());
+    this.spirits.forEach(spirit => spirit.audioPlayer?.stop());
   }
 
   private spiritPlayerDistance = new EnhancedDOMPoint();
@@ -235,11 +230,6 @@ export class GameState implements State {
         const dropOffPosition = this.currentLevel.dropOffs[this.player.carriedSpirit!.dropOffPoint];
         this.dropOffPlayerDistance.subtractVectors(dropOffPosition, this.player.chassisCenter);
         if (Math.abs(this.dropOffPlayerDistance.x) <= 30 && Math.abs(this.dropOffPlayerDistance.z) <= 30) {
-
-          // Less buffer is given after each drop off, down until the exact time it takes
-          if (this.timePerDistanceUnit >= this.minimumTimePerDistanceUnit) {
-            this.timePerDistanceUnit -= this.timeReductionPerDropOff;
-          }
 
           ghostFlyAwayAudio().start();
 
@@ -276,7 +266,7 @@ export class GameState implements State {
             this.player.mesh.wrapper.add(this.dynamicBody);
             this.player.isCarryingSpirit = true;
             this.player.carriedSpirit = spirit;
-            spirit.audioPlayer.stop();
+            spirit.audioPlayer?.stop();
             this.scene.add(this.arrowGuideWrapper);
             this.scene.remove(spirit.bodyMesh);
             this.scene.remove(spirit.headMesh);

@@ -1,5 +1,6 @@
 import { radsToDegrees } from '@/engine/math-helpers';
 import { EnhancedDOMPoint } from "@/engine/enhanced-dom-point";
+import { Spirit } from '@/spirit';
 
 export class Object3d {
   position: EnhancedDOMPoint;
@@ -64,6 +65,11 @@ export class Object3d {
   }
 
   updateWorldMatrix() {
+    // @ts-ignore
+    if (this.color !== undefined) {
+      return;
+    }
+
     this.localMatrix = this.getMatrix();
 
     if (this.parent) {

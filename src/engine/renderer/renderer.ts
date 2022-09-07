@@ -14,6 +14,7 @@ import { Scene } from '@/engine/renderer/scene';
 import { Mesh } from '@/engine/renderer/mesh';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
+import { Spirit } from '@/spirit';
 
 // IMPORTANT! The index of a given buffer in the buffer array must match it's respective data location in the shader.
 // This allows us to use the index while looping through buffers to bind the attributes. So setting a buffer
@@ -98,7 +99,7 @@ export class Renderer {
         gl.uniformMatrix4fv(this.viewProjectionLocation, false, viewProjectionMatrix.toFloat32Array());
         gl.drawElementsInstanced(gl.TRIANGLES, mesh.geometry.getIndices()!.length, gl.UNSIGNED_SHORT, 0, mesh.count);
       } else {
-        gl.uniformMatrix4fv(this.normalMatrixLocation, true, mesh.worldMatrix.inverse().toFloat32Array());
+        gl.uniformMatrix4fv(this.normalMatrixLocation, true, Spirit.isSpirit(mesh) ? mesh.cachedMatrixData : mesh.worldMatrix.inverse().toFloat32Array());
         gl.uniformMatrix4fv(this.modelviewProjectionLocation, false, modelViewProjectionMatrix.toFloat32Array());
         gl.drawElements(gl.TRIANGLES, mesh.geometry.getIndices()!.length, gl.UNSIGNED_SHORT, 0);
       }

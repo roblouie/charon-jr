@@ -74,7 +74,7 @@ export class ThirdPersonPlayer {
 
   private lastPosition = new EnhancedDOMPoint();
   private distanceTraveled = new EnhancedDOMPoint();
-  private dragRate = 0.99;
+  private dragRate = 0;
   private jumpTimer = 0;
   private lastIntervalJumpTimer = 0;
 
@@ -82,19 +82,17 @@ export class ThirdPersonPlayer {
     this.dragRate = 0.99;
     this.drivingThroughWaterGain.gain.value = 0;
 
-    if (this.isCarryingSpirit && this.jumpTimer - this.lastIntervalJumpTimer > 40) {
+    if (this.isCarryingSpirit && this.jumpTimer - this.lastIntervalJumpTimer > 35) {
       hud.addToScoreBonus();
       this.lastIntervalJumpTimer = this.jumpTimer;
     }
 
     // If we are diving through water
     if (this.chassisCenter.y - waterLevel < -1) {
-      this.dragRate = 0.96;
+      this.dragRate = 0.975;
       this.drivingThroughWaterGain.gain.value = this.speed;
       drivingThroughWaterAudio.playbackRate.value = Math.min(Math.abs(this.speed * 2), 1.2);
     }
-
-    this.dragRate = (this.chassisCenter.y - waterLevel < -1) ? 0.97 : 0.99;
 
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.01; // gravity
@@ -229,8 +227,8 @@ export class ThirdPersonPlayer {
   private baseTurningAbility = 0.08;
   private turningAbilityPercent = 1;
 
-  private fullTractionStep = 0.07;
-  private tractionPercent = 0.6;
+  private fullTractionStep = 0.06;
+  private tractionPercent = 0.5;
 
   private acceleratorValue = 0;
   private brakeValue = 0;
@@ -238,9 +236,9 @@ export class ThirdPersonPlayer {
   private decelerationRate = 0.02;
 
   private speed = 0;
-  private maxSpeed = 2.5;
-  private readonly baseAccelerationRate = 0.025;
-  private accelerationRate = 0.025;
+  private maxSpeed = 2.4;
+  private readonly baseAccelerationRate = 0.021;
+  private accelerationRate = 0.021;
 
 
   private determineAbilityToRotateCar() {
@@ -262,7 +260,7 @@ export class ThirdPersonPlayer {
   private reverseTimer = 0;
   private isReversing = false;
   protected updateVelocityFromControls() {
-    this.accelerationRate = (this.jumpTimer > 30) ? this.baseAccelerationRate / 3 : this.baseAccelerationRate;
+    this.accelerationRate = (this.jumpTimer > 30) ? this.baseAccelerationRate * 0.7 : this.baseAccelerationRate;
     this.decelerationRate = (this.jumpTimer > 30) ? this.baseDecelerationRate / 3 : this.baseDecelerationRate;
 
     this.acceleratorValue = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);

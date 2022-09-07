@@ -23,7 +23,7 @@ async function startGame() {
   gameStates.menuState = new MenuState();
   gameStates.levelOverState = new LevelOverState();
 
-  createGameStateMachine(gameStates.gameState, 2);
+  createGameStateMachine(gameStates.menuState, 2);
 
   let previousTime = 0;
   const maxFps = 60;

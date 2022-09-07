@@ -28,7 +28,7 @@ import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { findFloorHeightAtPosition, getGridPosition } from '@/engine/physics/surface-collision';
 import { clamp, doTimes } from '@/engine/helpers';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
-import { largeTree, leavesMesh, plant1 } from '@/modeling/flora.modeling';
+import { leavesMesh, plant1 } from '@/modeling/flora.modeling';
 import { Level } from '@/Level';
 import { makeDynamicBody, Spirit } from '@/spirit';
 import { draw2dEngine } from '@/core/draw2d-engine';
@@ -96,6 +96,7 @@ export class GameState implements State {
         materials.grass,
         materials.marble,
         materials.lake,
+        materials.wood,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),
@@ -126,6 +127,7 @@ export class GameState implements State {
         materials.pergatoryGrass,
         materials.marble,
         materials.lake,
+        materials.underworldBark,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),
@@ -147,13 +149,14 @@ export class GameState implements State {
         materials.underworldGrassMaterial,
         materials.underworldRocks,
         materials.underworldWater,
+        materials.underworldBark,
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),
       );
     }
 
-    this.player.mesh.position.y = 1.5;
+    this.player.mesh.position.set(0, 10, 0);
     this.player.isCarryingSpirit = false;
     this.spirits = this.currentLevel.spiritPositions.map(position => new Spirit(position));
 

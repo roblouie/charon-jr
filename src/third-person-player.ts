@@ -200,21 +200,12 @@ export class ThirdPersonPlayer {
     }
   }
 
-  private gearMultipliers = [3.2, 2.2, 1.5, 1.2];
+  private gearRatios = [3.2, 2.2];
   private gear = 0;
 
   private updateEngineSound() {
-    if (this.speed < 1.5) {
-      this.gear = 0;
-    } else if (this.speed >= 1.5 && this.speed < 2.2) {
-      this.gear = 1;
-    } else if (this.speed >= 2.2 && this.speed < 2.7) {
-      this.gear = 2;
-    } else {
-      this.gear = 3;
-    }
-
-    engineAudio.playbackRate.value = Math.max(Math.abs(this.speed) * this.gearMultipliers[this.gear], 0.7);
+    this.gear = this.speed < 1.5 ? 0 : 1;
+    engineAudio.playbackRate.value = Math.max((Math.abs(this.speed) - (this.gear * 0.3)) * this.gearRatios[this.gear], 0.7);
   }
 
 
@@ -232,11 +223,11 @@ export class ThirdPersonPlayer {
 
   private acceleratorValue = 0;
   private brakeValue = 0;
-  private readonly baseDecelerationRate = 0.02;
-  private decelerationRate = 0.02;
+  private readonly baseDecelerationRate = 0.015;
+  private decelerationRate = 0.015;
 
   private speed = 0;
-  private maxSpeed = 2.4;
+  private maxSpeed = 2.1;
   private readonly baseAccelerationRate = 0.021;
   private accelerationRate = 0.021;
 
@@ -245,7 +236,7 @@ export class ThirdPersonPlayer {
     this.tractionPercent = 0.6;
     this.turningAbilityPercent = 1;
 
-    const percentOfMaxSpeed = this.speed / this.maxSpeed;
+    const percentOfMaxSpeed = Math.abs(this.speed / this.maxSpeed);
     this.turningAbilityPercent = easeInOut(percentOfMaxSpeed);
 
     if (this.jumpTimer > 30) {
@@ -287,7 +278,8 @@ export class ThirdPersonPlayer {
       this.isReversing = false;
     }
 
-    this.speed = Math.max(this.isReversing ? -1 : 0, this.speed);
+    this.speed = Math.max(this.isReversing ? -0.7 : 0, this.speed);
+    debugElement.textContent = this.speed.toString();
 
     // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
     // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
@@ -300,7 +292,7 @@ export class ThirdPersonPlayer {
 
     this.determineAbilityToRotateCar();
 
-    this.anglePointing += this.steeringAngle * this.baseTurningAbility * this.turningAbilityPercent;
+    this.anglePointing += this.steeringAngle * this.baseTurningAbility * this.turningAbilityPercent * (this.isReversing ? -1 : 1);
     const quarterTurn = Math.PI / 2;
     this.anglePointing = clamp(this.anglePointing, this.angleTraveling - quarterTurn, this.angleTraveling + quarterTurn);
     // Never exceed full circle value

@@ -7,7 +7,7 @@ import { clamp, doTimes } from '@/engine/helpers';
 import { findFloorHeightAtPosition } from '@/engine/physics/surface-collision';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
-import { largeTree, leavesMesh, plant1, smallLeaves, smallTree } from '@/modeling/flora.modeling';
+import { leavesMesh, makeLargeTreeGeo, plant1, smallLeaves, smallTree } from '@/modeling/flora.modeling';
 import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { AttributeLocation } from '@/engine/renderer/renderer';
 import { Texture } from '@/engine/renderer/texture';
@@ -45,10 +45,12 @@ export class Level {
     plantMaterial: Material,
     rockMaterial: Material,
     waterMaterial: Material,
+    treeMaterial: Material,
     redDropOff: EnhancedDOMPoint,
     greenDropOff: EnhancedDOMPoint,
     blueDropOff: EnhancedDOMPoint
   ) {
+
     this.dropOffs = [];
     this.dropOffs.push(redDropOff);
     this.dropOffs.push(greenDropOff);
@@ -188,9 +190,9 @@ export class Level {
     // END TESTING
 
     const plants = new InstancedMesh(plant1.geometry, grassTransforms, grassTransforms.length, plantMaterial);
-    const trees = new InstancedMesh(largeTree.geometry, treeTransforms, treeTransforms.length, materials.underworldBark);
+    const trees = new InstancedMesh(makeLargeTreeGeo(), treeTransforms, treeTransforms.length, treeMaterial);
     if (isTreeLeavesShowing) {
-      const treeLeaves = new InstancedMesh(leavesMesh.geometry, treeTransforms, treeTransforms.length, leavesMesh.material);
+      const treeLeaves = new InstancedMesh(leavesMesh.geometry, treeTransforms, treeTransforms.length, materials.treeLeaves);
       this.meshesToRender.push(treeLeaves);
     }
     const rocks = new InstancedMesh(largeRock.geometry, rockTransforms, rockTransforms.length, rockMaterial);
@@ -198,7 +200,6 @@ export class Level {
     // const spirits = new InstancedMesh(staticBodyGeo, spiritTransforms, spiritTransforms.length, materials.spiritMaterial);
     this.facesToCollideWith.floorFaces.sort((faceA, faceB) => faceB.upperY - faceA.upperY);
     this.meshesToRender.push(plants, trees, rocks);
-    console.log(this.spiritPositions.length);
   }
 }
 

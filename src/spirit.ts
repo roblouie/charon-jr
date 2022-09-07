@@ -107,11 +107,6 @@ export class Spirit extends Object3d {
     this.bodyMesh = this.children[0] as Mesh;
     this.headMesh = this.children[1] as Mesh;
     this.position = position;
-    // const bodyMesh = new Mesh(body, materials.marble);
-    // const leftArm = createArm(true);
-    // const rightArm = createArm();
-    // const leftLeg = createLeg(true);
-    // const rightLeg = createLeg();
     const dropOffs: number[] = [0, 1, 2];
     const dropOffIndex = Math.abs(Math.floor(noiseMaker.randomNumber(position.x + position.z) * 2));
     this.dropOffPoint = dropOffs[dropOffIndex];

@@ -3,6 +3,7 @@ import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 import { doTimes } from '@/engine/helpers';
 import { getData, storeData } from '@/core/data-storage';
+import { draw2dEngine } from '@/core/draw2d-engine';
 
 interface CanvasPatterns {
   [key: string]: CanvasPattern;
@@ -231,8 +232,9 @@ export function drawUnderworldRocks() {
   clearWith('#384658');
   drawContext.globalCompositeOperation = 'color-dodge';
   noiseMaker.seed(23);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 2, NoiseType.Edge, '#82826e', 220, true, 'x', 'y', 'z', 0), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 3, NoiseType.Edge, '#82826e', 220, true, 'x', 'y', 'z', 0), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  draw2dEngine.marbleFill = draw2dEngine.context.createPattern(drawContext.canvas, 'repeat')!;
   return mainImageData();
 }
 
@@ -255,6 +257,9 @@ export const materials: {[key: string]: Material} = {};
 export async function populateMaterials() {
   noiseMaker.noiseCache = await getData() ?? {};
 
+  const dirtPath = new Material({texture: textureLoader.load(drawDirtPath())})
+  dirtPath.texture?.repeat.set(16, 16);
+
   const floorTexture = textureLoader.load(drawGrass());
   floorTexture.repeat.x = 12; floorTexture.repeat.y = 12;
   materials.grass = new Material({texture: floorTexture});
@@ -264,8 +269,7 @@ export async function populateMaterials() {
   const treeLeaves = new Material({texture: treeTexture });
   const pergatoryGrass = new Material({texture: treeTexture, color: '#f4f' });
 
-  const dirtPath = new Material({texture: textureLoader.load(drawDirtPath())})
-  dirtPath.texture?.repeat.set(16, 16);
+
 
   const tiles = new Material({texture: textureLoader.load(drawTiles())});
 

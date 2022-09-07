@@ -7,11 +7,10 @@ import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { renderer } from '@/engine/renderer/renderer';
 import { controls } from '@/core/controls';
 import { getGameStateMachine } from '@/game-state-machine';
-import { gameState } from '@/game-states/game-state';
 import { draw2dEngine } from '@/core/draw2d-engine';
-import { menuState } from '@/game-states/menu-state';
+import { gameStates } from '@/index';
 
-class LevelOverState implements State {
+export class LevelOverState implements State {
   spiritsTransported = 0;
   payment = 0;
   score = 0;
@@ -51,8 +50,8 @@ class LevelOverState implements State {
     draw2dEngine.drawText(this.rank, 'Times New Roman', 120, 640, 620, 1);
 
 
-    if (controls.isSpace) {
-      getGameStateMachine().setState(menuState);
+    if (controls.isEnter) {
+      getGameStateMachine().setState(gameStates.menuState);
     }
   }
 
@@ -60,5 +59,3 @@ class LevelOverState implements State {
     draw2dEngine.clear();
   }
 }
-
-export const levelOverState = new LevelOverState();

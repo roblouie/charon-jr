@@ -6,10 +6,7 @@ class Controls {
   isLeft = false;
   isRight = false;
   isEnter = false;
-  isSpace = false;
-  isEscape = false;
   direction: EnhancedDOMPoint;
-  isJumpPressed = false;
   leftTrigger = 0;
   rightTrigger = 0;
   isGamepadAttached = false;
@@ -33,7 +30,6 @@ class Controls {
       if (this.direction.magnitude < deadzone) {
         this.direction.x = 0; this.direction.z = 0;
       }
-      this.isJumpPressed = gamepad.buttons[0].pressed;
     }
   }
 
@@ -54,11 +50,6 @@ class Controls {
       case 'Enter':
         this.isEnter = isPressed;
         break;
-      case 'Space':
-        this.isSpace = isPressed;
-        break;
-      case 'Escape':
-        this.isEscape = isPressed;
     }
     this.direction.x = (Number(this.isLeft) * -1) + Number(this.isRight);
     this.direction.z = (Number(this.isUp) * -1) + Number(this.isDown);

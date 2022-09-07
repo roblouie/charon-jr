@@ -3,8 +3,6 @@ import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 
 export const audioCtx = new AudioContext();
 
-type AudioPlayer = (p?: number,k?:number,b?: number,e?: number,r?: number,t?: number,q?: number,D?: number,u?: number,y?: number,v?: number,z?: number,l?: number,E?: number,A?: number,F?: number,c?: number,w?: number,m?: number,B?: number) => AudioBufferSourceNode
-
 // zzfxV - global volume
 const zzfxV=.3
 

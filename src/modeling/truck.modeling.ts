@@ -171,19 +171,22 @@ export class TruckObject3d extends Object3d {
     this.rightFrontWheel.setRotation(0, steeringAngleRadians, 0);
   }
 
-  private rotation = 0;
+  private wheelRotation = 0;
   setDriveRotationRate(rate: number) {
-    this.rotation += rate;
-    this.leftFrontWheel.children[0].setRotation(this.rotation, 0, 0);
-    this.rightFrontWheel.children[0].setRotation(this.rotation, 0, 0);
-    this.rearWheels.setRotation(this.rotation, 0, 0);
+    this.wheelRotation += rate;
+    this.leftFrontWheel.children[0].setRotation(this.wheelRotation, 0, 0);
+    this.rightFrontWheel.children[0].setRotation(this.wheelRotation, 0, 0);
+    this.rearWheels.setRotation(this.wheelRotation, 0, 0);
   }
 }
 
-const frontWheels = createWheelPair();
-const rearWheels = createWheelPair();
-frontWheels.position.z += 4.5;
-rearWheels.position.z -= 5;
-const truckObject = new TruckObject3d(frontWheels, rearWheels, createChassis());
-truckObject.scale.set(0.7, 0.7, 0.7);
-export const truck = truckObject;
+export function makeTruck() {
+  const frontWheels = createWheelPair();
+  const rearWheels = createWheelPair();
+  frontWheels.position.z += 4.5;
+  rearWheels.position.z -= 5;
+  const truckObject = new TruckObject3d(frontWheels, rearWheels, createChassis());
+  truckObject.scale.set(0.7, 0.7, 0.7);
+  return truckObject;
+}
+

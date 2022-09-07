@@ -1,8 +1,6 @@
-import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
-import { draw2dEngine } from '@/core/draw2d-engine';
 import { doTimes } from '@/engine/helpers';
 import { getData, storeData } from '@/core/data-storage';
 
@@ -10,9 +8,6 @@ interface CanvasPatterns {
   [key: string]: CanvasPattern;
 }
 export const canvasPatterns: CanvasPatterns = {};
-
-// @ts-ignore
-noiseMaker.noiseCache = await getData();
 
 const [drawContext, tileContext, noiseContext] = ['draw', 'tile', 'noise'].map(id => {
   const canvas = document.createElement('canvas');
@@ -23,7 +18,6 @@ const [drawContext, tileContext, noiseContext] = ['draw', 'tile', 'noise'].map(i
 });
 
 const resolution = 128;
-const debugElement = document.querySelector('#debug')!;
 
 // *********************
 // Dirt Path
@@ -37,27 +31,11 @@ export function drawDirtPath() {
   drawContext.globalCompositeOperation = 'source-over';
   return mainImageData();
 }
-const dirtPath = new Material({texture: textureLoader.load(drawDirtPath())})
-dirtPath.texture?.repeat.set(16, 16);
-
-// *********************
-// Dirt - Grass In Between
-// *********************
-// export function dirtGrassInbetween() {
-//   clearWith('#525200');
-//   noiseMaker.seed(12);
-//   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 3, NoiseType.Perlin, '#0f0', 128), 0, 0);
-//   drawContext.globalCompositeOperation = 'screen';
-//   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-//   drawContext.globalCompositeOperation = 'source-over';
-//   return mainImageData();
-// }
-// const dirtGrassInBetween = new Material({texture: textureLoader.load(dirtGrassInbetween())});
 
 // *********************
 // Grass
 // *********************
-export function drawGrass() {
+function drawGrass() {
   clearWith('#090');
   noiseMaker.seed(12);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 3, NoiseType.Perlin, '#0f0', 128), 0, 0);
@@ -66,30 +44,6 @@ export function drawGrass() {
   drawContext.globalCompositeOperation = 'source-over';
   return mainImageData();
 }
-const floorTexture = textureLoader.load(drawGrass());
-floorTexture.repeat.x = 12; floorTexture.repeat.y = 12;
-const grass = new Material({texture: floorTexture});
-
-const treeTexture = textureLoader.load(drawGrass());
-treeTexture.repeat.set(2, 2);
-const treeLeaves = new Material({texture: treeTexture });
-const pergatoryGrass = new Material({texture: treeTexture, color: '#f4f' });
-
-// *********************
-// Bricks
-// *********************
-export function drawBricks() {
-  clearWith('#ddd');
-  drawContext.fillStyle = 'red';
-  drawContext.filter = 'drop-shadow(1px 1px 0px #888)';
-  tile((x, y) => {
-    const offsetX = (y / 16) % 2 === 0 ? x - 15 : x;
-    drawContext.fillRect(offsetX, y + 1, 30, 14);
-  }, 32, 16);
-  noisify(drawContext, 30);
-  return mainImageData();
-}
-const bricks = new Material({texture: textureLoader.load(drawBricks())});
 
 // *********************
 // Water
@@ -99,22 +53,7 @@ export function drawWater() {
   noiseMaker.seed(10);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Edge, '#3264ff', 220), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  const imageData = mainImageData();
-  const newContext = getContextToAnimate();
-
-  let xPos = 0;
-  function animate() {
-    newContext.putImageData(imageData, xPos - 128, 0);
-    newContext.putImageData(imageData, xPos, 0);
-    xPos += 0.1;
-    if (xPos > drawContext.canvas.width) {
-      xPos = 0;
-    }
-  }
-
-  animate();
-
-  const lakeTexture = textureLoader.load(newContext.canvas, animate);
+  const lakeTexture = textureLoader.load(mainImageData());
   lakeTexture.repeat.x = 6; lakeTexture.repeat.y = 6;
 
   return new Material({texture: lakeTexture, isTransparent: true, color: '#fffc'});
@@ -131,7 +70,6 @@ export function drawMarble() {
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   return mainImageData();
 }
-const marble = new Material({texture: textureLoader.load(drawMarble())})
 
 // *********************
 // Wood
@@ -145,10 +83,6 @@ export function drawWood() {
   noisify(drawContext, 2);
   return mainImageData();
 }
-
-const woodTexture = textureLoader.load(drawWood())
-const underworldBark = new Material({texture: woodTexture, color: '#2cf'});
-const wood = new Material({texture: woodTexture});
 
 // *********************
 // Tiles
@@ -166,12 +100,7 @@ export function drawTiles() {
   noisify(drawContext, 3);
   return mainImageData();
 }
-const tiles = new Material({texture: textureLoader.load(drawTiles())});
 
-const lake = drawWater();
-
-const tire = new Material({ color: '#000'});
-const wheel = new Material({ color: '#888'});
 
 export const truckColor = '#333';
 
@@ -192,7 +121,6 @@ function drawChassis() {
   noisify(drawContext, 3);
   return mainImageData();
 }
-const chassis = new Material({color: truckColor});
 
 // *********************
 // Truck Cab Top
@@ -206,7 +134,6 @@ export function drawTruckCabTop() {
   drawContext.fillText('💀', 64, 115);
   return mainImageData();
 }
-const truckCabTop = new Material({texture: textureLoader.load(drawTruckCabTop())});
 
 // *********************
 // Truck Cab Front
@@ -227,7 +154,6 @@ export function drawTruckCabFront() {
   });
   return mainImageData();
 }
-const truckCabFront = new Material({texture: textureLoader.load(drawTruckCabFront())});
 
 // *********************
 // Truck Cab Side
@@ -244,8 +170,7 @@ export function drawTruckCabSide(isRight: boolean) {
   drawContext.restore();
   return mainImageData();
 }
-const truckCabRightSide = new Material({texture: textureLoader.load(drawTruckCabSide(true))});
-const truckCabLeftSide = new Material({texture: textureLoader.load(drawTruckCabSide(false))});
+
 
 // *********************
 // Truck Cab Rear
@@ -254,7 +179,6 @@ export function drawTruckCabRear() {
   clearWith(truckColor);
   return mainImageData();
 }
-const truckCabRear = new Material({texture: textureLoader.load(drawTruckCabRear())});
 
 
 // *********************
@@ -269,9 +193,6 @@ export function drawVolcanicRock() {
   noisify(drawContext, 5);
   return mainImageData();
 }
-const underworldPathTexture = textureLoader.load(drawVolcanicRock());
-underworldPathTexture.repeat.x = 60; underworldPathTexture.repeat.y = 60;
-const underworldPath = new Material({texture: underworldPathTexture});
 
 
 // *********************
@@ -287,9 +208,7 @@ export function drawUnderworldGround() {
   return mainImageData();
 }
 
-const underworldGroundTexture = textureLoader.load(drawUnderworldGround());
-underworldGroundTexture.repeat.x = 60; underworldGroundTexture.repeat.y = 60;
-const underworldGround = new Material({texture: underworldGroundTexture});
+
 
 // *********************
 // Underworld Sky
@@ -316,12 +235,11 @@ export function drawUnderworldRocks() {
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   return mainImageData();
 }
-const underworldRocks = new Material({texture: textureLoader.load(drawUnderworldRocks())})
 
 // *********************
 // Underworld Water
 // *********************
-export function drawUnderworldWater() {
+function drawUnderworldWater() {
   clearWith('#3bca6c'); // '#16e868'
   noiseMaker.seed(10);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Edge, '#2d9f52', 220), 0, 0);
@@ -330,47 +248,75 @@ export function drawUnderworldWater() {
   return mainImageData();
 }
 
-const underworldWaterTexture = textureLoader.load(drawUnderworldWater());
-underworldWaterTexture.repeat.x = 10; underworldWaterTexture.repeat.y = 10;
-const underworldWater = new Material({texture: underworldWaterTexture, isTransparent: true, color: '#fffc'})
 
-const underworldGrassMaterial = new Material({isTransparent: true, color: '#00D9FFBA'})
 
-textureLoader.bindTextures();
+export const materials: {[key: string]: Material} = {};
 
-export const materials = {
-  grass,
-  lake,
-  marble,
-  bricks,
-  treeLeaves,
-  wood,
-  tiles,
-  chassis,
-  tire,
-  wheel,
-  truckCabTop,
-  truckCabFront,
-  truckCabRightSide,
-  truckCabLeftSide,
-  truckCabRear,
-  dirtPath,
-  pergatoryGrass,
-  underworldPath,
-  underworldGround,
-  underworldRocks,
-  underworldWater,
-  underworldGrassMaterial,
-  underworldBark,
-};
+export async function populateMaterials() {
+  noiseMaker.noiseCache = await getData() ?? {};
 
-// export const skyboxes = {
-//   earthSky: createSkybox(drawEarthSky),
-//   purgatorySky: createSkybox(drawPurgatorySky),
-//   underworldSky: createSkybox(drawSkyPurple)
-// }
+  const floorTexture = textureLoader.load(drawGrass());
+  floorTexture.repeat.x = 12; floorTexture.repeat.y = 12;
+  materials.grass = new Material({texture: floorTexture});
 
-export const underworldSky = createSkybox(drawSkyPurple);
+  const treeTexture = textureLoader.load(drawGrass());
+  treeTexture.repeat.set(2, 2);
+  const treeLeaves = new Material({texture: treeTexture });
+  const pergatoryGrass = new Material({texture: treeTexture, color: '#f4f' });
+
+  const dirtPath = new Material({texture: textureLoader.load(drawDirtPath())})
+  dirtPath.texture?.repeat.set(16, 16);
+
+  const tiles = new Material({texture: textureLoader.load(drawTiles())});
+
+  const lake = drawWater();
+
+  const tire = new Material({ color: '#000'});
+  const wheel = new Material({ color: '#888'});
+
+  const underworldPathTexture = textureLoader.load(drawVolcanicRock());
+  underworldPathTexture.repeat.x = 60; underworldPathTexture.repeat.y = 60;
+  const underworldPath = new Material({texture: underworldPathTexture});
+
+  const underworldGroundTexture = textureLoader.load(drawUnderworldGround());
+  underworldGroundTexture.repeat.x = 60; underworldGroundTexture.repeat.y = 60;
+  materials.underworldGround = new Material({texture: underworldGroundTexture});
+
+  materials.underworldRocks = new Material({texture: textureLoader.load(drawUnderworldRocks())});
+
+  materials.chassis = new Material({color: truckColor});
+  materials.truckCabTop = new Material({texture: textureLoader.load(drawTruckCabTop())});
+  materials.truckCabFront = new Material({texture: textureLoader.load(drawTruckCabFront())});
+  materials.truckCabRightSide = new Material({texture: textureLoader.load(drawTruckCabSide(true))});
+  materials.truckCabLeftSide = new Material({texture: textureLoader.load(drawTruckCabSide(false))});
+  materials.truckCabRear = new Material({texture: textureLoader.load(drawTruckCabRear())});
+
+  materials.marble = new Material({texture: textureLoader.load(drawMarble())})
+  materials.spiritMaterial = new Material({ texture: materials.marble.texture, color: '#fff9', emissive: '#fff9', isTransparent: true })
+
+  const woodTexture = textureLoader.load(drawWood())
+  materials.underworldBark = new Material({texture: woodTexture, color: '#2cf'});
+  materials.wood = new Material({texture: woodTexture});
+
+  const underworldWaterTexture = textureLoader.load(drawUnderworldWater());
+  underworldWaterTexture.repeat.x = 10; underworldWaterTexture.repeat.y = 10;
+  materials.underworldWater = new Material({texture: underworldWaterTexture, isTransparent: true, color: '#fffc'})
+
+  materials.underworldGrassMaterial = new Material({isTransparent: true, color: '#00D9FFBA'})
+
+  materials.lake = lake;
+  materials.treeLeaves = treeLeaves;
+  materials.tiles = tiles;
+  materials.tire = tire;
+  materials.wheel = wheel;
+  materials.dirtPath = dirtPath;
+  materials.pergatoryGrass = pergatoryGrass;
+  materials.underworldPath = underworldPath;
+
+  textureLoader.bindTextures();
+
+  storeData(noiseMaker.noiseCache);
+}
 
 export function drawEarthSky(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
   clearWith('#2d75fa');
@@ -400,43 +346,9 @@ export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimensio
   return tileContext.getImageData(0, 0, 256, 256);
 }
 
-export function drawParticle() {
-  drawContext.clearRect(0, 0, 128, 128);
-  drawContext.fillStyle = 'red';
-  drawContext.fillRect(32, 32, 32, 32);
-  return mainImageData();
-}
-
-
-
-
-
-
-export function drawStoneWalkway() {
-  clearWith('#5e6d81');
-  noiseMaker.seed(34);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#112', 220, true, 'x', 'y', 'z', 0), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-
-  noiseMaker.seed(34);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Lines, '#115', 220, true, 'x', 'y', 'z', 0), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  return mainImageData();
-}
-
-
-
 function mainImageData() {
   return drawContext.getImageData(0, 0, 128, 128);
 }
-
-function getContextToAnimate() {
-  const newCanvas = document.createElement('canvas');
-  newCanvas.width = drawContext.canvas.width;
-  newCanvas.height = drawContext.canvas.height;
-  return newCanvas.getContext('2d')!;
-}
-
 
 function clearWith(color: string, context = drawContext) {
   context.clearRect(0, 0, resolution, resolution);
@@ -503,6 +415,3 @@ export function createSkybox(callback: (firstDimension: 'x' | 'y' | 'z', secondD
     return callback(...coordinates.split(''), i % 2 === 0 ? 0 : 127, i === 0 || i === 5);
   });
 }
-
-storeData(noiseMaker.noiseCache);
-getData();

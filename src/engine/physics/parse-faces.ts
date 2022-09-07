@@ -35,13 +35,11 @@ export function meshToFaces(meshes: Mesh[], transformMatrix?: DOMMatrix) {
   });
 }
 
-export function getGroupedFaces(faces: Face[], destinationGroupedFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]}) {
+export function getGroupedFaces(faces: Face[], destinationGroupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
   faces.forEach(face => {
     if (face.normal.y > 0.2) {
       destinationGroupedFaces.floorFaces.push(face);
-    } else if (face.normal.y < -0.2) {
-      destinationGroupedFaces.ceilingFaces.push(face);
-    } else {
+    } else if (face.normal.y >= -0.2) {
       destinationGroupedFaces.wallFaces.push(face);
     }
   });

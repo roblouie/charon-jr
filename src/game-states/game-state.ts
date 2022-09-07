@@ -7,11 +7,7 @@ import {
   ghostThankYouAudio
 } from '@/engine/audio/audio-player';
 import {
-  drawBricks,
-  drawGrass,
-  drawMarble, drawParticle,
-  drawEarthSky,
-  drawWater, materials, createSkybox, drawPurgatorySky, drawSkyPurple, underworldSky,
+  drawEarthSky, materials, createSkybox, drawPurgatorySky, drawSkyPurple,
 } from '@/texture-maker';
 import { Scene } from '@/engine/renderer/scene';
 import { Camera } from '@/engine/renderer/camera';
@@ -23,12 +19,10 @@ import { PlaneGeometry } from '@/engine/plane-geometry';
 import { Material } from '@/engine/renderer/material';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { AttributeLocation, renderer } from '@/engine/renderer/renderer';
-import { Staircase } from '@/staircase-geometry';
 import { getGroupedFaces, meshToFaces } from '@/engine/physics/parse-faces';
 import { Face } from '@/engine/physics/face';
 import { controls } from '@/core/controls';
 import { getGameStateMachine } from '@/game-state-machine';
-import { menuState } from '@/game-states/menu-state';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { findFloorHeightAtPosition, getGridPosition } from '@/engine/physics/surface-collision';
@@ -36,10 +30,10 @@ import { clamp, doTimes } from '@/engine/helpers';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 import { largeTree, leavesMesh, plant1 } from '@/modeling/flora.modeling';
 import { Level } from '@/Level';
-import { dynamicBody, Spirit } from '@/spirit';
+import { makeDynamicBody, Spirit } from '@/spirit';
 import { draw2dEngine } from '@/core/draw2d-engine';
-import { levelOverState } from '@/game-states/level-over-state';
 import { hud } from '@/hud';
+import { gameStates } from '@/index';
 
 const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)
@@ -48,7 +42,7 @@ const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .computeNormalsPerPlane()
   .done();
 
-class GameState implements State {
+export class GameState implements State {
   player: ThirdPersonPlayer;
   scene: Scene;
   groupedFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]};
@@ -65,7 +59,9 @@ class GameState implements State {
   private minimumTimePerDistanceUnit = 0.012;
 
   spiritsTransported = 0;
-  currentLevel: Level
+  currentLevel: Level;
+
+  dynamicBody: Object3d;
 
   constructor() {
     const camera = new Camera(1.74533, 16 / 9, 1, 1000);
@@ -81,8 +77,7 @@ class GameState implements State {
     this.arrowGuideWrapper = new Object3d(this.arrowGuide);
 
     this.currentLevel = {} as Level;
-
-
+    this.dynamicBody = makeDynamicBody();
   }
 
   private levelNumber = 0;
@@ -145,7 +140,7 @@ class GameState implements State {
       // const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
       this.currentLevel = new Level(
         sampleHeightMap3,
-        underworldSky,
+        createSkybox(drawSkyPurple),
         -17,
         39,
         26,
@@ -196,19 +191,16 @@ class GameState implements State {
 
     const dropOffGeo = new MoldableCubeGeometry(1, 140, 1, 4, 1, 4).cylindrify(30).done();
     const redDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#f00c', emissive: '#f00c', isTransparent: true }));
-    redDropOffMesh.position.set(this.currentLevel.redDropOff);
+    redDropOffMesh.position.set(this.currentLevel.dropOffs[0]);
 
     const greenDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#0f0c', emissive: '#0f0c', isTransparent: true }));
-    greenDropOffMesh.position.set(this.currentLevel.greenDropOff);
+    greenDropOffMesh.position.set(this.currentLevel.dropOffs[1]);
 
     const blueDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#00fc', emissive: '#00fc', isTransparent: true }));
-    blueDropOffMesh.position.set(this.currentLevel.blueDropOff);
+    blueDropOffMesh.position.set(this.currentLevel.dropOffs[2]);
 
-    this.scene.add(this.player.mesh, ...this.spirits.map(spirit => spirit.bodyMesh), ...this.spirits.map(spirit => spirit.headMesh), redDropOffMesh, greenDropOffMesh, blueDropOffMesh);
-    this.scene.add(...this.currentLevel.meshesToRender, dynamicBody);
-
-
-
+    this.scene.add(this.player.mesh, redDropOffMesh, greenDropOffMesh, blueDropOffMesh);
+    this.scene.add(...this.currentLevel.meshesToRender, this.dynamicBody);
 
     this.scene.skybox = this.currentLevel.skybox;
     this.scene.skybox.bindGeometry();
@@ -240,7 +232,7 @@ class GameState implements State {
     // Drop Off
     if (this.player.isCarryingSpirit) {
       if (this.player.velocity.magnitude < 0.1) {
-        const dropOffPosition = this.currentLevel[this.player.carriedSpirit!.dropOffPoint];
+        const dropOffPosition = this.currentLevel.dropOffs[this.player.carriedSpirit!.dropOffPoint];
         this.dropOffPlayerDistance.subtractVectors(dropOffPosition, this.player.chassisCenter);
         if (Math.abs(this.dropOffPlayerDistance.x) <= 30 && Math.abs(this.dropOffPlayerDistance.z) <= 30) {
 
@@ -251,9 +243,9 @@ class GameState implements State {
 
           ghostFlyAwayAudio().start();
 
-          dynamicBody.position.set(this.player.chassisCenter);
-          dynamicBody.position.y += 3;
-          this.player.mesh.wrapper.remove(dynamicBody);
+          this.dynamicBody.position.set(this.player.chassisCenter);
+          this.dynamicBody.position.y += 3;
+          this.player.mesh.wrapper.remove(this.dynamicBody);
           this.scene.remove(this.arrowGuideWrapper);
           this.scene.remove(this.arrowGuide)
           this.player.isCarryingSpirit = false;
@@ -271,7 +263,7 @@ class GameState implements State {
             this.arrowGuide.material.color = spirit.color.map(val => val * 1.5);
 
             // Find distance from spirit pickup point to it's drop off point and add a relative amount of time
-            this.spiritDropOffDistance.subtractVectors(this.currentLevel[spirit.dropOffPoint], spirit.position);
+            this.spiritDropOffDistance.subtractVectors(this.currentLevel.dropOffs[spirit.dropOffPoint], spirit.position);
             this.spiritDropOffDistance.y = 0;
             const bonus = this.spiritDropOffDistance.magnitude * this.timePerDistanceUnit;
             hud.setTimeBonus(bonus);
@@ -279,9 +271,9 @@ class GameState implements State {
 
             ghostThankYouAudio().start();
 
-            dynamicBody.position.set(0, 3, -3);
-            dynamicBody.setRotation(0, Math.PI, 0);
-            this.player.mesh.wrapper.add(dynamicBody);
+            this.dynamicBody.position.set(0, 3, -3);
+            this.dynamicBody.setRotation(0, Math.PI, 0);
+            this.player.mesh.wrapper.add(this.dynamicBody);
             this.player.isCarryingSpirit = true;
             this.player.carriedSpirit = spirit;
             spirit.audioPlayer.stop();
@@ -314,7 +306,7 @@ class GameState implements State {
     if (this.player.isCarryingSpirit) {
       this.arrowGuideWrapper.position.set(this.player.chassisCenter);
       this.arrowGuideWrapper.position.y += 14;
-      this.arrowLookAtDropOff = this.currentLevel[this.player.carriedSpirit!.dropOffPoint];
+      this.arrowLookAtDropOff = this.currentLevel.dropOffs[this.player.carriedSpirit!.dropOffPoint];
       this.arrowLookAtDropOff.y = this.arrowGuideWrapper.position.y - 10;
       this.arrowGuideWrapper.lookAt(this.arrowLookAtDropOff);
     }
@@ -325,14 +317,8 @@ class GameState implements State {
 
     renderer.render(this.player.camera, this.scene);
 
-    if (controls.isEscape) {
-      getGameStateMachine().setState(menuState);
-    }
-
     if (hud.timeRemaining <= 0) {
-      getGameStateMachine().setState(levelOverState, this.spiritsTransported, hud.score, this.levelNumber);
+      getGameStateMachine().setState(gameStates.levelOverState, this.spiritsTransported, hud.score, this.levelNumber);
     }
   }
 }
-
-export const gameState = new GameState();

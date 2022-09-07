@@ -17,7 +17,7 @@ import {
   hit2Audio,
   landingAudio
 } from '@/engine/audio/audio-player';
-import { truck, TruckObject3d } from '@/modeling/truck.modeling';
+import { makeTruck, TruckObject3d } from '@/modeling/truck.modeling';
 import { clamp, easeInOut, linearMovement, moveValueTowardsTarget, wrap } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
 import { Spirit } from '@/spirit';
@@ -48,7 +48,7 @@ export class ThirdPersonPlayer {
   private drivingThroughWaterGain: GainNode;
 
   constructor(camera: Camera) {
-    this.mesh = truck;
+    this.mesh = makeTruck();
     this.chassisCenter.y = 10;
     this.camera = camera;
     this.listener = audioCtx.listener;
@@ -94,8 +94,7 @@ export class ThirdPersonPlayer {
       drivingThroughWaterAudio.playbackRate.value = Math.min(Math.abs(this.speed * 2), 1.2);
     }
 
-    this.dragRate = (this.chassisCenter.y - waterLevel < -1) ? 0.96 : 0.99;
-    debugElement.textContent = this.speed.toString();
+    this.dragRate = (this.chassisCenter.y - waterLevel < -1) ? 0.97 : 0.99;
 
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.01; // gravity
@@ -193,6 +192,7 @@ export class ThirdPersonPlayer {
       this.lastIntervalJumpTimer = 0;
       this.axis = this.axis.crossVectors(this.mesh.up, floorData.floor.normal);
       const radians = Math.acos(floorData.floor.normal.dot(this.mesh.up));
+      this.mesh.isUsingLookAt = true;
       this.mesh.rotationMatrix = new DOMMatrix();
       this.mesh.rotationMatrix.rotateAxisAngleSelf(this.axis.x, this.axis.y, this.axis.z, radsToDegrees(radians));
       this.previousFloorHeight = floorData.height;
@@ -321,25 +321,28 @@ export class ThirdPersonPlayer {
     this.velocity.x = Math.sin(this.angleTraveling) * this.speed;
 
     this.mesh.wrapper.setRotation(0, this.anglePointing, 0);
-
-    if (controls.isSpace || controls.isJumpPressed) {
-      if (!this.isJumping) {
-        this.velocity.y = 0.15;
-        this.isJumping = true;
-      }
-    }
   }
 
   private updateAudio() {
-    this.listener.positionX.value = this.mesh.position.x;
-    this.listener.positionY.value = this.mesh.position.y;
-    this.listener.positionZ.value = this.mesh.position.z;
+    const { x, y, z } = this.mesh.position;
+    if (this.listener.positionX) {
+      this.listener.positionX.value = this.mesh.position.x;
+      this.listener.positionY.value = this.mesh.position.y;
+      this.listener.positionZ.value = this.mesh.position.z;
+    } else {
+      this.listener.setPosition(x, y, z);
+    }
 
-    const {x, z} = this.mesh.position.clone()
+    const cameraPlayerDirection = this.mesh.position.clone()
       .subtract(this.camera.position) // distance from camera to player
       .normalize() // direction of camera to player
 
-    this.listener.forwardX.value = x;
-    this.listener.forwardZ.value = z;
+    if (this.listener.forwardX) {
+      this.listener.forwardX.value = cameraPlayerDirection.x;
+      this.listener.forwardZ.value = cameraPlayerDirection.z;
+    } else {
+      this.listener.setOrientation(cameraPlayerDirection.x, 0, cameraPlayerDirection.z, 0, 1, 0);
+    }
+
   }
 }

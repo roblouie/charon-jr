@@ -27,7 +27,7 @@ export function calculateVertexNormals(points: EnhancedDOMPoint[], indices: numb
 }
 
 // Not included presently, but is faster than DOMMatrix's built in multiply, so may be useful for performance improvement
-// function mulitplyMatrix(a: DOMMatrix, b: DOMMatrix, out: DOMMatrix) {
+// export function multiplyMatrix(a: DOMMatrix, b: DOMMatrix, out: DOMMatrix) {
 //   let a00 = a.m11,
 //     a01 = a.m12,
 //     a02 = a.m13,

@@ -24,7 +24,7 @@ export function storeData(value: any) {
 }
 
 export function getData(): Promise<any> {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
 
 
   const open = indexedDB.open("ddamt", 1);
@@ -46,7 +46,7 @@ export function getData(): Promise<any> {
     const getNoiseCache = store.get(0);
 
     getNoiseCache.onsuccess = function () {
-      resolve(getNoiseCache.result.value);
+      resolve(getNoiseCache.result?.value);
     };
 
     // Close the db when the transaction is done

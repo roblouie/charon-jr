@@ -30,9 +30,8 @@ export class Level {
   facesToCollideWith: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]};
   skybox: Skybox;
   spiritPositions: EnhancedDOMPoint[] = [];
-  redDropOff: EnhancedDOMPoint;
-  greenDropOff: EnhancedDOMPoint;
-  blueDropOff: EnhancedDOMPoint;
+
+  dropOffs: EnhancedDOMPoint[]
 
   constructor(
     heightmap: number[],
@@ -50,9 +49,10 @@ export class Level {
     greenDropOff: EnhancedDOMPoint,
     blueDropOff: EnhancedDOMPoint
   ) {
-    this.redDropOff = redDropOff;
-    this.greenDropOff = greenDropOff;
-    this.blueDropOff = blueDropOff;
+    this.dropOffs = [];
+    this.dropOffs.push(redDropOff);
+    this.dropOffs.push(greenDropOff);
+    this.dropOffs.push(blueDropOff);
 
     const treeCollision = new MoldableCubeGeometry(3, 12, 3, 2, 1, 2).cylindrify(2).translate(0, 3).done();
     const treeCollisionMesh = new Mesh(treeCollision, new Material({color: '#0000'}));
@@ -95,10 +95,10 @@ export class Level {
     // Draw Scenery
     noiseMaker.seed(scenerySeed);
     const landscapeItemPositionNoise = noiseMaker.noiseLandscape(256, 1 / 16, 4, NoiseType.Perlin,3);
-    console.log(Math.max(...landscapeItemPositionNoise))
     const grassTransforms: DOMMatrix[] = [];
     const treeTransforms: DOMMatrix[] = [];
     const rockTransforms: DOMMatrix[] = [];
+    const spiritTransforms: DOMMatrix[] = []
 
     const placedTreePositions: EnhancedDOMPoint[] = [];
 
@@ -136,7 +136,7 @@ export class Level {
         // @ts-ignore
         const spiritPosition = new EnhancedDOMPoint(this.floorMesh.geometry.vertices[index].x, yPosition + 2, this.floorMesh.geometry.vertices[index].z)
         this.spiritPositions.push(spiritPosition);
-        // spiritTransforms.push(new DOMMatrix().translateSelf(spiritPosition.x, spiritPosition.y, spiritPosition.z))
+        spiritTransforms.push(new DOMMatrix().translateSelf(spiritPosition.x, spiritPosition.y, spiritPosition.z))
       }
 
       // With rocks and spirits drawn, filter out all other values less than 1 before continuing.
@@ -187,10 +187,9 @@ export class Level {
     }
     const rocks = new InstancedMesh(largeRock.geometry, rockTransforms, rockTransforms.length, rockMaterial);
 
-    console.log(this.spiritPositions.length);
+    const spirits = new InstancedMesh(staticBodyGeo, spiritTransforms, spiritTransforms.length, materials.spiritMaterial);
     this.facesToCollideWith.floorFaces.sort((faceA, faceB) => faceB.upperY - faceA.upperY);
-    console.log(this.facesToCollideWith.ceilingFaces);
-    this.meshesToRender.push(plants, trees, rocks);
+    this.meshesToRender.push(plants, trees, rocks, spirits);
   }
 }
 

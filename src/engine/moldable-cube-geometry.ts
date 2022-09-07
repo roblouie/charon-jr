@@ -126,17 +126,6 @@ export class MoldableCubeGeometry extends BufferGeometry {
     return this;
   }
 
-  deselectVertices(...vertices: number[]) {
-    const verticesToRemove = vertices.map(vertexNumber => this.vertices[vertexNumber]);
-    this.verticesToActOn = this.verticesToActOn.filter(vertex => !verticesToRemove.includes(vertex));
-    return this;
-  }
-
-  selectVertices(...vertices: number[]) {
-    this.verticesToActOn = vertices.map(vertexNumber => this.vertices[vertexNumber]);
-    return this;
-  }
-
   invertSelection() {
     this.verticesToActOn = this.vertices.filter(vertex => !this.verticesToActOn.includes(vertex));
     return this;
@@ -213,11 +202,6 @@ export class MoldableCubeGeometry extends BufferGeometry {
     return this;
   }
 
-  invert() {
-    this.getIndices()!.reverse();
-    return this;
-  }
-
   cylindrify(radius: number, aroundAxis: 'x' | 'y' | 'z' = 'y', circleCenter: VectorLike = {x: 0, y: 0, z: 0}) {
     this.verticesToActOn.forEach(vertex => {
       const originalAxis = vertex[aroundAxis];
@@ -226,28 +210,6 @@ export class MoldableCubeGeometry extends BufferGeometry {
       // vertex.normalize().scale(radius);
       vertex[aroundAxis] = originalAxis;
     });
-    return this;
-  }
-
-  delete() {
-    this.verticesToActOn.forEach(vertex => {
-      const vertexIndex = this.vertices.indexOf(vertex);
-      const indices = [...this.getIndices()!];
-      const normals = [...this.getAttribute(AttributeLocation.Normals).data];
-      normals.splice(vertexIndex, 1);
-      this.vertices.splice(vertexIndex, 1);
-
-      for (let i = 0; i < indices.length; i += 3) {
-        if ([indices[i], indices[i + 1], indices[i + 2]].includes(vertexIndex)) {
-          indices.splice(i, 3);
-        }
-      }
-
-      const renumberedIndices = indices.map(index => index > vertexIndex ? index - 1 : index);
-
-      this.setIndices(new Uint16Array(renumberedIndices));
-    });
-    this.verticesToActOn = [];
     return this;
   }
 

@@ -9,8 +9,6 @@ import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { hexToWebgl } from '@/engine/helpers';
 import { createPannerNode, sadGhostAudio, sadGhostAudio2 } from '@/engine/audio/audio-player';
 
-const spiritMaterial = new Material({ texture: materials.marble.texture, color: '#fff9', emissive: '#fff9', isTransparent: true })
-
 const neck = new MoldableCubeGeometry(1, 0.4, 1, 2, 1, 2).cylindrify(0.3).translate(0, 1.3, 0).computeNormalsCrossPlane().done();
 
 const head = new MoldableCubeGeometry(1, 1, 1, 2, 3, 2)
@@ -43,7 +41,7 @@ function makeArmGeo() {
 }
 
 function createArm(isLeft = false) {
-  const armMesh = new Mesh(makeArmGeo(), spiritMaterial);
+  const armMesh = new Mesh(makeArmGeo(), materials.spiritMaterial);
   armMesh.position.y += 1;
 
   const armAttachment = new Object3d(armMesh);
@@ -66,29 +64,27 @@ function createLeg(isLeft = false) {
     .done();
 }
 
-
-
-const headMesh = new Mesh(head, spiritMaterial);
-const bodyMesh = new Mesh(makeBody(), spiritMaterial);
-const leftArm = createArm(true);
-const rightArm = createArm();
 const leftLeg = createLeg(true);
 const rightLeg = createLeg();
 
+export function makeDynamicBody() {
+  const headMesh = new Mesh(head, materials.spiritMaterial);
+  const bodyMesh = new Mesh(makeBody(), materials.spiritMaterial);
+  const leftArm = createArm(true);
+  const rightArm = createArm();
+  const leftLegMesh = new Mesh(leftLeg, materials.spiritMaterial);
+  const rightLegMesh = new Mesh(rightLeg, materials.spiritMaterial);
+  leftLegMesh.rotate(-1.7, 0, 0);
+  rightLegMesh.rotate(-1.7, 0, 0);
+  leftLegMesh.position.y -= 0.8;
+  rightLegMesh.position.y -= 0.8;
+  return new Object3d(headMesh, bodyMesh, leftArm, rightArm, leftLegMesh, rightLegMesh);
+}
+
 const staticLeftArm = makeArmGeo().all().rotate(1.4).translate(1, 1, 1).done();
 const staticRightArm = makeArmGeo().all().rotate(1.6).translate(-1, 0.8, 1).done();
-
-
-const leftLegMesh = new Mesh(leftLeg, spiritMaterial);
-const rightLegMesh = new Mesh(rightLeg, spiritMaterial);
-leftLegMesh.rotate(-1.7, 0, 0);
-rightLegMesh.rotate(-1.7, 0, 0);
-leftLegMesh.position.y -= 0.8;
-rightLegMesh.position.y -= 0.8;
-export const dynamicBody = new Object3d(headMesh, bodyMesh, leftArm, rightArm, leftLegMesh, rightLegMesh);
-
 export const staticBodyGeo = makeBody().merge(staticLeftArm).merge(staticRightArm).merge(leftLeg).merge(rightLeg).done();
-const staticBody = new Mesh(staticBodyGeo, spiritMaterial);
+
 
 
 export class Spirit {
@@ -97,19 +93,19 @@ export class Spirit {
   position: EnhancedDOMPoint;
   color: number[];
 
-  dropOffPoint: 'redDropOff' | 'greenDropOff' | 'blueDropOff';
+  dropOffPoint: number;
   audioPlayer: AudioBufferSourceNode;
 
   constructor(position: EnhancedDOMPoint) {
-    this.bodyMesh = new Mesh(staticBodyGeo, spiritMaterial);
-    this.headMesh = new Mesh(head, spiritMaterial);
+    this.bodyMesh = new Mesh(staticBodyGeo, materials.spiritMaterial);
+    this.headMesh = new Mesh(head, materials.spiritMaterial);
     this.position = position;
     // const bodyMesh = new Mesh(body, materials.marble);
     // const leftArm = createArm(true);
     // const rightArm = createArm();
     // const leftLeg = createLeg(true);
     // const rightLeg = createLeg();
-    const dropOffs: ('redDropOff' | 'greenDropOff' | 'blueDropOff')[] = ['redDropOff', 'greenDropOff', 'blueDropOff'];
+    const dropOffs: number[] = [0, 1, 2];
     const dropOffIndex = Math.abs(Math.floor(noiseMaker.randomNumber(position.x + position.z) * 2));
     this.dropOffPoint = dropOffs[dropOffIndex];
     this.color = ['#f00', '#0f0', '#00f'].map(hexToWebgl)[dropOffIndex];

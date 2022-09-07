@@ -104,8 +104,6 @@ export class Renderer {
       }
     }
 
-    textureLoader.updateAnimatedTextures();
-
     // Render solid meshes first
     scene.solidMeshes.forEach(renderMesh);
 

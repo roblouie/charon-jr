@@ -29,9 +29,6 @@ export class LilGl {
     const shader = this.gl.createShader(type)!;
     this.gl.shaderSource(shader, source);
     this.gl.compileShader(shader);
-    // if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-    //   throw new Error('Error compiling shader: ' + this.gl.getShaderInfoLog(shader));
-    // }
     return shader;
   }
 
@@ -40,9 +37,6 @@ export class LilGl {
     this.gl.attachShader(program, vertexShader);
     this.gl.attachShader(program, fragmentShader);
     this.gl.linkProgram(program);
-    // if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
-    //   throw new Error('Error creating program: ' + this.gl.getProgramInfoLog(program));
-    // }
     return program;
   }
 }

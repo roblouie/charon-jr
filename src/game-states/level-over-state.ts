@@ -1,14 +1,9 @@
-import { Scene } from '@/engine/renderer/scene';
 import { State } from '@/core/state';
-import { Skybox } from '@/skybox';
-import { canvasPatterns, materials } from '@/texture-maker';
-import { Camera } from '@/engine/renderer/camera';
-import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
-import { renderer } from '@/engine/renderer/renderer';
 import { controls } from '@/core/controls';
 import { getGameStateMachine } from '@/game-state-machine';
 import { draw2dEngine } from '@/core/draw2d-engine';
 import { gameStates } from '@/index';
+import { getRankFromScore } from '@/engine/helpers';
 
 export class LevelOverState implements State {
   spiritsTransported = 0;
@@ -20,9 +15,7 @@ export class LevelOverState implements State {
     this.spiritsTransported = spiritsTransported;
     this.payment = payment;
     this.score = this.payment * this.spiritsTransported;
-    const scoreThresholds = [0, 500, 1_000, 10_000, 15_000, 25_000, 30_000].reverse();
-    const ranks: string[] = ['F', 'D', 'C', 'B', 'A', 'S', 'SS'].reverse();
-    this.rank = ranks.find((rank, index) => this.score >= scoreThresholds[index])!;
+    this.rank = getRankFromScore(this.score)
     const pastScore = window.localStorage.getItem(`ddamt_score-${levelNumber}`);
     if (!pastScore || this.score > parseInt(pastScore)) {
       window.localStorage.setItem(`ddamt_score-${levelNumber}`, this.score.toString()); //s

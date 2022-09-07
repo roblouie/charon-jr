@@ -1,6 +1,5 @@
 import { radsToDegrees } from '@/engine/math-helpers';
 import { EnhancedDOMPoint } from "@/engine/enhanced-dom-point";
-import { Spirit } from '@/spirit';
 
 export class Object3d {
   position: EnhancedDOMPoint;
@@ -65,6 +64,7 @@ export class Object3d {
   }
 
   updateWorldMatrix() {
+    // Don't udpate spirites to save time on matrix multiplication. Bit of a hack but ya it works...
     // @ts-ignore
     if (this.color !== undefined) {
       return;

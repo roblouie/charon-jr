@@ -4,24 +4,19 @@ import { materials } from '@/texture-maker';
 import { Skybox } from '@/skybox';
 import { getGroupedFaces, meshToFaces } from '@/engine/physics/parse-faces';
 import { clamp, doTimes } from '@/engine/helpers';
-import { findFloorHeightAtPosition } from '@/engine/physics/surface-collision';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
-import { leavesMesh, makeLargeTreeGeo, plant1, smallLeaves, smallTree } from '@/modeling/flora.modeling';
+import { makeLargeTreeGeo, makePlantGeo, makeTreeLeavesGeo } from '@/modeling/flora.modeling';
 import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { AttributeLocation } from '@/engine/renderer/renderer';
-import { Texture } from '@/engine/renderer/texture';
-import { largeRock, smallRock } from '@/modeling/rocks.modeling';
 import { Face } from '@/engine/physics/face';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
-import { staticBodyGeo } from '@/spirit';
+import { makeRock } from '@/modeling/rocks.modeling';
 
 function getRandomArbitrary(min: number, max: number) {
   return Math.random() * (max - min) + min;
 }
-
-
 
 export class Level {
   waterLevel: number;
@@ -100,9 +95,10 @@ export class Level {
     const grassTransforms: DOMMatrix[] = [];
     const treeTransforms: DOMMatrix[] = [];
     const rockTransforms: DOMMatrix[] = [];
-    const spiritTransforms: DOMMatrix[] = []
 
     const placedTreePositions: EnhancedDOMPoint[] = [];
+
+    const rock = new Mesh(makeRock(), materials.tire);
 
     doTimes(256 * 256, index => {
       const currentNoiseValue = landscapeItemPositionNoise[index];
@@ -123,7 +119,7 @@ export class Level {
       if (currentNoiseValue < 0 && currentNoiseValue >= -0.005) {
         // @ts-ignore
         const rockGeoTransform = getMatrixForPosition(this.floorMesh.geometry.vertices[index], yPosition, 1, 2);
-        const rockFaces = meshToFaces([largeRock], rockGeoTransform);
+        const rockFaces = meshToFaces([rock], rockGeoTransform);
         getGroupedFaces(rockFaces, this.facesToCollideWith);
         rockTransforms.push(rockGeoTransform);
         return;
@@ -150,7 +146,7 @@ export class Level {
       }
 
       // With rocks and spirits drawn, filter out all other values less than 1 before continuing.
-      // This is so spirits and rocks don't appear in the middle of a "forested" area, so this is like a seperator.
+      // This is so spirits and rocks don't appear in the middle of a "forested" area, so this is like a separator.
       if (currentNoiseValue < 1) {
         return;
       }
@@ -189,15 +185,14 @@ export class Level {
     // getGroupedFaces(meshToFaces([ramp], ramp.worldMatrix), this.facesToCollideWith);
     // END TESTING
 
-    const plants = new InstancedMesh(plant1.geometry, grassTransforms, grassTransforms.length, plantMaterial);
+    const plants = new InstancedMesh(makePlantGeo(), grassTransforms, grassTransforms.length, plantMaterial);
     const trees = new InstancedMesh(makeLargeTreeGeo(), treeTransforms, treeTransforms.length, treeMaterial);
     if (isTreeLeavesShowing) {
-      const treeLeaves = new InstancedMesh(leavesMesh.geometry, treeTransforms, treeTransforms.length, materials.treeLeaves);
+      const treeLeaves = new InstancedMesh(makeTreeLeavesGeo(), treeTransforms, treeTransforms.length, materials.treeLeaves);
       this.meshesToRender.push(treeLeaves);
     }
-    const rocks = new InstancedMesh(largeRock.geometry, rockTransforms, rockTransforms.length, rockMaterial);
+    const rocks = new InstancedMesh(makeRock(), rockTransforms, rockTransforms.length, rockMaterial);
 
-    // const spirits = new InstancedMesh(staticBodyGeo, spiritTransforms, spiritTransforms.length, materials.spiritMaterial);
     this.facesToCollideWith.floorFaces.sort((faceA, faceB) => faceB.upperY - faceA.upperY);
     this.meshesToRender.push(plants, trees, rocks);
   }

@@ -11,7 +11,7 @@ import { makeTruck, TruckObject3d } from '@/modeling/truck.modeling';
 import { gameStates } from '@/index';
 import { createSkybox, drawSkyPurple, materials } from '@/texture-maker';
 import { debounce } from '@/core/timing-helpers';
-import { clamp } from '@/engine/helpers';
+import { clamp, getRankFromScore } from '@/engine/helpers';
 import { Mesh } from '@/engine/renderer/mesh';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { ghostThankYouAudio } from '@/engine/audio/audio-player';
@@ -47,6 +47,10 @@ export class MenuState implements State {
     draw2dEngine.context.canvas.style.transform = 'translate3d(13%, 5%, -27px) rotate3d(0, 1, 0, 337deg)'
   }
 
+  private getScore(levelNumber: number) {
+    return parseInt(window.localStorage.getItem(`ddamt_score-${levelNumber}`) ?? '0')
+  }
+
   onUpdate() {
     this.truck.wrapper.rotate(0, -0.01, 0);
     this.truck.setDriveRotationRate(0.1);
@@ -59,22 +63,25 @@ export class MenuState implements State {
 
     draw2dEngine.drawText('CHARON JR.', 'Times New Roman', 100, 640, 170, 1);
 
+    const level1Score = this.getScore(2);
     this.drawEngraving('UNDERWORLD', 55, 640, 270, this.selectedOption === 0 ? 1 : 0);
-    this.drawEngraving('Top Score ' + (localStorage.getItem(`ddamt_score-${2}`) ?? 0), 30, 640, 315,this.selectedOption === 0 ? 1 : 0);
+    this.drawEngraving(`Top Score ${level1Score} - RANK: ${getRankFromScore(level1Score)}`, 30, 640, 307,this.selectedOption === 0 ? 1 : 0);
 
-    this.drawEngraving('PURGATORY', 55, 640, 390, this.selectedOption === 1 ? 1 : 0);
-    this.drawEngraving('Top Score ' + (localStorage.getItem(`ddamt_score-${1}`) ?? 0), 30, 640, 425,this.selectedOption === 1 ? 1 : 0);
+    const level2Score = this.getScore(1);
+    this.drawEngraving('PURGATORY', 55, 640, 385, this.selectedOption === 1 ? 1 : 0);
+    this.drawEngraving(`Top Score ${level2Score} - RANK: ${getRankFromScore(level2Score)}`, 30, 640, 422,this.selectedOption === 1 ? 1 : 0);
 
+    const level3Score = this.getScore(0);
     this.drawEngraving('EARTH', 55, 640, 500, this.selectedOption === 2 ? 1 : 0);
-    this.drawEngraving('Top Score ' + (localStorage.getItem(`ddamt_score-${0}`) ?? 0), 30, 640, 535,this.selectedOption === 2 ? 1 : 0);
+    this.drawEngraving(`Top Score ${level3Score} - RANK: ${getRankFromScore(level3Score)}`, 30, 640, 537,this.selectedOption === 2 ? 1 : 0);
 
-    this.drawEngraving('FULLSCREEN', 35, 640, 600, this.selectedOption === 3 ? 1 : 0);
+    this.drawEngraving('FULLSCREEN', 40, 640, 610, this.selectedOption === 3 ? 1 : 0);
 
-    if (controls.isDown) {
+    if (controls.isDown || controls.direction.y > 0) {
       debounce(() => this.selectedOption++, 30);
     }
 
-    if (controls.isUp) {
+    if (controls.isUp || controls.direction.y < 0) {
       debounce(() => this.selectedOption--, 30);
     }
 

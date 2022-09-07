@@ -1,7 +1,7 @@
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { doTimes, hexToRgba } from "@/engine/helpers";
 
-export enum NoiseType {
+export const enum NoiseType {
   Perlin,
   Turbulent,
   Edge,

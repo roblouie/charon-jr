@@ -21,14 +21,16 @@ class Controls {
     const gamepad = navigator.getGamepads()[0];
     this.isGamepadAttached = !!gamepad;
     if (gamepad) {
+      this.isUp = gamepad.buttons[12].pressed;
+      this.isDown = gamepad.buttons[13].pressed;
       this.direction.x = gamepad.axes[0];
-      this.direction.z = gamepad.axes[1];
+      this.direction.y = gamepad.axes[1];
       this.leftTrigger = gamepad.buttons[6].value;
       this.rightTrigger = gamepad.buttons[7].value;
 
       const deadzone = 0.1;
       if (this.direction.magnitude < deadzone) {
-        this.direction.x = 0; this.direction.z = 0;
+        this.direction.x = 0; this.direction.y = 0;
       }
     }
   }

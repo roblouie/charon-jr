@@ -1,13 +1,11 @@
 import { Mesh } from '@/engine/renderer/mesh';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
-import { spiritGeometry } from '@/modeling/spirits.modeling';
-import { Material } from '@/engine/renderer/material';
 import { noiseMaker } from '@/engine/texture-creation/noise-maker';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { materials } from '@/texture-maker';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { hexToWebgl } from '@/engine/helpers';
-import { createPannerNode, sadGhostAudio, sadGhostAudio2 } from '@/engine/audio/audio-player';
+import { sadGhostAudio, sadGhostAudio2 } from '@/engine/audio/audio-player';
 
 const neck = new MoldableCubeGeometry(1, 0.4, 1, 2, 1, 2).cylindrify(0.3).translate(0, 1.3, 0).computeNormalsCrossPlane().done();
 

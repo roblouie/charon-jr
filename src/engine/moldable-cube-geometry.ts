@@ -207,7 +207,6 @@ export class MoldableCubeGeometry extends BufferGeometry {
       const originalAxis = vertex[aroundAxis];
       vertex[aroundAxis] = 0;
       vertex.subtract(circleCenter).normalize().scale(radius);
-      // vertex.normalize().scale(radius);
       vertex[aroundAxis] = originalAxis;
     });
     return this;

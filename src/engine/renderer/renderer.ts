@@ -45,6 +45,7 @@ export class Renderer {
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     this.modelviewProjectionLocation = gl.getUniformLocation(lilgl.program, MODELVIEWPROJECTION)!;
     this.normalMatrixLocation =  gl.getUniformLocation(lilgl.program, NORMALMATRIX)!;
     this.colorLocation =  gl.getUniformLocation(lilgl.program, COLOR)!;
@@ -76,16 +77,13 @@ export class Renderer {
 
     const instancedColorLocation = gl.getUniformLocation(lilgl.instancedProgram, COLOR)!;
     const instancedEmissiveLocation = gl.getUniformLocation(lilgl.instancedProgram, EMISSIVE)!;
-    const instancedNormalMatrixLocation = gl.getUniformLocation(lilgl.instancedProgram, NORMALMATRIX);
     const textureRepeatLocation = gl.getUniformLocation(lilgl.instancedProgram, TEXTUREREPEAT);
 
     const renderMesh = (mesh: Mesh | InstancedMesh) => {
-      const isInstancedMesh = Mesh.isInstanced(mesh);
+      // @ts-ignore
+      const isInstancedMesh = mesh.count !== undefined;
       gl.useProgram(isInstancedMesh ? lilgl.instancedProgram : lilgl.program);
       const modelViewProjectionMatrix = viewProjectionMatrix.multiply(mesh.worldMatrix);
-
-      // In order to avoid having to generate mipmaps for every animation frame, animated textures have mipmaps disabled
-      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, mesh.material.texture?.animationFunction ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
 
       gl.uniform4fv(isInstancedMesh ? instancedColorLocation : this.colorLocation, mesh.material.color);
       gl.uniform4fv(isInstancedMesh ? instancedEmissiveLocation : this.emissiveLocation, mesh.material.emissive);
@@ -97,6 +95,7 @@ export class Renderer {
 
       if (isInstancedMesh) {
         gl.uniformMatrix4fv(this.viewProjectionLocation, false, viewProjectionMatrix.toFloat32Array());
+        // @ts-ignore
         gl.drawElementsInstanced(gl.TRIANGLES, mesh.geometry.getIndices()!.length, gl.UNSIGNED_SHORT, 0, mesh.count);
       } else {
         gl.uniformMatrix4fv(this.normalMatrixLocation, true, Spirit.isSpirit(mesh) ? mesh.cachedMatrixData : mesh.worldMatrix.inverse().toFloat32Array());

@@ -4,11 +4,9 @@ export class Texture {
   id: number;
   source: ImageData | HTMLCanvasElement;
   repeat = new EnhancedDOMPoint(1, 1);
-  animationFunction?: () => void;
 
-  constructor(id: number, source: ImageData | HTMLCanvasElement, animationFunction?: () => void) {
+  constructor(id: number, source: ImageData | HTMLCanvasElement) {
     this.source = source;
     this.id = id;
-    this.animationFunction = animationFunction;
   }
 }

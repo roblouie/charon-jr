@@ -13,22 +13,16 @@ import { Scene } from '@/engine/renderer/scene';
 import { Camera } from '@/engine/renderer/camera';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { ThirdPersonPlayer } from '@/third-person-player';
-import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Mesh } from '@/engine/renderer/mesh';
-import { PlaneGeometry } from '@/engine/plane-geometry';
 import { Material } from '@/engine/renderer/material';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
-import { AttributeLocation, renderer } from '@/engine/renderer/renderer';
-import { getGroupedFaces, meshToFaces } from '@/engine/physics/parse-faces';
+import { renderer } from '@/engine/renderer/renderer';
 import { Face } from '@/engine/physics/face';
-import { controls } from '@/core/controls';
 import { getGameStateMachine } from '@/game-state-machine';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
-import { findFloorHeightAtPosition, getGridPosition } from '@/engine/physics/surface-collision';
-import { clamp, doTimes } from '@/engine/helpers';
-import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
-import { leavesMesh, plant1 } from '@/modeling/flora.modeling';
+import { getGridPosition } from '@/engine/physics/surface-collision';
+import { clamp } from '@/engine/helpers';
 import { Level } from '@/Level';
 import { makeDynamicBody, Spirit } from '@/spirit';
 import { draw2dEngine } from '@/core/draw2d-engine';
@@ -53,7 +47,7 @@ export class GameState implements State {
   arrowGuideWrapper: Object3d;
   arrowGuide: Mesh;
 
-  private timePerDistanceUnit = 0.018;
+  private timePerDistanceUnit = 0.015;
 
   spiritsTransported = 0;
   currentLevel: Level;

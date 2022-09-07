@@ -3,7 +3,7 @@ import { coinAudio, ghostThankYouAudio } from '@/engine/audio/audio-player';
 
 class Hud {
   timeRemaining = 0;
-  private readonly initialTimeRemaining = 150;
+  private readonly initialTimeRemaining = 100;
 
   score = 0;
   currentScoreBonus = 0;

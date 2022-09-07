@@ -1,27 +1,10 @@
-/* File generated with Shader Minifier 1.2
- * http://www.ctrl-alt-test.fr
- */
-export const ACOORDS = "o"
-export const ADEPTH = "e"
-export const ANORMAL = "i"
-export const APERINSTANCEMATRIX = "h"
-export const APERINSTANCENORMALMATRIX = "P"
-export const ATEXCOORD = "t"
 export const COLOR = "s"
 export const EMISSIVE = "f"
 export const MODELVIEWPROJECTION = "n"
 export const NORMALMATRIX = "a"
-export const OUTCOLOR = "z"
 export const TEXTUREREPEAT = "r"
-export const USAMPLER = "y"
 export const U_SKYBOX = "p"
 export const U_VIEWDIRECTIONPROJECTIONINVERSE = "g"
-export const VCOLOR = "m"
-export const VDEPTH = "v"
-export const VNORMAL = "l"
-export const VNORMALMATRIX = "u"
-export const VTEXCOORD = "c"
-export const V_POSITION = "d"
 export const VIEWPROJECTION = "D"
 
 export const vertex_shader_glsl = `#version 300 es

@@ -279,7 +279,6 @@ export class ThirdPersonPlayer {
     }
 
     this.speed = Math.max(this.isReversing ? -0.7 : 0, this.speed);
-    debugElement.textContent = this.speed.toString();
 
     // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
     // This should also probably use lerp/slerp to move towards the value. There is already a lerp method

@@ -60,6 +60,11 @@ export function easeInOut(x: number) {
   }
 }
 
+export function getRankFromScore(score: number) {
+  const scoreThresholds = [30000, 25000, 15000, 10000, 1000, 500, 0];
+  const ranks: string[] = ['SS', 'S', 'A', 'B', 'C', 'D', 'F'];
+  return ranks.find((rank, index) => score >= scoreThresholds[index])!;
+}
 
 
 export function setToIdentity(matrix: DOMMatrix) {

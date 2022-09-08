@@ -1,14 +1,12 @@
 class DrawEngine {
   context: CanvasRenderingContext2D;
-  marbleFill: CanvasPattern;
 
   constructor() {
-    this.marbleFill = {} as CanvasPattern;
     this.context = document.querySelector<HTMLCanvasElement>('#oc')!.getContext('2d')!;
   }
 
   clear() {
-    this.context.clearRect(0, 0, 1920, 1080);
+    this.context.clearRect(0, 0, 1280, 720);
   }
 
   drawText(text: string, font: string, size: number, x: number, y: number, lineWidth: number, textAlign: 'center' | 'left' | 'right' = 'center', isItalic = true, fill = 'black') {

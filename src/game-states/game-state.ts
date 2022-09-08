@@ -150,7 +150,7 @@ export class GameState implements State {
       );
     }
 
-    this.player.mesh.position.set(0, 10, 0);
+    this.player.mesh.position.set(0, 10, -10);
     this.player.isCarryingSpirit = false;
     this.spirits = this.currentLevel.spiritPositions.map(position => new Spirit(position));
 

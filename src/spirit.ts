@@ -72,6 +72,8 @@ export function makeDynamicBody() {
   const rightArm = createArm();
   const leftLegMesh = new Mesh(leftLeg, materials.spiritMaterial);
   const rightLegMesh = new Mesh(rightLeg, materials.spiritMaterial);
+  leftArm.rotate(-1, 0, -0.2);
+  rightArm.rotate(-1, 0, 0.2);
   leftLegMesh.rotate(-1.7, 0, 0);
   rightLegMesh.rotate(-1.7, 0, 0);
   leftLegMesh.position.y -= 0.8;

@@ -64,7 +64,7 @@ function createChassis() {
     materials.truckCabRightSide.texture!,
     materials.truckCabLeftSide.texture!,
     materials.truckCabTop.texture!,
-    materials.tiles.texture!,
+    materials.truckCabRear.texture!,
     materials.truckCabRear.texture!,
     materials.truckCabFront.texture!,
   );

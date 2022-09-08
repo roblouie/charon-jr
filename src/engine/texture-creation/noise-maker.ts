@@ -1,5 +1,6 @@
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { doTimes, hexToRgba } from "@/engine/helpers";
+import { debounce } from '@/core/timing-helpers';
 
 export const enum NoiseType {
   Perlin,
@@ -130,6 +131,7 @@ class NoiseMaker {
   }
 
   noiseCache: {[key: string]: number} = {};
+  noiseCacheUsedCount = 0;
   noiseImage(
     size: number,
     frequency: number,

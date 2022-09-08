@@ -12,7 +12,7 @@ import { AttributeLocation } from '@/engine/renderer/renderer';
 import { Face } from '@/engine/physics/face';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
-import { makeRock } from '@/modeling/rocks.modeling';
+import { makeRock } from '@/modeling/stone.modeling';
 
 function getRandomArbitrary(min: number, max: number) {
   return Math.random() * (max - min) + min;
@@ -176,13 +176,14 @@ export class Level {
     });
 
     // TESTING
-    // const rampGeometry = new MoldableCubeGeometry(16, 40, 40);
-    // const ramp = new Mesh(rampGeometry, materials.marble);
-    // ramp.position.y += 10;
-    // ramp.position.z += 10;
-    // ramp.updateWorldMatrix();
-    // this.meshesToRender.push(ramp);
-    // getGroupedFaces(meshToFaces([ramp], ramp.worldMatrix), this.facesToCollideWith);
+    const rampGeometry = new MoldableCubeGeometry(16, 20, 40).selectBy(vertex => vertex.y > 0 && vertex.z > 0).translate(0, -20, 0).done();
+    const ramp = new Mesh(rampGeometry, materials.marble);
+    ramp.position.x += 20;
+    ramp.position.y += 5;
+    ramp.position.z += 50;
+    ramp.updateWorldMatrix();
+    this.meshesToRender.push(ramp);
+    getGroupedFaces(meshToFaces([ramp], ramp.worldMatrix), this.facesToCollideWith);
     // END TESTING
 
     const plants = new InstancedMesh(makePlantGeo(), grassTransforms, grassTransforms.length, plantMaterial);

@@ -13,8 +13,8 @@ import { createSkybox, drawSkyPurple, materials } from '@/texture-maker';
 import { debounce } from '@/core/timing-helpers';
 import { clamp, getRankFromScore } from '@/engine/helpers';
 import { Mesh } from '@/engine/renderer/mesh';
-import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { ghostThankYouAudio } from '@/engine/audio/audio-player';
+import { makeTombstoneGeo } from '@/modeling/stone.modeling';
 
 export class MenuState implements State {
   scene?: Scene;
@@ -27,11 +27,8 @@ export class MenuState implements State {
     this.camera = new Camera(Math.PI / 6, 16 / 9, 1, 400);
     this.truck = makeTruck();
     this.truck.scale.set(0.4, 0.4, 0.4);
-    const tombstoneGeo = new MoldableCubeGeometry(18, 10, 5, 18, 1, 4)
-      .selectBy(vertex => vertex.y > 0)
-      .cylindrify(8, 'z')
-      .done();
-    this.tombstone = new Mesh(tombstoneGeo, materials.underworldRocks);
+
+    this.tombstone = new Mesh(makeTombstoneGeo(18, 10, 5, 8), materials.underworldRocks);
     this.tombstone.position.set(4.6, -1.5, -27.0);
     this.tombstone.setRotation(0.1, -0.6, 0);
   }

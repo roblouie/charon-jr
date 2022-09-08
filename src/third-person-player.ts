@@ -2,12 +2,10 @@ import { Camera } from '@/engine/renderer/camera';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { Face } from '@/engine/physics/face';
 import { controls } from '@/core/controls';
-import { textureLoader } from '@/engine/renderer/texture-loader';
-import { drawVolcanicRock } from '@/texture-maker';
 import {
   findFloorHeightAtPosition,
   findWallCollisionsFromList,
-  getGridPosition, halfLevelSize, maxHalfLevelValue, rayCastCollision
+  getGridPosition, maxHalfLevelValue
 } from '@/engine/physics/surface-collision';
 import {
   audioCtx,
@@ -153,12 +151,7 @@ export class ThirdPersonPlayer {
   private axis = new EnhancedDOMPoint();
   private previousFloorHeight = 0;
   collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
-    const rayCollisions = rayCastCollision(groupedFaces.wallFaces, this.lastPosition, this.chassisCenter);
-    if (rayCollisions) {
-      this.chassisCenter.set(rayCollisions.collision);
-    }
-
-    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 0.1, 3.5);
+    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 2, 3.5);
 
     this.chassisCenter.x += wallCollisions.xPush;
     this.chassisCenter.z += wallCollisions.zPush;
@@ -173,8 +166,12 @@ export class ThirdPersonPlayer {
     const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, this.chassisCenter);
 
     if (!floorData) {
+      this.isJumping = true;
       return;
     }
+
+    debugElement.textContent = floorData.height.toString();
+
 
     const collisionDepth = floorData.height - this.chassisCenter.y;
 

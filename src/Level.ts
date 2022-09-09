@@ -45,6 +45,14 @@ export class Level {
     greenDropOff: EnhancedDOMPoint,
     blueDropOff: EnhancedDOMPoint
   ) {
+    doTimes(256, y => {
+      doTimes(256, x => {
+        if (y === 0 || y === 255 || x === 0 || x === 255) {
+          const index = y * 256 + x;
+          heightmap[index] = Math.min(heightmap[index] + 40, 50);
+        }
+      })
+    })
 
     this.dropOffs = [];
     this.dropOffs.push(redDropOff);

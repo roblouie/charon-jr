@@ -11,6 +11,7 @@ export function makeTombstoneGeo(width: number, height: number, depth: number, t
     .cylindrify(topRadius, 'z')
     .all()
     .rotate(xRotation)
+    .computeNormalsPerPlane()
     .done();
 }
 

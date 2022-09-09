@@ -2,7 +2,6 @@ import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 import { doTimes } from '@/engine/helpers';
-import { draw2dEngine } from '@/core/draw2d-engine';
 import { getData, storeData } from '@/core/data-storage';
 
 const [drawContext, tileContext, noiseContext] = ['draw', 'tile', 'noise'].map(id => {
@@ -24,6 +23,7 @@ export function drawDirtPath() {
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 16, 4, NoiseType.Perlin, '#804b10', 128), 0, 0);
   drawContext.globalCompositeOperation = 'screen';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  noisify(drawContext, 10);
   return mainImageData();
 }
 
@@ -32,11 +32,12 @@ export function drawDirtPath() {
 // *********************
 function drawGrass() {
   noiseMaker.seed(12);
-  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 3, NoiseType.Perlin, '#0f0', 128), 0, 0);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 3, NoiseType.Perlin, '#009303', 128), 0, 0);
 
-  clearWith('#090');
-  drawContext.globalCompositeOperation = 'screen';
+  clearWith('#007002');
+  // drawContext.globalCompositeOperation = 'screen';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  noisify(drawContext, 8);
   const earthGrass = mainImageData();
 
   noiseMaker.seed(12);
@@ -75,7 +76,7 @@ export function drawRocks() {
   const noiseImage = noiseMaker.noiseImage(128, 1 / 64, 2, NoiseType.Edge, '#82826e', 220, true, 'x', 'y', 'z', 0);
   noiseContext.putImageData(noiseImage, 0, 0);
 
-  clearWith('#ccccab');
+  clearWith('#929292');
   drawContext.globalCompositeOperation = 'color-dodge';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   const earthRocks = mainImageData();
@@ -228,7 +229,7 @@ export function drawSkyPurple(firstDimension: 'x' | 'y' | 'z', secondDimension: 
 // Earth Sky
 // *********************
 export function drawEarthSky(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
-  clearWith('#2d75fa');
+  clearWith('#0061af');
   noiseMaker.seed(100);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 6, NoiseType.Perlin, '#fff', 210, true, firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
@@ -259,17 +260,14 @@ export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimensio
 
   noiseMaker.seed(100);
 
-  const noiseImage = noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Perlin, '#c1597e', 180, true, firstDimension, secondDimension, sliceDimension, slice, flip);
+  const noiseImage = noiseMaker.noiseImage(128, 1 / 128, 1, NoiseType.Perlin, '#c1597e', 180, true, firstDimension, secondDimension, sliceDimension, slice, flip);
   noiseContext.putImageData(noiseImage, 0, 0);
   drawContext.globalCompositeOperation = 'difference';
 
   noiseContext.putImageData(noiseImage, 0, 0, 0, 0, 256, 256);
 
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  tileContext.save();
-  tileContext.scale(2, 1);
   tileDrawn();
-  tileContext.restore();
   return tileContext.getImageData(0, 0, 256, 256);
 }
 

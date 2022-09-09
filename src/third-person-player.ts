@@ -99,8 +99,9 @@ export class ThirdPersonPlayer {
 
 
     // don't let the player leave the level
-    this.chassisCenter.x = clamp(this.chassisCenter.x, -maxHalfLevelValue, maxHalfLevelValue);
-    this.chassisCenter.z = clamp(this.chassisCenter.z, -maxHalfLevelValue, maxHalfLevelValue);
+    const levelBorderBuffer = 10;
+    this.chassisCenter.x = clamp(this.chassisCenter.x, -maxHalfLevelValue + levelBorderBuffer, maxHalfLevelValue - levelBorderBuffer);
+    this.chassisCenter.z = clamp(this.chassisCenter.z, -maxHalfLevelValue + levelBorderBuffer, maxHalfLevelValue - levelBorderBuffer);
 
     // if the player falls through the floor, reset them
     if (this.chassisCenter.y < -100) {

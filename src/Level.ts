@@ -43,7 +43,9 @@ export class Level {
     treeMaterial: Material,
     redDropOff: EnhancedDOMPoint,
     greenDropOff: EnhancedDOMPoint,
-    blueDropOff: EnhancedDOMPoint
+    blueDropOff: EnhancedDOMPoint,
+    orangeDropOff: EnhancedDOMPoint,
+    rampData: { position: EnhancedDOMPoint, rotation: number }[]
   ) {
     doTimes(256, y => {
       doTimes(256, x => {
@@ -58,6 +60,7 @@ export class Level {
     this.dropOffs.push(redDropOff);
     this.dropOffs.push(greenDropOff);
     this.dropOffs.push(blueDropOff);
+    this.dropOffs.push(orangeDropOff);
 
     const treeCollision = new MoldableCubeGeometry(3, 12, 3, 2, 1, 2).cylindrify(2).translate(0, 3).done();
     const treeCollisionMesh = new Mesh(treeCollision, new Material({color: '#0000'}));
@@ -97,30 +100,8 @@ export class Level {
     // Draw Sky
     this.skybox = new Skybox(...skyboxImages);
 
-    // tombstone.position.x += 20;
-    // tombstone.position.y += 5.9;
-    // tombstone.position.z += 50;
-    // tombstone.setRotation(-1.1, 0, 0);
-    /// 252.40696083320768, -5.865107993918577, 117.6359214012997 - 1.6003420112819629
-    //685.3157106012746, -6.1334833313382555, -60.42719705234351 - 2.596863689510206
-    // 147.79202938275571, -2.7878840236285156, -371.0654075845064 - 5.619473704785751
-    // Place Ramps
-    const purgatoryRampPositions = [
-      {
-        position: new EnhancedDOMPoint(252, -5.8 + 5.5, 117),
-        rotation: 1.6,
-      },
-      {
-        position: new EnhancedDOMPoint(685, -6 + 5.5, -60),
-        rotation: 2.59,
-      },
-      {
-        position: new EnhancedDOMPoint(148, -2.7 + 5.5, -371),
-        rotation: 5.6,
-      }
-    ]
-
-    purgatoryRampPositions.forEach(rampData => {
+    console.log(rampData.length);
+    rampData.forEach(rampData => {
       this.placeRamps(rampData.position, rampData.rotation);
     });
 

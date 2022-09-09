@@ -2,7 +2,7 @@ import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 import { doTimes } from '@/engine/helpers';
-import { getData, storeData } from '@/core/data-storage';
+// import { getData, storeData } from '@/core/data-storage';
 
 const [drawContext, tileContext, noiseContext] = ['draw', 'tile', 'noise'].map(id => {
   const canvas = document.createElement('canvas');
@@ -229,7 +229,7 @@ export function drawSkyPurple(firstDimension: 'x' | 'y' | 'z', secondDimension: 
 // Earth Sky
 // *********************
 export function drawEarthSky(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
-  clearWith('#0061af');
+  clearWith('#0256b4');
   noiseMaker.seed(100);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 6, NoiseType.Perlin, '#fff', 210, true, firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
@@ -263,9 +263,7 @@ export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimensio
   const noiseImage = noiseMaker.noiseImage(128, 1 / 128, 1, NoiseType.Perlin, '#c1597e', 180, true, firstDimension, secondDimension, sliceDimension, slice, flip);
   noiseContext.putImageData(noiseImage, 0, 0);
   drawContext.globalCompositeOperation = 'difference';
-
   noiseContext.putImageData(noiseImage, 0, 0, 0, 0, 256, 256);
-
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   tileDrawn();
   return tileContext.getImageData(0, 0, 256, 256);
@@ -276,7 +274,7 @@ export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimensio
 export const materials: {[key: string]: Material} = {};
 
 export async function populateMaterials() {
-  noiseMaker.noiseCache = await getData() ?? {};
+  // noiseMaker.noiseCache = await getData() ?? {};
 
   const dirtPath = new Material({texture: textureLoader.load(drawDirtPath())})
   dirtPath.texture?.repeat.set(16, 16);
@@ -347,7 +345,7 @@ export async function populateMaterials() {
 
   textureLoader.bindTextures();
 
-  storeData(noiseMaker.noiseCache);
+  // storeData(noiseMaker.noiseCache);
 }
 
 

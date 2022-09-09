@@ -69,6 +69,7 @@ export class GameState implements State {
 
     this.currentLevel = {} as Level;
     this.dynamicBody = makeDynamicBody();
+    this.dynamicBody.position.set(-10000, -10000, -10000);
   }
 
   private levelNumber = 0;
@@ -94,6 +95,8 @@ export class GameState implements State {
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),
+        new EnhancedDOMPoint(-556, 26, -760),
+        []
       );
     } else if (levelNumber === 1) {
       noiseMaker.seed(75);
@@ -125,18 +128,33 @@ export class GameState implements State {
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),
+        new EnhancedDOMPoint(-556, 26, -760),
+        [
+          {
+            position: new EnhancedDOMPoint(252, -5.8 + 5.5, 117),
+            rotation: 1.6,
+          },
+          {
+            position: new EnhancedDOMPoint(685, -6 + 5.5, -60),
+            rotation: 2.59,
+          },
+          {
+            position: new EnhancedDOMPoint(148, -2.7 + 5.5, -371),
+            rotation: 5.6,
+          }
+        ]
       );
     } else {
-      noiseMaker.seed(99);
-      const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 4, NoiseType.Perlin, 200);
+      noiseMaker.seed(3);
+      const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 3, NoiseType.Perlin, 180);
       // @ts-ignore
       // const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
       this.currentLevel = new Level(
         sampleHeightMap3,
         createSkybox(drawSkyPurple),
-        -17,
-        39,
-        26,
+        -8,
+        106,
+        9,
         materials.underworldGround,
         materials.underworldPath,
         false,
@@ -144,9 +162,26 @@ export class GameState implements State {
         materials.underworldRocks,
         materials.underworldWater,
         materials.underworldBark,
-        new EnhancedDOMPoint(907, -41, 148),
-        new EnhancedDOMPoint(-940, 45, -85),
-        new EnhancedDOMPoint(61, -26, -390),
+        new EnhancedDOMPoint(22, 35, 891),
+        new EnhancedDOMPoint(-411, 17, 215),
+        new EnhancedDOMPoint(471, 7, -687),
+        new EnhancedDOMPoint(-556, 26, -760),
+        // -130.80326185103107, 31.988282043103016, -67.86333913563085 - -0.73536226864383
+        // -485.98986525035406, -6.351797407448845, 404.71459643568846 - -12.406139571300404
+        [
+          {
+            position: new EnhancedDOMPoint(-130, 31 + 5.5, -67),
+            rotation: -0.7
+          },
+          {
+            position: new EnhancedDOMPoint(-480, -6 + 5.5, 400),
+            rotation: -0.3
+          },
+          {
+            position: new EnhancedDOMPoint(138, 2 + 5.5, 501),
+            rotation: 4
+          }
+        ]
       );
     }
 
@@ -193,7 +228,10 @@ export class GameState implements State {
     const blueDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#00fc', emissive: '#00fc', isTransparent: true }));
     blueDropOffMesh.position.set(this.currentLevel.dropOffs[2]);
 
-    this.scene.add(this.player.mesh, ...this.spirits, redDropOffMesh, greenDropOffMesh, blueDropOffMesh);
+    const orangeDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#f80c', emissive: '#f80c', isTransparent: true }));
+    orangeDropOffMesh.position.set(this.currentLevel.dropOffs[3]);
+
+    this.scene.add(this.player.mesh, ...this.spirits, redDropOffMesh, greenDropOffMesh, blueDropOffMesh, orangeDropOffMesh);
     this.scene.add(...this.currentLevel.meshesToRender, this.dynamicBody);
 
     this.scene.skybox = this.currentLevel.skybox;
@@ -230,8 +268,7 @@ export class GameState implements State {
 
           ghostFlyAwayAudio().start();
 
-          this.dynamicBody.position.set(this.player.chassisCenter);
-          this.dynamicBody.position.y += 3;
+          this.dynamicBody.position.set(-10000, -10000, -10000);
           this.player.mesh.wrapper.remove(this.dynamicBody);
           this.scene.remove(this.arrowGuideWrapper);
           this.scene.remove(this.arrowGuide)

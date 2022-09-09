@@ -140,7 +140,7 @@ export class ThirdPersonPlayer {
 
     this.updateAudio();
 
-    debugElement.textContent = `${this.chassisCenter.x}, ${this.chassisCenter.y}, ${this.chassisCenter.z} - ${this.anglePointing}`;
+    debugElement.textContent = `${this.chassisCenter.x}, ${this.chassisCenter.y}, ${this.chassisCenter.z} // ${this.anglePointing}`;
   }
 
   private axis = new EnhancedDOMPoint();

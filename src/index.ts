@@ -19,7 +19,7 @@ async function startGame() {
   gameStates.menuState = new MenuState();
   gameStates.levelOverState = new LevelOverState();
 
-  createGameStateMachine(gameStates.gameState, 0);
+  createGameStateMachine(gameStates.gameState, 2);
 
   let previousTime = 0;
   const interval = 1000 / 60;

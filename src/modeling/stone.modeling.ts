@@ -5,10 +5,12 @@ export function makeRock() {
 }
 
 
-export function makeTombstoneGeo(width: number, height: number, depth: number, topRadius: number) {
-  return new MoldableCubeGeometry(width, height, depth, 18, 1, 4)
+export function makeTombstoneGeo(width: number, height: number, depth: number, topRadius: number, widthSegments: number, xRotation = 0) {
+  return new MoldableCubeGeometry(width, height, depth, widthSegments, 1, 1)
     .selectBy(vertex => vertex.y > 0)
     .cylindrify(topRadius, 'z')
+    .all()
+    .rotate(xRotation)
     .done();
 }
 

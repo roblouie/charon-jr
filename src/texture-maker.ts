@@ -68,10 +68,10 @@ export function drawRocks() {
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   const earthRocks = mainImageData();
 
-  clearWith('#384658');
+  clearWith('#3f4d62');
   drawContext.globalCompositeOperation = 'color-dodge';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  noisify(drawContext, 7);
+  noisify(drawContext, 9);
   const underworldRocks = mainImageData();
 
   return { earthRocks, underworldRocks };
@@ -285,6 +285,10 @@ export async function populateMaterials() {
   const { earthRocks, underworldRocks } = drawRocks();
   materials.underworldRocks = new Material({texture: textureLoader.load(underworldRocks)});
   materials.marble = new Material({texture: textureLoader.load(earthRocks)})
+  materials.gameTombstone = new Material({texture: textureLoader.load(underworldRocks)})
+  materials.gameTombstone.texture!.repeat.x = 0.4;
+  materials.gameTombstone.texture!.repeat.y = 0.7;
+  materials.gameTombstone.color = [1.1, 1.1, 1.1, 1.0];
 
   materials.chassis = new Material({color: truckColor});
   materials.truckCabTop = new Material({texture: textureLoader.load(drawTruckCabTop())});

@@ -70,7 +70,6 @@ export class ThirdPersonPlayer {
       .add(this.mesh.position);
   }
 
-  private lastPosition = new EnhancedDOMPoint();
   private distanceTraveled = new EnhancedDOMPoint();
   private dragRate = 0;
   private jumpTimer = 0;
@@ -119,12 +118,6 @@ export class ThirdPersonPlayer {
     this.frontRightWheel.set(this.mesh.rightFrontWheel.worldMatrix.transformPoint(this.origin));
 
 
-    const heightTraveled = this.chassisCenter.y - this.lastPosition.y;
-
-    if (!this.isJumping) {
-      this.velocity.y += heightTraveled;
-    }
-
     this.mesh.position.set(this.chassisCenter); // at this point, feetCenter is in the correct spot, so draw the mesh there
     this.mesh.position.y += 2; // move up by half height so mesh ends at feet position
 
@@ -144,12 +137,14 @@ export class ThirdPersonPlayer {
     this.camera.lookAt(this.transformIdeal(this.idealLookAt));
     this.camera.updateWorldMatrix();
 
-    this.updateAudio()
-    this.lastPosition.set(this.chassisCenter);
+    this.updateAudio();
+
+    debugElement.textContent = `${this.chassisCenter.x}, ${this.chassisCenter.y}, ${this.chassisCenter.z} - ${this.anglePointing}`;
   }
 
   private axis = new EnhancedDOMPoint();
-  private previousFloorHeight = 0;
+  private lastPosition = new EnhancedDOMPoint();
+
   collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
     const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 2, 3.5);
 
@@ -170,9 +165,6 @@ export class ThirdPersonPlayer {
       return;
     }
 
-    debugElement.textContent = floorData.height.toString();
-
-
     const collisionDepth = floorData.height - this.chassisCenter.y;
 
     if (collisionDepth > 0) {
@@ -181,7 +173,11 @@ export class ThirdPersonPlayer {
       }
 
       this.chassisCenter.y += collisionDepth;
-      this.velocity.y = 0;
+
+      if (collisionDepth < 1.5) {
+        this.velocity.y += collisionDepth;
+      }
+
       this.isJumping = false;
       this.jumpTimer = 0;
       this.lastIntervalJumpTimer = 0;
@@ -190,7 +186,6 @@ export class ThirdPersonPlayer {
       this.mesh.isUsingLookAt = true;
       this.mesh.rotationMatrix = new DOMMatrix();
       this.mesh.rotationMatrix.rotateAxisAngleSelf(this.axis.x, this.axis.y, this.axis.z, radsToDegrees(radians));
-      this.previousFloorHeight = floorData.height;
     } else {
       this.isJumping = true;
       this.jumpTimer++;

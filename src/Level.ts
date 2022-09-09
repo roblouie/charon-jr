@@ -12,7 +12,7 @@ import { AttributeLocation } from '@/engine/renderer/renderer';
 import { Face } from '@/engine/physics/face';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
-import { makeRock } from '@/modeling/stone.modeling';
+import { makeRock, makeTombstoneGeo } from '@/modeling/stone.modeling';
 
 function getRandomArbitrary(min: number, max: number) {
   return Math.random() * (max - min) + min;
@@ -88,6 +88,33 @@ export class Level {
 
     // Draw Sky
     this.skybox = new Skybox(...skyboxImages);
+
+    // tombstone.position.x += 20;
+    // tombstone.position.y += 5.9;
+    // tombstone.position.z += 50;
+    // tombstone.setRotation(-1.1, 0, 0);
+    /// 252.40696083320768, -5.865107993918577, 117.6359214012997 - 1.6003420112819629
+    //685.3157106012746, -6.1334833313382555, -60.42719705234351 - 2.596863689510206
+    // 147.79202938275571, -2.7878840236285156, -371.0654075845064 - 5.619473704785751
+    // Place Ramps
+    const purgatoryRampPositions = [
+      {
+        position: new EnhancedDOMPoint(252, -5.8 + 5.5, 117),
+        rotation: 1.6,
+      },
+      {
+        position: new EnhancedDOMPoint(685, -6 + 5.5, -60),
+        rotation: 2.59,
+      },
+      {
+        position: new EnhancedDOMPoint(148, -2.7 + 5.5, -371),
+        rotation: 5.6,
+      }
+    ]
+
+    purgatoryRampPositions.forEach(rampData => {
+      this.placeRamps(rampData.position, rampData.rotation);
+    });
 
     // Draw Scenery
     noiseMaker.seed(scenerySeed);
@@ -175,17 +202,6 @@ export class Level {
       }
     });
 
-    // TESTING
-    const rampGeometry = new MoldableCubeGeometry(16, 20, 40).selectBy(vertex => vertex.y > 0 && vertex.z > 0).translate(0, -20, 0).done();
-    const ramp = new Mesh(rampGeometry, materials.marble);
-    ramp.position.x += 20;
-    ramp.position.y += 5;
-    ramp.position.z += 50;
-    ramp.updateWorldMatrix();
-    this.meshesToRender.push(ramp);
-    getGroupedFaces(meshToFaces([ramp], ramp.worldMatrix), this.facesToCollideWith);
-    // END TESTING
-
     const plants = new InstancedMesh(makePlantGeo(), grassTransforms, grassTransforms.length, plantMaterial);
     const trees = new InstancedMesh(makeLargeTreeGeo(), treeTransforms, treeTransforms.length, treeMaterial);
     if (isTreeLeavesShowing) {
@@ -196,6 +212,23 @@ export class Level {
 
     this.facesToCollideWith.floorFaces.sort((faceA, faceB) => faceB.upperY - faceA.upperY);
     this.meshesToRender.push(plants, trees, rocks);
+  }
+
+  placeRamps(rampPosition: EnhancedDOMPoint, rampYRotation: number) {
+    const rampGeometry = new MoldableCubeGeometry(16, 6, 3);
+    const blocker = new Mesh(rampGeometry, materials.marble);
+    blocker.position.x += rampPosition.x;
+    blocker.position.y += rampPosition.y - 5;
+    blocker.position.z += rampPosition.z;
+    blocker.rotate(0, rampYRotation, 0);
+    blocker.updateWorldMatrix();
+    const tombstone = new Mesh(makeTombstoneGeo(16, 30, 4, 14, 8, 1), materials.gameTombstone);
+    tombstone.position.set(rampPosition);
+    tombstone.rotate(0, rampYRotation, 0);
+    tombstone.updateWorldMatrix();
+    this.meshesToRender.push(blocker);
+    this.meshesToRender.push(tombstone);
+    getGroupedFaces(meshToFaces([tombstone, blocker]), this.facesToCollideWith);
   }
 }
 

@@ -28,7 +28,7 @@ export class MenuState implements State {
     this.truck = makeTruck();
     this.truck.scale.set(0.4, 0.4, 0.4);
 
-    this.tombstone = new Mesh(makeTombstoneGeo(18, 10, 5, 8), materials.underworldRocks);
+    this.tombstone = new Mesh(makeTombstoneGeo(18, 10, 5, 8,18), materials.underworldRocks);
     this.tombstone.position.set(4.6, -1.5, -27.0);
     this.tombstone.setRotation(0.1, -0.6, 0);
   }

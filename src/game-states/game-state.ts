@@ -55,7 +55,7 @@ export class GameState implements State {
   dynamicBody: Object3d;
 
   constructor() {
-    const camera = new Camera(1.74533, 16 / 9, 1, 1000);
+    const camera = new Camera(1.73, 16 / 9, 1, 1000);
     camera.position = new EnhancedDOMPoint(0, 5, -17);
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();

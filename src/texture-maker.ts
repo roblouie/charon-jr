@@ -24,7 +24,6 @@ export function drawDirtPath() {
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 16, 4, NoiseType.Perlin, '#804b10', 128), 0, 0);
   drawContext.globalCompositeOperation = 'screen';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  drawContext.globalCompositeOperation = 'source-over';
   return mainImageData();
 }
 
@@ -37,7 +36,6 @@ function drawGrass() {
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 3, NoiseType.Perlin, '#0f0', 128), 0, 0);
   drawContext.globalCompositeOperation = 'screen';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  drawContext.globalCompositeOperation = 'source-over';
   return mainImageData();
 }
 
@@ -74,7 +72,19 @@ export function drawRocks() {
   noisify(drawContext, 9);
   const underworldRocks = mainImageData();
 
-  return { earthRocks, underworldRocks };
+  clearWith('#4d1d00');
+  drawContext.globalCompositeOperation = 'color-dodge';
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  noisify(drawContext, 9);
+  const purgatoryRocks = mainImageData();
+
+  clearWith('#833700');
+  drawContext.globalCompositeOperation = 'color-dodge';
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  noisify(drawContext, 12);
+  const purgatoryFloor = mainImageData();
+
+  return { earthRocks, underworldRocks, purgatoryRocks, purgatoryFloor };
 }
 
 // *********************
@@ -231,11 +241,11 @@ function drawUnderworldWater() {
 // Purgatory Sky
 // *********************
 export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
-  clearWith('#f53c00');
+  clearWith('#e8671c');
 
   noiseMaker.seed(100);
 
-  const noiseImage = noiseMaker.noiseImage(128, 1 / 64, 2, NoiseType.Perlin, '#6e16ff', 180, true, firstDimension, secondDimension, sliceDimension, slice, flip);
+  const noiseImage = noiseMaker.noiseImage(128, 1 / 64, 1, NoiseType.Perlin, '#c1597e', 180, true, firstDimension, secondDimension, sliceDimension, slice, flip);
   noiseContext.putImageData(noiseImage, 0, 0);
   drawContext.globalCompositeOperation = 'difference';
 
@@ -243,7 +253,7 @@ export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimensio
 
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   tileContext.save();
-  tileContext.scale(4, 1);
+  tileContext.scale(2, 1);
   tileDrawn();
   tileContext.restore();
   return tileContext.getImageData(0, 0, 256, 256);
@@ -282,9 +292,13 @@ export async function populateMaterials() {
   underworldGroundTexture.repeat.x = 60; underworldGroundTexture.repeat.y = 60;
   materials.underworldGround = new Material({texture: underworldGroundTexture});
 
-  const { earthRocks, underworldRocks } = drawRocks();
+  const { earthRocks, underworldRocks, purgatoryRocks, purgatoryFloor } = drawRocks();
   materials.underworldRocks = new Material({texture: textureLoader.load(underworldRocks)});
   materials.marble = new Material({texture: textureLoader.load(earthRocks)})
+  materials.purgatoryRocks = new Material({texture: textureLoader.load(purgatoryRocks)});
+  materials.purgatoryFloor = new Material({texture: textureLoader.load(purgatoryFloor)});
+  materials.purgatoryFloor.texture?.repeat.set(12, 12);
+
   materials.gameTombstone = new Material({texture: textureLoader.load(underworldRocks)})
   materials.gameTombstone.texture!.repeat.x = 0.4;
   materials.gameTombstone.texture!.repeat.y = 0.7;

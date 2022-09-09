@@ -31,12 +31,26 @@ export function drawDirtPath() {
 // Grass
 // *********************
 function drawGrass() {
-  clearWith('#090');
   noiseMaker.seed(12);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 3, NoiseType.Perlin, '#0f0', 128), 0, 0);
+
+  clearWith('#090');
   drawContext.globalCompositeOperation = 'screen';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  return mainImageData();
+  const earthGrass = mainImageData();
+
+  noiseMaker.seed(12);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 32, 3, NoiseType.Perlin, '#66b47f', 128), 0, 0);
+
+  clearWith('#45835a');
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  const purgatoryPlants = mainImageData();
+
+  // clearWith('#008a44');
+  // drawContext.globalCompositeOperation = 'screen';
+  // drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  // const purgatoryPlants = mainImageData();
+  return { earthGrass, purgatoryPlants };
 }
 
 // *********************
@@ -269,14 +283,17 @@ export async function populateMaterials() {
   const dirtPath = new Material({texture: textureLoader.load(drawDirtPath())})
   dirtPath.texture?.repeat.set(16, 16);
 
-  const floorTexture = textureLoader.load(drawGrass());
+  const { earthGrass, purgatoryPlants } = drawGrass();
+  const floorTexture = textureLoader.load(earthGrass);
   floorTexture.repeat.x = 12; floorTexture.repeat.y = 12;
   materials.grass = new Material({texture: floorTexture});
 
-  const treeTexture = textureLoader.load(drawGrass());
+  materials.purgatoryGrass = new Material({texture: textureLoader.load(purgatoryPlants) });
+  materials.purgatoryGrass.color = [1.0, 0.8, 0.8, 1.0]
+
+  const treeTexture = textureLoader.load(earthGrass);
   treeTexture.repeat.set(2, 2);
   const treeLeaves = new Material({texture: treeTexture });
-  const pergatoryGrass = new Material({texture: treeTexture, color: '#f4f' });
 
 
   const lake = drawWater();
@@ -328,7 +345,6 @@ export async function populateMaterials() {
   materials.tire = tire;
   materials.wheel = wheel;
   materials.dirtPath = dirtPath;
-  materials.pergatoryGrass = pergatoryGrass;
   materials.underworldPath = underworldPath;
 
   textureLoader.bindTextures();

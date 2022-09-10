@@ -100,7 +100,6 @@ export class Level {
     // Draw Sky
     this.skybox = new Skybox(...skyboxImages);
 
-    console.log(rampData.length);
     rampData.forEach(rampData => {
       this.placeRamps(rampData.position, rampData.rotation);
     });
@@ -204,20 +203,21 @@ export class Level {
   }
 
   placeRamps(rampPosition: EnhancedDOMPoint, rampYRotation: number) {
-    const rampGeometry = new MoldableCubeGeometry(16, 6, 3);
-    const blocker = new Mesh(rampGeometry, materials.marble);
-    blocker.position.x += rampPosition.x;
-    blocker.position.y += rampPosition.y - 5;
-    blocker.position.z += rampPosition.z;
-    blocker.rotate(0, rampYRotation, 0);
-    blocker.updateWorldMatrix();
-    const tombstone = new Mesh(makeTombstoneGeo(16, 30, 4, 14, 8, 1), materials.gameTombstone);
+    const texturesPerSide = MoldableCubeGeometry.TexturePerSide(8, 1, 1,
+      materials.underworldRocks.texture!,
+      materials.underworldRocks.texture!,
+      materials.underworldRocks.texture!,
+      materials.underworldRocks.texture!,
+      materials.underworldRocks.texture!,
+      materials.tombstoneFront.texture!,
+    );
+    const tombstone = new Mesh(makeTombstoneGeo(35, 50, 6, 30, 8, 1).translate(0, 7, 15).done(), materials.tombstoneFront);
+    tombstone.geometry.setAttribute(AttributeLocation.TextureDepth, new Float32Array(texturesPerSide), 1);
     tombstone.position.set(rampPosition);
     tombstone.rotate(0, rampYRotation, 0);
     tombstone.updateWorldMatrix();
-    this.meshesToRender.push(blocker);
     this.meshesToRender.push(tombstone);
-    getGroupedFaces(meshToFaces([tombstone, blocker]), this.facesToCollideWith);
+    getGroupedFaces(meshToFaces([tombstone]), this.facesToCollideWith);
   }
 }
 

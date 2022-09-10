@@ -147,7 +147,7 @@ export class ThirdPersonPlayer {
   private lastPosition = new EnhancedDOMPoint();
 
   collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
-    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 2, 3.5);
+    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 1, 3.5);
 
     this.chassisCenter.x += wallCollisions.xPush;
     this.chassisCenter.z += wallCollisions.zPush;

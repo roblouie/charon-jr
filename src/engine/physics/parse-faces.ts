@@ -39,7 +39,7 @@ export function getGroupedFaces(faces: Face[], destinationGroupedFaces: {floorFa
   faces.forEach(face => {
     if (face.normal.y > 0.2) {
       destinationGroupedFaces.floorFaces.push(face);
-    } else if (face.normal.y >= -0.2) {
+    } else {
       destinationGroupedFaces.wallFaces.push(face);
     }
   });

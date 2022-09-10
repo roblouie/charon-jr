@@ -2,7 +2,7 @@ import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 import { doTimes } from '@/engine/helpers';
-// import { getData, storeData } from '@/core/data-storage';
+import { getData, storeData } from '@/core/data-storage';
 
 const [drawContext, tileContext, noiseContext] = ['draw', 'tile', 'noise'].map(id => {
   const canvas = document.createElement('canvas');
@@ -87,6 +87,14 @@ export function drawRocks() {
   noisify(drawContext, 9);
   const underworldRocks = mainImageData();
 
+  drawContext.globalCompositeOperation = 'source-over';
+  drawContext.fillStyle = '#333';
+  drawContext.scale(1, -1);
+  drawContext.textAlign = 'center';
+  drawContext.font = '70px Times New Roman';
+  drawContext.fillText('RIP', 64, -50);
+  const tombstoneFront = mainImageData();
+
   clearWith('#4d1d00');
   drawContext.globalCompositeOperation = 'color-dodge';
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
@@ -99,7 +107,7 @@ export function drawRocks() {
   noisify(drawContext, 12);
   const purgatoryFloor = mainImageData();
 
-  return { earthRocks, underworldRocks, purgatoryRocks, purgatoryFloor };
+  return { earthRocks, underworldRocks, purgatoryRocks, purgatoryFloor, tombstoneFront };
 }
 
 // *********************
@@ -274,7 +282,7 @@ export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimensio
 export const materials: {[key: string]: Material} = {};
 
 export async function populateMaterials() {
-  // noiseMaker.noiseCache = await getData() ?? {};
+  noiseMaker.noiseCache = await getData() ?? {};
 
   const dirtPath = new Material({texture: textureLoader.load(drawDirtPath())})
   dirtPath.texture?.repeat.set(16, 16);
@@ -305,17 +313,14 @@ export async function populateMaterials() {
   underworldGroundTexture.repeat.x = 60; underworldGroundTexture.repeat.y = 60;
   materials.underworldGround = new Material({texture: underworldGroundTexture});
 
-  const { earthRocks, underworldRocks, purgatoryRocks, purgatoryFloor } = drawRocks();
+  const { earthRocks, underworldRocks, purgatoryRocks, purgatoryFloor, tombstoneFront } = drawRocks();
   materials.underworldRocks = new Material({texture: textureLoader.load(underworldRocks)});
   materials.marble = new Material({texture: textureLoader.load(earthRocks)})
   materials.purgatoryRocks = new Material({texture: textureLoader.load(purgatoryRocks)});
   materials.purgatoryFloor = new Material({texture: textureLoader.load(purgatoryFloor)});
   materials.purgatoryFloor.texture?.repeat.set(12, 12);
 
-  materials.gameTombstone = new Material({texture: textureLoader.load(underworldRocks)})
-  materials.gameTombstone.texture!.repeat.x = 0.4;
-  materials.gameTombstone.texture!.repeat.y = 0.7;
-  materials.gameTombstone.color = [1.1, 1.1, 1.1, 1.0];
+  materials.tombstoneFront = new Material({texture: textureLoader.load(tombstoneFront)});
 
   materials.chassis = new Material({color: truckColor});
   materials.truckCabTop = new Material({texture: textureLoader.load(drawTruckCabTop())});
@@ -345,7 +350,7 @@ export async function populateMaterials() {
 
   textureLoader.bindTextures();
 
-  // storeData(noiseMaker.noiseCache);
+  storeData(noiseMaker.noiseCache);
 }
 
 
@@ -355,6 +360,7 @@ function mainImageData() {
 }
 
 function clearWith(color: string, context = drawContext) {
+  drawContext.resetTransform();
   tileContext.resetTransform();
   context.clearRect(0, 0, resolution, resolution);
   context.globalCompositeOperation = 'source-over';

@@ -178,7 +178,7 @@ export class GameState implements State {
             rotation: -0.3
           },
           {
-            position: new EnhancedDOMPoint(138, 2 + 5.5, 501),
+            position: new EnhancedDOMPoint(138, 1 + 5.5, 501),
             rotation: 4
           }
         ]

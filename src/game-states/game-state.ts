@@ -75,6 +75,8 @@ export class GameState implements State {
   private levelNumber = 0;
   private isLoaded = false;
   onEnter(levelNumber: 0 | 1 | 2) {
+    this.gridFaces = [];
+    this.groupedFaces = { floorFaces: [], wallFaces: [], ceilingFaces: [] }
     this.levelNumber = levelNumber;
     if (levelNumber === 0) {
       noiseMaker.seed(22);
@@ -115,7 +117,7 @@ export class GameState implements State {
       this.currentLevel = new Level(
         sampleHeightMap2,
         createSkybox(drawPurgatorySky),
-        -47,
+        -10000,
         undefined,
         4,
         materials.purgatoryFloor,
@@ -125,22 +127,46 @@ export class GameState implements State {
         materials.purgatoryRocks,
         materials.lake,
         materials.wood,
-        new EnhancedDOMPoint(907, -41, 148),
-        new EnhancedDOMPoint(-940, 45, -85),
-        new EnhancedDOMPoint(61, -26, -390),
-        new EnhancedDOMPoint(-556, 26, -760),
+        new EnhancedDOMPoint(-331, 50, -553),
+        new EnhancedDOMPoint(700, -1.3, -765),
+        new EnhancedDOMPoint(700, -7, 770),
+        new EnhancedDOMPoint(-706, 50, 259),
         [
           {
-            position: new EnhancedDOMPoint(252, -5.8 + 5.5, 117),
+            position: new EnhancedDOMPoint(252, -7.5 + 5.5, 117),
             rotation: 1.6,
           },
           {
-            position: new EnhancedDOMPoint(685, -6 + 5.5, -60),
+            position: new EnhancedDOMPoint(685, -7.5 + 5.5, -60),
             rotation: 2.59,
           },
           {
-            position: new EnhancedDOMPoint(148, -2.7 + 5.5, -371),
+            position: new EnhancedDOMPoint(148, -3.7 + 5.5, -371),
             rotation: 5.6,
+          },
+          {
+            position: new EnhancedDOMPoint(-455, -9 + 5.5, 419),
+            rotation: -2,
+          },
+          {
+            position: new EnhancedDOMPoint(32, 41 + 5.5, 237),
+            rotation: -1.8,
+          },
+          {
+            position: new EnhancedDOMPoint(692, -7 + 5.5, -333),
+            rotation: 6.23,
+          },
+          {
+            position: new EnhancedDOMPoint(-223, 41 + 5.5, 55),
+            rotation: -3.7,
+          },
+          {
+            position: new EnhancedDOMPoint(475, 49 + 5.5, 400),
+            rotation: 0.7,
+          },
+          {
+            position: new EnhancedDOMPoint(-630, -11.5 + 5.5, -291),
+            rotation: 8.2,
           }
         ]
       );
@@ -185,9 +211,13 @@ export class GameState implements State {
       );
     }
 
-    this.player.mesh.position.set(0, 10, -10);
+    this.player.chassisCenter.set(0, 10, 60);
     this.player.isCarryingSpirit = false;
+    if (levelNumber === 1) {
+      this.currentLevel.spiritPositions = this.currentLevel.spiritPositions.filter((spirit, index) => index % 2 === 0);
+    }
     this.spirits = this.currentLevel.spiritPositions.map(position => new Spirit(position));
+    console.log(this.currentLevel.spiritPositions.length);
 
     this.scene = new Scene();
 

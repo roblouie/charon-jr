@@ -79,7 +79,7 @@ export class ThirdPersonPlayer {
     this.dragRate = 0.99;
     this.drivingThroughWaterGain.gain.value = 0;
 
-    if (this.isCarryingSpirit && this.jumpTimer - this.lastIntervalJumpTimer > 35) {
+    if (this.isCarryingSpirit && this.jumpTimer - this.lastIntervalJumpTimer > 20) {
       hud.addToScoreBonus();
       this.lastIntervalJumpTimer = this.jumpTimer;
     }

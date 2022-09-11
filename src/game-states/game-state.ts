@@ -54,8 +54,10 @@ export class GameState implements State {
 
   dynamicBody: Object3d;
 
+  dropoffs: Mesh[];
+
   constructor() {
-    const camera = new Camera(1.73, 16 / 9, 1, 1000);
+    const camera = new Camera(1.68, 16 / 9, 1, 1000);
     camera.position = new EnhancedDOMPoint(0, 5, -17);
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();
@@ -70,6 +72,7 @@ export class GameState implements State {
     this.currentLevel = {} as Level;
     this.dynamicBody = makeDynamicBody();
     this.dynamicBody.position.set(-10000, -10000, -10000);
+    this.dropoffs = [];
   }
 
   private levelNumber = 0;
@@ -167,6 +170,10 @@ export class GameState implements State {
           {
             position: new EnhancedDOMPoint(-630, -11.5 + 5.5, -291),
             rotation: 8.2,
+          },
+          {
+            position: new EnhancedDOMPoint(876, 42 + 5.5, -253),
+            rotation: 3.2,
           }
         ]
       );
@@ -248,20 +255,14 @@ export class GameState implements State {
       });
     });
 
-    const dropOffGeo = new MoldableCubeGeometry(1, 140, 1, 4, 1, 4).cylindrify(30).done();
-    const redDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#f00c', emissive: '#f00c', isTransparent: true }));
-    redDropOffMesh.position.set(this.currentLevel.dropOffs[0]);
+    const dropOffGeo = new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).done();
+    this.dropoffs = this.currentLevel.dropOffs.map((dropOff, index) => {
+      const dropOffMesh = new Mesh(dropOffGeo, new Material({ texture: materials.dropOff.texture, emissive: Spirit.Colors[index], isTransparent: true }));
+      dropOffMesh.position.set(dropOff);
+      return dropOffMesh
+    })
 
-    const greenDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#0f0c', emissive: '#0f0c', isTransparent: true }));
-    greenDropOffMesh.position.set(this.currentLevel.dropOffs[1]);
-
-    const blueDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#00fc', emissive: '#00fc', isTransparent: true }));
-    blueDropOffMesh.position.set(this.currentLevel.dropOffs[2]);
-
-    const orangeDropOffMesh = new Mesh(dropOffGeo, new Material({ color: '#f80c', emissive: '#f80c', isTransparent: true }));
-    orangeDropOffMesh.position.set(this.currentLevel.dropOffs[3]);
-
-    this.scene.add(this.player.mesh, ...this.spirits, redDropOffMesh, greenDropOffMesh, blueDropOffMesh, orangeDropOffMesh);
+    this.scene.add(this.player.mesh, ...this.spirits, ...this.dropoffs);
     this.scene.add(...this.currentLevel.meshesToRender, this.dynamicBody);
 
     this.scene.skybox = this.currentLevel.skybox;
@@ -272,13 +273,13 @@ export class GameState implements State {
     hud.reset();
     this.isLoaded = true;
     draw2dEngine.clear();
-    engineAudio.start();
+    this.player.engineGain.gain.value = 0.4;
     drivingThroughWaterAudio.start();
   }
 
   onLeave() {
     draw2dEngine.clear();
-    engineAudio.stop();
+    this.player.engineGain.gain.value = 0;
     drivingThroughWaterAudio.stop();
     this.spirits.forEach(spirit => spirit.audioPlayer?.stop());
   }
@@ -291,11 +292,11 @@ export class GameState implements State {
 
     // Drop Off
     if (this.player.isCarryingSpirit) {
-      if (this.player.velocity.magnitude < 0.1) {
+      if (this.player.velocity.magnitude < 0.2) {
         const dropOffPosition = this.currentLevel.dropOffs[this.player.carriedSpirit!.dropOffPoint];
         this.dropOffPlayerDistance.subtractVectors(dropOffPosition, this.player.chassisCenter);
-        if (Math.abs(this.dropOffPlayerDistance.x) <= 30 && Math.abs(this.dropOffPlayerDistance.z) <= 30) {
-
+        if (Math.abs(this.dropOffPlayerDistance.x) <= 40 && Math.abs(this.dropOffPlayerDistance.z) <= 40) {
+          this.dropoffs[this.player.carriedSpirit!.dropOffPoint].scale.y = 1;
           ghostFlyAwayAudio().start();
 
           this.dynamicBody.position.set(-10000, -10000, -10000);
@@ -310,11 +311,12 @@ export class GameState implements State {
     }
     else {
       // Pick Up
-      if (this.player.velocity.magnitude < 0.1) {
+      if (this.player.velocity.magnitude < 0.2) {
         this.spirits.some((spirit, index) => {
           this.spiritPlayerDistance.subtractVectors(spirit.position, this.player.chassisCenter)
           if (Math.abs(this.spiritPlayerDistance.x) < 15 && Math.abs(this.spiritPlayerDistance.z) < 15) {
             this.arrowGuide.material.color = spirit.color.map(val => val * 1.5);
+            this.dropoffs[spirit.dropOffPoint].scale.y = 300;
 
             // Find distance from spirit pickup point to it's drop off point and add a relative amount of time
             this.spiritDropOffDistance.subtractVectors(this.currentLevel.dropOffs[spirit.dropOffPoint], spirit.position);
@@ -332,8 +334,8 @@ export class GameState implements State {
             this.player.carriedSpirit = spirit;
             spirit.audioPlayer?.stop();
             this.scene.add(this.arrowGuideWrapper);
-            this.scene.remove(spirit.bodyMesh);
-            this.scene.remove(spirit.headMesh);
+            this.scene.remove(spirit.spiritMesh);
+            this.scene.remove(spirit.iconMesh);
             this.spirits.splice(index, 1);
             return true;
           }
@@ -364,6 +366,8 @@ export class GameState implements State {
       this.arrowLookAtDropOff.y = this.arrowGuideWrapper.position.y - 10;
       this.arrowGuideWrapper.lookAt(this.arrowLookAtDropOff);
     }
+
+    this.dropoffs.forEach(dropoff => dropoff.rotate(0, 0.01, 0));
 
 
     this.scene.updateWorldMatrix();

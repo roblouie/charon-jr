@@ -11,8 +11,6 @@ import {
   audioCtx,
   drivingThroughWaterAudio,
   engineAudio,
-  hit1Audio,
-  hit2Audio,
   landingAudio
 } from '@/engine/audio/audio-player';
 import { makeTruck, TruckObject3d } from '@/modeling/truck.modeling';
@@ -44,6 +42,7 @@ export class ThirdPersonPlayer {
   carriedSpirit?: Spirit;
 
   private drivingThroughWaterGain: GainNode;
+  engineGain: GainNode;
 
   constructor(camera: Camera) {
     this.mesh = makeTruck();
@@ -53,10 +52,10 @@ export class ThirdPersonPlayer {
 
     engineAudio.loop = true;
     engineAudio.playbackRate.value = 1;
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.value = 0.4;
-    engineAudio.connect(gainNode).connect(audioCtx.destination);
-
+    this.engineGain = audioCtx.createGain();
+    engineAudio.connect(this.engineGain).connect(audioCtx.destination);
+    engineAudio.start();
+    this.engineGain.gain.value = 0;
     drivingThroughWaterAudio.loop = true;
     drivingThroughWaterAudio.playbackRate.value = 1;
     this.drivingThroughWaterGain = audioCtx.createGain();
@@ -155,7 +154,10 @@ export class ThirdPersonPlayer {
     if (wallCollisions.numberOfWallsHit > 0) {
       this.angleTravelingVector.normalize();
       const collisionDot = this.angleTravelingVector.x * wallCollisions.walls[0].normal.x + this.angleTravelingVector.z * wallCollisions.walls[0].normal.z;
-
+      // Play crash sound
+      if (wallCollisions.xPush > 0.1 || wallCollisions.zPush > 0.1) {
+        landingAudio().start();
+      }
       this.speed -= this.speed * (1 - Math.abs(collisionDot));
     }
 

@@ -9,9 +9,6 @@ const zzfxV=.3
 // zzfxR - global sample rate
 const zzfxR=44100
 
-// zzfx() - the universal entry point -- returns a AudioBufferSourceNode
-const zzfx=(...t)=>zzfxP(zzfxG(...t))
-
 // zzfxP() - the sound player -- returns a AudioBufferSourceNode
 const zzfxP=(...t)=>{let e=audioCtx.createBufferSource(),f=audioCtx.createBuffer(t.length,t[0].length,zzfxR);t.map((d,i)=>f.getChannelData(i).set(d)),e.buffer=f;return e}
 
@@ -68,25 +65,14 @@ export const ghostThankYouAudio = createAudioNode(ghostThankYouBuffer);
 const ghostFlyAwayBuffer = zzfxG(...[2.11,0,101,.25,.4,.56,1,,.4,.6,270,,,,.1,.1,.43,-0.6,.26,.29]); // Pickup 61 - Copy 14
 export const ghostFlyAwayAudio = createAudioNode(ghostFlyAwayBuffer);
 
-// Engine ?
-zzfx(...[2.03,0,48,,2.91,-1,2,.3,,,,,.07,.3,,.1,.19,.6,,.43]); // Powerup 78
-
-// BETTER ENGINE
 const engine = zzfxG(...[2.03,0,48,,2.91,0,2,.4,,,,,.03,,,,,.6,,.59]);
 export const engineAudio = zzfxP(engine);
 
 const drivingThroughWaterBuffer = zzfxG(...[.8,0,109,,2.91,0,4,0,,,,,,,-5,.2,.01,.4]);
 export const drivingThroughWaterAudio = zzfxP(drivingThroughWaterBuffer);
 
-// Possible landing sound
 const landingBuffer = zzfxG(...[,,135,.01,.09,.05,1,1.7,-3.9,-1.5,,,.17,.6,,.1,,.59,.01]); // Hit 761 // Shoot 151
 export const landingAudio = createAudioNode(landingBuffer);
-
-const hit1Buffer = zzfxG(...[1.74,.2,164.8138,.01,.08,.04,4,4.4,-1,-2,-400,,,.2,,.1,.01,.5,.06,.08]); // Hit 242
-export const hit1Audio = createAudioNode(hit1Buffer);
-
-const hit2Buffer = zzfxG(...[,,243,.01,.02,.19,4,.42,-0.1,,,,,.9,,.4,,.59,.04,.03]); // Hit 251
-export const hit2Audio = createAudioNode(hit2Buffer);
 
 const coinBuffer = zzfxG(...[0.8,0,1123,,.05,.18,,.73,.5,-2.3,187,.09,,,,.1,,.54,.01]);
 export const coinAudio = createAudioNode(coinBuffer);

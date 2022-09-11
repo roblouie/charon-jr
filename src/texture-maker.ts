@@ -2,7 +2,6 @@ import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 import { doTimes } from '@/engine/helpers';
-import { getData, storeData } from '@/core/data-storage';
 
 const [drawContext, tileContext, noiseContext] = ['draw', 'tile', 'noise'].map(id => {
   const canvas = document.createElement('canvas');
@@ -245,6 +244,18 @@ export function drawEarthSky(firstDimension: 'x' | 'y' | 'z', secondDimension: '
   return tileContext.getImageData(0, 0, 256, 256);
 }
 
+// *********************
+// Drop Off Point
+// *********************
+function drawDropoff() {
+  clearWith('rgba(31,0,63,0.7)');
+  noiseMaker.seed(100);
+  noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 2, NoiseType.Perlin, '#fff', 120, false, 'x', 'y', 'z', 0), 0, 0);
+  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  tileDrawn();
+  return tileContext.getImageData(0, 0, 128, 128);
+}
+
 
 // *********************
 // Underworld Water
@@ -282,7 +293,7 @@ export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimensio
 export const materials: {[key: string]: Material} = {};
 
 export async function populateMaterials() {
-  noiseMaker.noiseCache = await getData() ?? {};
+  // noiseMaker.noiseCache = await getData() ?? {};
 
   const dirtPath = new Material({texture: textureLoader.load(drawDirtPath())})
   dirtPath.texture?.repeat.set(16, 16);
@@ -329,11 +340,16 @@ export async function populateMaterials() {
   materials.truckCabLeftSide = new Material({texture: textureLoader.load(drawTruckCabSide(false))});
   materials.truckCabRear = new Material({texture: textureLoader.load(drawTruckCabRear())});
 
-  materials.spiritMaterial = new Material({ texture: materials.marble.texture, color: '#fff9', emissive: '#fff9', isTransparent: true })
+
 
   const { underworldBark, earthBark } = drawTreeBarks();
   materials.underworldBark = new Material({texture: textureLoader.load(underworldBark)});
   materials.wood = new Material({texture: textureLoader.load(earthBark)});
+
+  materials.dropOff = new Material({texture: textureLoader.load(drawDropoff())});
+
+  materials.spiritMaterial = new Material({ texture: materials.marble.texture, color: '#fff9', isTransparent: true })
+  materials.spiritMaterial.emissive = [1.4, 1.4, 1.4, 1.0];
 
   const underworldWaterTexture = textureLoader.load(drawUnderworldWater());
   underworldWaterTexture.repeat.x = 10; underworldWaterTexture.repeat.y = 10;
@@ -350,7 +366,7 @@ export async function populateMaterials() {
 
   textureLoader.bindTextures();
 
-  storeData(noiseMaker.noiseCache);
+  // storeData(noiseMaker.noiseCache);
 }
 
 

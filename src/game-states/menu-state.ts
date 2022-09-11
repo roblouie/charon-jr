@@ -28,7 +28,7 @@ export class MenuState implements State {
     this.truck = makeTruck();
     this.truck.scale.set(0.4, 0.4, 0.4);
 
-    this.tombstone = new Mesh(makeTombstoneGeo(18, 10, 5, 8,18), materials.underworldRocks);
+    this.tombstone = new Mesh(makeTombstoneGeo(15, 10, 5, 9,18), materials.underworldRocks);
     this.tombstone.position.set(4.6, -1.5, -27.0);
     this.tombstone.setRotation(0.1, -0.6, 0);
   }
@@ -58,7 +58,7 @@ export class MenuState implements State {
 
     draw2dEngine.clear();
 
-    draw2dEngine.drawText('CHARON JR.', 'Times New Roman', 100, 640, 170, 1);
+    draw2dEngine.drawText('CHARON JR.', 'Times New Roman', 100, 640, 150, 1);
 
     const level1Score = this.getScore(2);
     this.drawEngraving('UNDERWORLD', 55, 640, 270, this.selectedOption === 0 ? 1 : 0);

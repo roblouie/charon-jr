@@ -89,10 +89,10 @@ export function drawRocks() {
 
   drawContext.globalCompositeOperation = 'source-over';
   drawContext.fillStyle = '#333';
-  drawContext.scale(1, -1);
+  drawContext.scale(1, -0.7);
   drawContext.textAlign = 'center';
   drawContext.font = '70px Times New Roman';
-  drawContext.fillText('RIP', 64, -50);
+  drawContext.fillText('RIP', 64, -40);
   const tombstoneFront = mainImageData();
 
   clearWith('#4d1d00');

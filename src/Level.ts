@@ -203,7 +203,7 @@ export class Level {
   }
 
   placeRamps(rampPosition: EnhancedDOMPoint, rampYRotation: number) {
-    const texturesPerSide = MoldableCubeGeometry.TexturePerSide(8, 1, 1,
+    const texturesPerSide = MoldableCubeGeometry.TexturePerSide(8, 2, 1,
       materials.underworldRocks.texture!,
       materials.underworldRocks.texture!,
       materials.underworldRocks.texture!,

@@ -14,13 +14,10 @@ import {
   landingAudio
 } from '@/engine/audio/audio-player';
 import { makeTruck, TruckObject3d } from '@/modeling/truck.modeling';
-import { clamp, easeInOut, linearMovement, moveValueTowardsTarget, wrap } from '@/engine/helpers';
+import { clamp, gripCurve, moveValueTowardsTarget } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
 import { Spirit } from '@/spirit';
 import { hud } from '@/hud';
-
-const debugElement = document.querySelector('#debug')!;
-
 
 export class ThirdPersonPlayer {
   isJumping = false;
@@ -69,7 +66,6 @@ export class ThirdPersonPlayer {
       .add(this.mesh.position);
   }
 
-  private distanceTraveled = new EnhancedDOMPoint();
   private dragRate = 0;
   private jumpTimer = 0;
   private lastIntervalJumpTimer = 0;
@@ -138,12 +134,9 @@ export class ThirdPersonPlayer {
     this.camera.updateWorldMatrix();
 
     this.updateAudio();
-
-    debugElement.textContent = `${this.chassisCenter.x}, ${this.chassisCenter.y}, ${this.chassisCenter.z} // ${this.anglePointing}`;
   }
 
   private axis = new EnhancedDOMPoint();
-  private lastPosition = new EnhancedDOMPoint();
 
   collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
     const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 1, 3.5);
@@ -232,7 +225,7 @@ export class ThirdPersonPlayer {
     this.turningAbilityPercent = 1;
 
     const percentOfMaxSpeed = Math.abs(this.speed / this.maxSpeed);
-    this.turningAbilityPercent = easeInOut(percentOfMaxSpeed);
+    this.turningAbilityPercent = gripCurve(percentOfMaxSpeed);
 
     if (this.jumpTimer > 30) {
       this.tractionPercent = 0.2;

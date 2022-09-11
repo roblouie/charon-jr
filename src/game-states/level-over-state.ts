@@ -22,7 +22,7 @@ export class LevelOverState implements State {
     }
     setTimeout(() => {
       getGameStateMachine().setState(gameStates.menuState);
-    }, 5000);
+    }, 4000);
   }
 
   onUpdate() {

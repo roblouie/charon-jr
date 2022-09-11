@@ -57,7 +57,7 @@ export class GameState implements State {
   dropoffs: Mesh[];
 
   constructor() {
-    const camera = new Camera(1.68, 16 / 9, 1, 1000);
+    const camera = new Camera(1.68, 16 / 9, 1, 1700);
     camera.position = new EnhancedDOMPoint(0, 5, -17);
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();
@@ -219,6 +219,7 @@ export class GameState implements State {
     }
 
     this.player.chassisCenter.set(0, 10, 60);
+    this.player.velocity.set(0, 0, 0);
     this.player.isCarryingSpirit = false;
     if (levelNumber === 1) {
       this.currentLevel.spiritPositions = this.currentLevel.spiritPositions.filter((spirit, index) => index % 2 === 0);
@@ -316,7 +317,7 @@ export class GameState implements State {
           this.spiritPlayerDistance.subtractVectors(spirit.position, this.player.chassisCenter)
           if (Math.abs(this.spiritPlayerDistance.x) < 15 && Math.abs(this.spiritPlayerDistance.z) < 15) {
             this.arrowGuide.material.color = spirit.color.map(val => val * 1.5);
-            this.dropoffs[spirit.dropOffPoint].scale.y = 300;
+            this.dropoffs[spirit.dropOffPoint].scale.y = 500;
 
             // Find distance from spirit pickup point to it's drop off point and add a relative amount of time
             this.spiritDropOffDistance.subtractVectors(this.currentLevel.dropOffs[spirit.dropOffPoint], spirit.position);

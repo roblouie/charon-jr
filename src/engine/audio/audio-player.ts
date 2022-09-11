@@ -58,7 +58,7 @@ export const sadGhostAudio2 = createPannerNode(sadGhostBuffer2);
 const sadGhostBuffer = addGap(zzfxG(...[2.11,.85,100,.25,.58,.08,1,,-0.1,-0.2,350,,,,,.1,.23,-0.6,.26,.17]), 0.8); // Pickup 61 - Copy 12
 export const sadGhostAudio = createPannerNode(sadGhostBuffer);
 
-const ghostThankYouBuffer = zzfxG(...[2.11,.5,300,.13,.28,.08,1,,1.1,.5,200,,,,.3,.1,.23,-0.2,.18,.17]);
+const ghostThankYouBuffer = zzfxG(...[2.11,0,300,.13,.28,.08,1,,1.1,.5,200,,,,.3,.1,.23,-0.2,.18,.17]);
 export const ghostThankYouAudio = createAudioNode(ghostThankYouBuffer);
 
 // Ghost fly away?:

@@ -248,7 +248,7 @@ export function drawEarthSky(firstDimension: 'x' | 'y' | 'z', secondDimension: '
 // Drop Off Point
 // *********************
 function drawDropoff() {
-  clearWith('rgba(31,0,63,0.7)');
+  clearWith('#0000');
   noiseMaker.seed(100);
   noiseContext.putImageData(noiseMaker.noiseImage(128, 1 / 64, 2, NoiseType.Perlin, '#fff', 120, false, 'x', 'y', 'z', 0), 0, 0);
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);

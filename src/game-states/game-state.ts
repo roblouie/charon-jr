@@ -225,7 +225,6 @@ export class GameState implements State {
       this.currentLevel.spiritPositions = this.currentLevel.spiritPositions.filter((spirit, index) => index % 2 === 0);
     }
     this.spirits = this.currentLevel.spiritPositions.map(position => new Spirit(position));
-    console.log(this.currentLevel.spiritPositions.length);
 
     this.scene = new Scene();
 

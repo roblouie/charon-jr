@@ -243,8 +243,8 @@ export class ThirdPersonPlayer {
     this.accelerationRate = (this.jumpTimer > 30) ? this.baseAccelerationRate * 0.7 : this.baseAccelerationRate;
     this.decelerationRate = (this.jumpTimer > 30) ? this.baseDecelerationRate / 3 : this.baseDecelerationRate;
 
-    this.acceleratorValue = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
-    this.brakeValue = controls.isGamepadAttached ? controls.leftTrigger : Number(controls.isDown);
+    this.acceleratorValue = controls.accel;
+    this.brakeValue = controls.decel;
 
     this.speed += this.acceleratorValue * this.accelerationRate;
     this.speed = Math.min(this.speed, this.maxSpeed);

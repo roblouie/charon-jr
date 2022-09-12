@@ -3,13 +3,10 @@ import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 class Controls {
   isUp = false;
   isDown = false;
-  isLeft = false;
-  isRight = false;
-  isEnter = false;
+  isSelect = false;
+  accel = 0;
+  decel = 0;
   direction: EnhancedDOMPoint;
-  leftTrigger = 0;
-  rightTrigger = 0;
-  isGamepadAttached = false;
 
   keyMap: any = {};
 
@@ -21,43 +18,29 @@ class Controls {
 
   queryController() {
     const gamepad = navigator.getGamepads()[0];
-    this.isGamepadAttached = !!gamepad;
-    if (gamepad) {
-      this.isUp = gamepad.buttons[12].pressed;
-      this.isDown = gamepad.buttons[13].pressed;
-      this.direction.x = gamepad.axes[0];
-      this.direction.y = gamepad.axes[1];
-      this.leftTrigger = gamepad.buttons[6].value;
-      this.rightTrigger = gamepad.buttons[7].value;
+    const leftVal = (this.keyMap['KeyA'] || this.keyMap['ArrowLeft'] || gamepad?.buttons[14]?.pressed) ? -1 : 0;
+    const rightVal = (this.keyMap['KeyD'] || this.keyMap['ArrowRight'] || gamepad?.buttons[15].pressed) ? 1 : 0;
+    this.direction.x = (leftVal + rightVal) || gamepad?.axes[0] || 0;
+    this.direction.y = gamepad?.axes[1] ?? 0;
 
-      const deadzone = 0.1;
-      if (this.direction.magnitude < deadzone) {
-        this.direction.x = 0; this.direction.y = 0;
-      }
+    const deadzone = 0.1;
+    if (this.direction.magnitude < deadzone) {
+      this.direction.x = 0; this.direction.y = 0;
     }
+
+    const keyboardUp = this.keyMap['KeyW'] || this.keyMap['ArrowUp'];
+    const keyboardDown = this.keyMap['KeyS'] || this.keyMap['ArrowDown'];
+
+    this.isUp = keyboardUp || gamepad?.buttons[12]?.pressed || this.direction.y < 0;
+    this.isDown = keyboardDown || gamepad?.buttons[13].pressed || this.direction.y > 0;
+
+    this.accel = keyboardUp ? 1 : (gamepad?.buttons[7]?.value ?? 0);
+    this.decel = keyboardDown ? 1 : (gamepad?.buttons[6]?.value ?? 0);
+    this.isSelect = this.keyMap['Enter'] || gamepad?.buttons[0].pressed || gamepad?.buttons[9].pressed;
   }
 
   private toggleKey(event: KeyboardEvent, isPressed: boolean) {
     this.keyMap[event.code] = isPressed;
-    // switch (event.code) {
-    //   case 'KeyW':
-    //     this.isUp = isPressed;
-    //     break;
-    //   case 'KeyS':
-    //     this.isDown = isPressed;
-    //     break;
-    //   case 'KeyA':
-    //     this.isLeft = isPressed;
-    //     break;
-    //   case 'KeyD':
-    //     this.isRight = isPressed;
-    //     break;
-    //   case 'Enter':
-    //     this.isEnter = isPressed;
-    //     break;
-    // }
-    // this.direction.x = (Number(this.isLeft) * -1) + Number(this.isRight);
-    // this.direction.z = (Number(this.isUp) * -1) + Number(this.isDown);
   }
 }
 

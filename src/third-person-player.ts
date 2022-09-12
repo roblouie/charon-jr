@@ -35,7 +35,6 @@ export class ThirdPersonPlayer {
 
   listener: AudioListener;
 
-  isCarryingSpirit = false;
   carriedSpirit?: Spirit;
 
   drivingThroughWaterGain: GainNode;
@@ -75,7 +74,7 @@ export class ThirdPersonPlayer {
     this.dragRate = 0.99;
     this.drivingThroughWaterGain.gain.value = 0;
 
-    if (this.isCarryingSpirit && this.jumpTimer - this.lastIntervalJumpTimer > 20) {
+    if (this.carriedSpirit && this.jumpTimer - this.lastIntervalJumpTimer > 20) {
       hud.addToScoreBonus();
       this.lastIntervalJumpTimer = this.jumpTimer;
     }
@@ -204,14 +203,10 @@ export class ThirdPersonPlayer {
   private slipAngle = 0;
 
   private steeringAngle = 0;
-  private baseTurningAbility = 0.08;
   private turningAbilityPercent = 1;
 
-  private fullTractionStep = 0.06;
   private tractionPercent = 0.5;
 
-  private acceleratorValue = 0;
-  private brakeValue = 0;
   private readonly baseDecelerationRate = 0.015;
   private decelerationRate = 0.015;
 
@@ -243,21 +238,18 @@ export class ThirdPersonPlayer {
     this.accelerationRate = (this.jumpTimer > 30) ? this.baseAccelerationRate * 0.7 : this.baseAccelerationRate;
     this.decelerationRate = (this.jumpTimer > 30) ? this.baseDecelerationRate / 3 : this.baseDecelerationRate;
 
-    this.acceleratorValue = controls.accel;
-    this.brakeValue = controls.decel;
-
-    this.speed += this.acceleratorValue * this.accelerationRate;
+    this.speed += controls.accel * this.accelerationRate;
     this.speed = Math.min(this.speed, this.maxSpeed);
 
-    this.speed -= this.brakeValue * this.decelerationRate;
+    this.speed -= controls.decel * this.decelerationRate;
 
     this.speed *= this.dragRate;
 
-    if (this.speed <= 0 && this.brakeValue > 0.1) {
+    if (this.speed <= 0 && controls.decel > 0.1) {
       this.reverseTimer++;
 
       if (this.reverseTimer > 20) {
-        this.speed -= this.brakeValue * this.decelerationRate;
+        this.speed -= controls.decel * this.decelerationRate;
         this.isReversing = true;
       }
     }
@@ -272,21 +264,20 @@ export class ThirdPersonPlayer {
     // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
     // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
     // but not slerp yet, not
-    const wheelTurnScale = -0.7;
-    this.steeringAngle = moveValueTowardsTarget(this.steeringAngle, controls.direction.x * wheelTurnScale, .05)
+    this.steeringAngle = moveValueTowardsTarget(this.steeringAngle, controls.direction.x * -0.7, .05);
     this.mesh.setSteeringAngle(this.steeringAngle);
 
     this.mesh.setDriveRotationRate(this.speed);
 
     this.determineAbilityToRotateCar();
 
-    this.anglePointing += this.steeringAngle * this.baseTurningAbility * this.turningAbilityPercent * (this.isReversing ? -1 : 1);
+    this.anglePointing += this.steeringAngle * 0.08 * this.turningAbilityPercent * (this.isReversing ? -1 : 1);
     const quarterTurn = Math.PI / 2;
     this.anglePointing = clamp(this.anglePointing, this.angleTraveling - quarterTurn, this.angleTraveling + quarterTurn);
     // Never exceed full circle value
 
 
-    this.angleTraveling = moveValueTowardsTarget(this.angleTraveling, this.anglePointing, this.fullTractionStep * this.tractionPercent);
+    this.angleTraveling = moveValueTowardsTarget(this.angleTraveling, this.anglePointing, 0.06 * this.tractionPercent);
 
     this.angleTraveling = clamp(this.angleTraveling, this.anglePointing - quarterTurn, this.anglePointing + quarterTurn);
 
@@ -302,13 +293,10 @@ export class ThirdPersonPlayer {
   }
 
   private updateAudio() {
-    const { x, y, z } = this.mesh.position;
     if (this.listener.positionX) {
       this.listener.positionX.value = this.mesh.position.x;
       this.listener.positionY.value = this.mesh.position.y;
       this.listener.positionZ.value = this.mesh.position.z;
-    } else {
-      this.listener.setPosition(x, y, z);
     }
 
     const cameraPlayerDirection = this.mesh.position.clone()
@@ -318,8 +306,6 @@ export class ThirdPersonPlayer {
     if (this.listener.forwardX) {
       this.listener.forwardX.value = cameraPlayerDirection.x;
       this.listener.forwardZ.value = cameraPlayerDirection.z;
-    } else {
-      this.listener.setOrientation(cameraPlayerDirection.x, 0, cameraPlayerDirection.z, 0, 1, 0);
     }
 
   }

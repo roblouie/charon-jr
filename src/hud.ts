@@ -86,8 +86,6 @@ class Hud {
         this.scoreBonusPer = 1;
       }
     }
-
-    draw2dEngine.context.filter = 'none';
   }
 }
 

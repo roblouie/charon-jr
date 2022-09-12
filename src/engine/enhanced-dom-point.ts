@@ -1,5 +1,3 @@
-import { clamp } from '@/engine/helpers';
-
 export interface VectorLike {
   x: number;
   y: number;
@@ -55,11 +53,6 @@ export class EnhancedDOMPoint extends DOMPoint {
     return this;
   }
 
-  cross(otherVector: EnhancedDOMPoint) {
-    this.crossVectors(this, otherVector);
-    return this;
-  }
-
   crossVectors(v1: EnhancedDOMPoint, v2: EnhancedDOMPoint) {
     const x = v1.y * v2.z - v1.z * v2.y;
     const y = v1.z * v2.x - v1.x * v2.z;
@@ -90,18 +83,6 @@ export class EnhancedDOMPoint extends DOMPoint {
     this.x /= magnitude;
     this.y /= magnitude;
     this.z /= magnitude;
-    return this;
-  }
-
-  setFromRotationMatrix(matrix: DOMMatrix) {
-    this.y = Math.asin(clamp(matrix.m13, -1, 1));
-    if (Math.abs(matrix.m13) < 0.9999999) {
-      this.x = Math.atan2(-matrix.m23, matrix.m33);
-      this.z = Math.atan2(-matrix.m12, matrix.m11);
-    } else {
-      this.x = Math.atan2(matrix.m32, matrix.m22);
-      this.z = 0;
-    }
     return this;
   }
 

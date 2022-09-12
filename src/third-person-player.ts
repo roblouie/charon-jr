@@ -2,46 +2,63 @@ import { Camera } from '@/engine/renderer/camera';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { Face } from '@/engine/physics/face';
 import { controls } from '@/core/controls';
-import { textureLoader } from '@/engine/renderer/texture-loader';
-import { drawVolcanicRock } from '@/texture-maker';
 import {
   findFloorHeightAtPosition,
   findWallCollisionsFromList,
-  getGridPosition, halfLevelSize, maxHalfLevelValue
+  getGridPosition, maxHalfLevelValue
 } from '@/engine/physics/surface-collision';
-import { audioCtx } from '@/engine/audio/audio-player';
-import { truck, TruckObject3d } from '@/modeling/truck.modeling';
-import { clamp, moveValueTowardsTarget } from '@/engine/helpers';
+import {
+  audioCtx,
+  drivingThroughWaterAudio,
+  engineAudio,
+  landingAudio
+} from '@/engine/audio/audio-player';
+import { makeTruck, TruckObject3d } from '@/modeling/truck.modeling';
+import { clamp, gripCurve, moveValueTowardsTarget } from '@/engine/helpers';
 import { radsToDegrees } from '@/engine/math-helpers';
-
-const debugElement = document.querySelector('#debug')!;
-
+import { Spirit } from '@/spirit';
+import { hud } from '@/hud';
 
 export class ThirdPersonPlayer {
-  isJumping = true;
+  isJumping = false;
   chassisCenter = new EnhancedDOMPoint(0, 0, 0);
   readonly origin = new EnhancedDOMPoint(0, 0, 0);
+  frontLeftWheel = new EnhancedDOMPoint();
+  frontRightWheel = new EnhancedDOMPoint();
+  velocity = new EnhancedDOMPoint(0, 0, 0);
 
-  speed = 0;
-  componentVelocity = new EnhancedDOMPoint(0, 0, 0);
-  angle = 0;
-  slipAngle = 0;
-  steeringAngle = 0;
-  framesSpentAtHighSteeringAngle = 0;
 
   mesh: TruckObject3d;
   camera: Camera;
-  idealPosition = new EnhancedDOMPoint(0, 6, -17);
+  idealPosition = new EnhancedDOMPoint(0, 8, -17);
   idealLookAt = new EnhancedDOMPoint(0, 2, 0);
 
   listener: AudioListener;
 
+  isCarryingSpirit = false;
+  carriedSpirit?: Spirit;
+
+  drivingThroughWaterGain: GainNode;
+  engineGain: GainNode;
+
   constructor(camera: Camera) {
-    textureLoader.load(drawVolcanicRock())
-    this.mesh = truck;
+    this.mesh = makeTruck();
     this.chassisCenter.y = 10;
     this.camera = camera;
     this.listener = audioCtx.listener;
+
+    engineAudio.loop = true;
+    engineAudio.playbackRate.value = 1;
+    this.engineGain = audioCtx.createGain();
+    engineAudio.connect(this.engineGain).connect(audioCtx.destination);
+    engineAudio.start();
+    this.engineGain.gain.value = 0;
+    drivingThroughWaterAudio.loop = true;
+    drivingThroughWaterAudio.playbackRate.value = 1;
+    this.drivingThroughWaterGain = audioCtx.createGain();
+    this.drivingThroughWaterGain.gain.value = 0;
+    drivingThroughWaterAudio.connect(this.drivingThroughWaterGain).connect(audioCtx.destination);
+    drivingThroughWaterAudio.start();
   }
 
   private transformIdeal(ideal: EnhancedDOMPoint): EnhancedDOMPoint {
@@ -50,203 +67,58 @@ export class ThirdPersonPlayer {
       .add(this.mesh.position);
   }
 
-  private lastPosition = new EnhancedDOMPoint();
-  update(gridFaces: Face[][]) {
-    this.setSteeringAngle(); // calculate wheel angle and update mesh
-    this.updateVelocity();
+  private dragRate = 0;
+  private jumpTimer = 0;
+  private lastIntervalJumpTimer = 0;
 
-    this.chassisCenter.add(this.componentVelocity)
+  update(gridFaces: {floorFaces: Face[], wallFaces: Face[], ceilingFaces: Face[]}[], waterLevel: number) {
+    this.dragRate = 0.99;
+    this.drivingThroughWaterGain.gain.value = 0;
+
+    if (this.isCarryingSpirit && this.jumpTimer - this.lastIntervalJumpTimer > 20) {
+      hud.addToScoreBonus();
+      this.lastIntervalJumpTimer = this.jumpTimer;
+    }
+
+    // If we are diving through water
+    if (this.chassisCenter.y - waterLevel < -1) {
+      this.dragRate = 0.975;
+      this.drivingThroughWaterGain.gain.value = this.speed;
+      drivingThroughWaterAudio.playbackRate.value = Math.min(Math.abs(this.speed * 2), 1.2);
+    }
+
+    this.updateVelocityFromControls();  // set x / z velocity based on input
+    this.velocity.y -= 0.01; // gravity
+    this.chassisCenter.add(this.velocity);  // move the player position by the velocity
+
+    this.updateEngineSound();
+
 
     // don't let the player leave the level
-    this.chassisCenter.x = clamp(this.chassisCenter.x, -maxHalfLevelValue, maxHalfLevelValue);
-    this.chassisCenter.z = clamp(this.chassisCenter.z, -maxHalfLevelValue, maxHalfLevelValue);
+    const levelBorderBuffer = 10;
+    this.chassisCenter.x = clamp(this.chassisCenter.x, -maxHalfLevelValue + levelBorderBuffer, maxHalfLevelValue - levelBorderBuffer);
+    this.chassisCenter.z = clamp(this.chassisCenter.z, -maxHalfLevelValue + levelBorderBuffer, maxHalfLevelValue - levelBorderBuffer);
 
     // if the player falls through the floor, reset them
     if (this.chassisCenter.y < -100) {
       this.chassisCenter.y = 50;
-      this.componentVelocity.y = 0;
+      this.velocity.y = 0;
     }
 
     const playerGridPosition = getGridPosition(this.chassisCenter);
-    this.componentVelocity.y = clamp(this.componentVelocity.y, -2, 2);
-    this.collideWithLevel({ floorFaces: gridFaces[playerGridPosition], wallFaces: [] }); // do collision detection, if collision is found, feetCenter gets pushed out of the collision
+    this.velocity.y = clamp(this.velocity.y, -1, 1);
+    this.collideWithLevel(gridFaces[playerGridPosition]); // do collision detection, if collision is found, feetCenter gets pushed out of the collision
+
+
+    // 4 wheels in the right place
+    this.frontLeftWheel.set(this.mesh.leftFrontWheel.worldMatrix.transformPoint(this.origin));
+    this.frontRightWheel.set(this.mesh.rightFrontWheel.worldMatrix.transformPoint(this.origin));
 
 
     this.mesh.position.set(this.chassisCenter); // at this point, feetCenter is in the correct spot, so draw the mesh there
-    this.mesh.position.y += 0.5; // move up by half height so mesh ends at feet position
+    this.mesh.position.y += 2; // move up by half height so mesh ends at feet position
 
-    this.positionCamera();
-
-    this.updateAudio()
-    this.lastPosition.set(this.chassisCenter);
-  }
-
-
-  protected setSteeringAngle() {
-    this.steeringAngle = moveValueTowardsTarget(this.steeringAngle, controls.direction * -0.7, 0.05);
-    this.mesh.setSteeringAngle(this.steeringAngle);
-  }
-
-  protected updateVelocity() {
-    // wind resistance
-    this.speed = moveValueTowardsTarget(this.speed, 0, .005);
-
-    // earthbound physics
-    if (!this.isJumping) {
-      // rolling resistance
-      this.speed = moveValueTowardsTarget(this.speed, 0, Math.abs(this.speed) * .009);
-
-      enum ControlState {
-        Accelerating,
-        Braking,
-        Coasting,
-      }
-      let controlState = ControlState.Coasting;
-
-      if (controls.rightTrigger && this.speed >= 0 || controls.leftTrigger && this.speed <= 0) {
-        // accelerating
-        controlState = ControlState.Accelerating;
-      }
-
-      if (controls.leftTrigger && this.speed > 0 || controls.rightTrigger && this.speed < 0) {
-        controlState = ControlState.Braking;
-      }
-
-      // inverts target velocity for accel and steering direction if reversing
-      const inversionFactor =  controls.leftTrigger && this.speed <= 0 || this.speed < 0 ? -1 : 1;
-
-      switch (controlState) {
-        case ControlState.Accelerating:
-          // gas pedal percent is trinary, annoyingly. if you're already going forwards, right is gas,
-          // if you're going backwards, left is gas, and if you're standing still, the triggers have to duke it out
-          let gasPedalPercent;
-          if (this.speed === 0) {
-            // case going 0
-            gasPedalPercent = Math.max(controls.rightTrigger, controls.leftTrigger);
-          } else {
-            // cases going forward or backward
-            gasPedalPercent = this.speed >= 0 ? controls.rightTrigger : controls.leftTrigger;
-          }
-          this.speed = moveValueTowardsTarget(this.speed, (2 * gasPedalPercent) * inversionFactor, 0.02 * gasPedalPercent);
-          break;
-        case ControlState.Braking:
-          const brakePedalPercent = this.speed > 0 ? controls.leftTrigger : controls.rightTrigger;
-          this.speed = moveValueTowardsTarget(this.speed, 0, 0.01 * brakePedalPercent);
-          break;
-      }
-
-      // if no steering angle, controls do not change angle, as we're multiplying by 0
-      this.angle += this.steeringAngle * 0.05 * inversionFactor * Math.abs(this.speed);
-
-
-      if (Math.abs(this.steeringAngle) > .65) {
-        this.framesSpentAtHighSteeringAngle += 1
-      } else {
-        this.framesSpentAtHighSteeringAngle = 0;
-      }
-
-      // drifting is initiated by number of frames at high steering input. It also continues once started until
-      // drift logic return slip angle to 0
-      const shouldContinueDrifting = this.slipAngle !== 0;
-      const shouldInitiateDrift = this.framesSpentAtHighSteeringAngle && this.speed > .85;
-      const driftState = shouldInitiateDrift || shouldContinueDrifting;
-
-      if (controlState === ControlState.Accelerating && driftState) {
-        // this.steeringAngle moves to and from control direction. We want player input to directly impact drifting
-        // regardless of where the animated wheels are pointed
-        const inputAngle = controls.direction * -0.7;
-        const targetDriftAngle = inputAngle * this.speed;
-
-        if (inputAngle === 0) {
-          // neutral steering decreases drift
-          this.slipAngle = moveValueTowardsTarget(this.slipAngle, 0, .025)
-        } else {
-          // makes for valid initial Math.sign comparison of slipAngle and inputAngle and makes the truck have some drift momentum
-          this.slipAngle = moveValueTowardsTarget(this.slipAngle, targetDriftAngle, .01);
-          // determine if in-steer or out-steer. insteer increases angle and out-steer decreases.
-          const isInsteer = Math.sign(inputAngle) === Math.sign(this.slipAngle);
-          if (isInsteer) {
-            // insteer increases angle
-            this.slipAngle = moveValueTowardsTarget(this.slipAngle, targetDriftAngle, .03);
-          } else {
-            // countersteer decreases angle
-            this.slipAngle = moveValueTowardsTarget(this.slipAngle, 0, .05);
-          }
-        }
-      } else {
-        // accel off pulls slip angle back to 0
-        this.slipAngle = moveValueTowardsTarget(this.slipAngle, 0, .035);
-      }
-    }
-
-    this.componentVelocity.z = Math.cos(this.angle) * this.speed;
-    this.componentVelocity.x = Math.sin(this.angle) * this.speed;
-
-    this.mesh.wrapper.setRotation(0, this.angle + this.slipAngle, 0);
-
-    this.mesh.setDriveRotationRate(this.speed);
-
-    if (controls.isSpace || controls.isJumpPressed) {
-      if (!this.isJumping) {
-        this.componentVelocity.y = 0.15;
-        this.isJumping = true;
-      }
-    }
-
-    /// ramp physics
-    const heightTraveled = this.chassisCenter.y - this.lastPosition.y;
-
-    if (!this.isJumping) {
-      this.componentVelocity.y += heightTraveled;
-    }
-    // debugElement.textContent = `
-    //     Speed: ${this.speed}
-    //     steering angle: ${this.steeringAngle}
-    //     Slip Angle: ${this.slipAngle}
-    //     Angle: ${this.angle};
-    //     is jumping: ${this.isJumping}
-    //     isInsteer: ${ Math.sign(controls.direction) === Math.sign(this.slipAngle)}
-    //   `;
-
-    // gravity
-    this.componentVelocity.y -= 0.005;
-  }
-
-  private axis = new EnhancedDOMPoint();
-  private previousFloorHeight = 0;
-  collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
-    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 0.4, 0.1);
-    this.chassisCenter.x += wallCollisions.xPush;
-    this.chassisCenter.z += wallCollisions.zPush;
-
-    const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, this.chassisCenter);
-
-    if (!floorData) {
-      return;
-    }
-
-    // all position updates here. This needs to be broken off in another method, as this is related to things
-    // other than just collision
-    const collisionDepth = floorData.height - this.chassisCenter.y;
-
-    debugElement.textContent = `collision: ${collisionDepth}`
-
-    if (collisionDepth > -0.2) {
-      this.chassisCenter.y += collisionDepth;
-      this.componentVelocity.y = 0;
-      this.isJumping = false;
-      this.axis = this.axis.crossVectors(this.mesh.up, floorData.floor.normal);
-      const radians = Math.acos(floorData.floor.normal.dot(this.mesh.up));
-      this.mesh.rotationMatrix = new DOMMatrix();
-      this.mesh.rotationMatrix.rotateAxisAngleSelf(this.axis.x, this.axis.y, this.axis.z, radsToDegrees(radians));
-      this.previousFloorHeight = floorData.height;
-    } else {
-      this.isJumping = true;
-    }
-  }
-
-  protected positionCamera() {
-    this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.1);
+    this.camera.position.lerp(this.transformIdeal(this.idealPosition), 0.07);
 
     // Keep camera away regardless of lerp
     const distanceToKeep = 17;
@@ -261,22 +133,194 @@ export class ThirdPersonPlayer {
 
     this.camera.lookAt(this.transformIdeal(this.idealLookAt));
     this.camera.updateWorldMatrix();
+
+    this.updateAudio();
+  }
+
+  private axis = new EnhancedDOMPoint();
+
+  collideWithLevel(groupedFaces: {floorFaces: Face[], wallFaces: Face[]}) {
+    const wallCollisions = findWallCollisionsFromList(groupedFaces.wallFaces, this.chassisCenter, 1, 3.5);
+
+    this.chassisCenter.x += wallCollisions.xPush;
+    this.chassisCenter.z += wallCollisions.zPush;
+
+    if (wallCollisions.numberOfWallsHit > 0) {
+      this.angleTravelingVector.normalize();
+      const collisionDot = this.angleTravelingVector.x * wallCollisions.walls[0].normal.x + this.angleTravelingVector.z * wallCollisions.walls[0].normal.z;
+      // Play crash sound
+      if (wallCollisions.xPush > 0.1 || wallCollisions.zPush > 0.1) {
+        landingAudio().start();
+      }
+      this.speed -= this.speed * (1 - Math.abs(collisionDot));
+    }
+
+    const floorData = findFloorHeightAtPosition(groupedFaces!.floorFaces, this.chassisCenter);
+
+    if (!floorData) {
+      this.isJumping = true;
+      return;
+    }
+
+    const collisionDepth = floorData.height - this.chassisCenter.y;
+
+    if (collisionDepth > 0) {
+      if (this.jumpTimer > 20) {
+        landingAudio().start();
+      }
+
+      this.chassisCenter.y += collisionDepth;
+
+      if (collisionDepth < 1.5) {
+        this.velocity.y += collisionDepth;
+      }
+
+      this.isJumping = false;
+      this.jumpTimer = 0;
+      this.lastIntervalJumpTimer = 0;
+      this.axis = this.axis.crossVectors(this.mesh.up, floorData.floor.normal);
+      const radians = Math.acos(floorData.floor.normal.dot(this.mesh.up));
+      this.mesh.isUsingLookAt = true;
+      this.mesh.rotationMatrix = new DOMMatrix();
+      this.mesh.rotationMatrix.rotateAxisAngleSelf(this.axis.x, this.axis.y, this.axis.z, radsToDegrees(radians));
+    } else {
+      this.isJumping = true;
+      this.jumpTimer++;
+    }
+  }
+
+  private gearRatios = [3.2, 2.2];
+  private gear = 0;
+
+  private updateEngineSound() {
+    this.gear = this.speed < 1.5 ? 0 : 1;
+    engineAudio.playbackRate.value = Math.max((Math.abs(this.speed) - (this.gear * 0.3)) * this.gearRatios[this.gear], 0.7);
+  }
+
+
+  private angleTraveling = 0;
+  private angleTravelingVector = new EnhancedDOMPoint();
+  private anglePointing = 0;
+  private slipAngle = 0;
+
+  private steeringAngle = 0;
+  private baseTurningAbility = 0.08;
+  private turningAbilityPercent = 1;
+
+  private fullTractionStep = 0.06;
+  private tractionPercent = 0.5;
+
+  private acceleratorValue = 0;
+  private brakeValue = 0;
+  private readonly baseDecelerationRate = 0.015;
+  private decelerationRate = 0.015;
+
+  speed = 0;
+  private maxSpeed = 2.1;
+  private readonly baseAccelerationRate = 0.021;
+  private accelerationRate = 0.021;
+
+
+  private determineAbilityToRotateCar() {
+    this.tractionPercent = 0.6;
+    this.turningAbilityPercent = 1;
+
+    const percentOfMaxSpeed = Math.abs(this.speed / this.maxSpeed);
+    this.turningAbilityPercent = gripCurve(percentOfMaxSpeed);
+
+    if (this.jumpTimer > 30) {
+      this.tractionPercent = 0.2;
+      this.turningAbilityPercent = 0.2;
+    }
+
+    clamp(this.tractionPercent, 0, 1);
+    clamp(this.turningAbilityPercent, 0, 1);
+  }
+
+  private reverseTimer = 0;
+  private isReversing = false;
+  protected updateVelocityFromControls() {
+    this.accelerationRate = (this.jumpTimer > 30) ? this.baseAccelerationRate * 0.7 : this.baseAccelerationRate;
+    this.decelerationRate = (this.jumpTimer > 30) ? this.baseDecelerationRate / 3 : this.baseDecelerationRate;
+
+    this.acceleratorValue = controls.isGamepadAttached ? controls.rightTrigger : Number(controls.isUp);
+    this.brakeValue = controls.isGamepadAttached ? controls.leftTrigger : Number(controls.isDown);
+
+    this.speed += this.acceleratorValue * this.accelerationRate;
+    this.speed = Math.min(this.speed, this.maxSpeed);
+
+    this.speed -= this.brakeValue * this.decelerationRate;
+
+    this.speed *= this.dragRate;
+
+    if (this.speed <= 0 && this.brakeValue > 0.1) {
+      this.reverseTimer++;
+
+      if (this.reverseTimer > 20) {
+        this.speed -= this.brakeValue * this.decelerationRate;
+        this.isReversing = true;
+      }
+    }
+
+    if (this.speed > 0) {
+      this.reverseTimer = 0;
+      this.isReversing = false;
+    }
+
+    this.speed = Math.max(this.isReversing ? -0.7 : 0, this.speed);
+
+    // Steering shouldn't really go as far as -1/1, which the analog stick goes to, so scale down a bit
+    // This should also probably use lerp/slerp to move towards the value. There is already a lerp method
+    // but not slerp yet, not
+    const wheelTurnScale = -0.7;
+    this.steeringAngle = moveValueTowardsTarget(this.steeringAngle, controls.direction.x * wheelTurnScale, .05)
+    this.mesh.setSteeringAngle(this.steeringAngle);
+
+    this.mesh.setDriveRotationRate(this.speed);
+
+    this.determineAbilityToRotateCar();
+
+    this.anglePointing += this.steeringAngle * this.baseTurningAbility * this.turningAbilityPercent * (this.isReversing ? -1 : 1);
+    const quarterTurn = Math.PI / 2;
+    this.anglePointing = clamp(this.anglePointing, this.angleTraveling - quarterTurn, this.angleTraveling + quarterTurn);
+    // Never exceed full circle value
+
+
+    this.angleTraveling = moveValueTowardsTarget(this.angleTraveling, this.anglePointing, this.fullTractionStep * this.tractionPercent);
+
+    this.angleTraveling = clamp(this.angleTraveling, this.anglePointing - quarterTurn, this.anglePointing + quarterTurn);
+
+    this.angleTravelingVector.set(Math.cos(this.angleTraveling), 0, Math.sin(this.angleTraveling));
+
+
+    this.slipAngle = this.angleTraveling - this.anglePointing;
+
+    this.velocity.z = Math.cos(this.angleTraveling) * this.speed;
+    this.velocity.x = Math.sin(this.angleTraveling) * this.speed;
+
+    this.mesh.wrapper.setRotation(0, this.anglePointing, 0);
   }
 
   private updateAudio() {
-    this.listener.positionX.value = this.mesh.position.x;
-    this.listener.positionY.value = this.mesh.position.y;
-    this.listener.positionZ.value = this.mesh.position.z;
+    const { x, y, z } = this.mesh.position;
+    if (this.listener.positionX) {
+      this.listener.positionX.value = this.mesh.position.x;
+      this.listener.positionY.value = this.mesh.position.y;
+      this.listener.positionZ.value = this.mesh.position.z;
+    } else {
+      this.listener.setPosition(x, y, z);
+    }
 
-    // const cameraDireciton = new EnhancedDOMPoint();
-    // cameraDireciton.setFromRotationMatrix(this.camera.rotationMatrix);
-
-    const {x, z} = this.mesh.position.clone()
+    const cameraPlayerDirection = this.mesh.position.clone()
       .subtract(this.camera.position) // distance from camera to player
       .normalize() // direction of camera to player
 
-    this.listener.forwardX.value = x;
-    // this.listener.forwardY.value = cameraDireciton.y;
-    this.listener.forwardZ.value = z;
+    if (this.listener.forwardX) {
+      this.listener.forwardX.value = cameraPlayerDirection.x;
+      this.listener.forwardZ.value = cameraPlayerDirection.z;
+    } else {
+      this.listener.setOrientation(cameraPlayerDirection.x, 0, cameraPlayerDirection.z, 0, 1, 0);
+    }
+
   }
 }

@@ -9,7 +9,8 @@ module.exports = {
   devServer: {
     static: './dist',
     hot: true,
-    host: '0.0.0.0'
+    host: '0.0.0.0',
+    https: true,
   },
   plugins: [
     new HtmlWebpackPlugin({

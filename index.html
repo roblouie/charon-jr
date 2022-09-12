@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
-    <title>TypeScript Template</title>
+    <title>Charon Jr.</title>
     <style>
-        #c {
+        canvas {
             width: min(100vw, calc(100vh * 16/9));
+            position: absolute;
         }
 
         /* Get rid of any margins, set background black, use flexbox to center */
@@ -16,10 +17,16 @@
             align-items: center;
             height: 100%;
         }
+        html {
+            overflow: hidden;
+        }
+        body {
+            perspective: 845px;
+        }
     </style>
 </head>
 
 <body>
-<div id="debug" style="position: fixed; top: 20px; left: 20px; color: white; white-space: pre;"></div>
     <canvas id="c"></canvas>
+    <canvas id="oc" width="1280" height="720"></canvas>
 </body>

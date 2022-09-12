@@ -5,8 +5,7 @@ import { gl } from '@/engine/renderer/lil-gl';
 export class Skybox extends BufferGeometry {
   constructor(...textureSources: (ImageData | HTMLCanvasElement)[]) {
     super();
-    const cubemapTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubemapTexture);
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, gl.createTexture());
     textureSources.forEach((tex, index) => {
       gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + index, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     });

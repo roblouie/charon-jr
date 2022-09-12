@@ -45,6 +45,6 @@ export class InstancedMesh extends Object3d {
       gl.enableVertexAttribArray(loc);
     }
 
-    gl.bindVertexArray(null);
+    // gl.bindVertexArray(null);
   }
 }

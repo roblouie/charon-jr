@@ -1,7 +1,8 @@
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { doTimes, hexToRgba } from "@/engine/helpers";
+import { debounce } from '@/core/timing-helpers';
 
-export enum NoiseType {
+export const enum NoiseType {
   Perlin,
   Turbulent,
   Edge,
@@ -28,7 +29,9 @@ class NoiseMaker {
     return this.directions[this.perms[permsIndex]];
   }
 
+  seedVal = -1;
   seed(seedValue: number) {
+    this.seedVal = seedValue;
     const initialPerm: number[] = [];
     for (let i = 0; i < 256; i++) {
       initialPerm.push(i);
@@ -127,6 +130,7 @@ class NoiseMaker {
     return values;
   }
 
+  noiseCache: {[key: string]: number} = {};
   noiseImage(
     size: number,
     frequency: number,
@@ -144,6 +148,10 @@ class NoiseMaker {
     const imageData = new ImageData(size, size);
     let imageDataIndex = 0;
 
+    // TESTING
+    // return imageData;
+    // END TESTING
+
     const position = new EnhancedDOMPoint();
     const flipBase = size - 1;
     for (let verticalPosition = 0; verticalPosition < size; verticalPosition++) {
@@ -152,7 +160,14 @@ class NoiseMaker {
         position[verticalDimension] = verticalPosition * frequency;
         position[sliceDimension] = slice * frequency;
 
-        const noiseValue = this.fBm(position, Math.trunc(size * frequency), octals, noiseType);
+        const per = Math.trunc(size * frequency);
+        const cacheKey = `${position.toArray()}${per}${octals}${noiseType}`;
+        const cachedNoise = this.noiseCache[cacheKey];
+
+        const noiseValue = cachedNoise ?? this.fBm(position, per, octals, noiseType);
+        if (!cachedNoise) {
+          this.noiseCache[cacheKey] = noiseValue;
+        }
         const computed = noiseValue * colorScale + colorScale;
         imageData.data[imageDataIndex] = red;
         imageData.data[imageDataIndex + 1] = green;

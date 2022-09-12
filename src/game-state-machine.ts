@@ -7,6 +7,6 @@ export function getGameStateMachine(): StateMachine {
   return gameStateMachineRef.value!;
 }
 
-export function createGameStateMachine(initialState: State) {
-  gameStateMachineRef.value = new StateMachine(initialState);
+export function createGameStateMachine(initialState: State, ...initialArguments: any[]) {
+  gameStateMachineRef.value = new StateMachine(initialState, ...initialArguments);
 }

@@ -3,11 +3,11 @@ const context = canvas.getContext('2d')!;
 
 // DO NOT USE FOR REAL TIME COLOR CHANGES
 // This is a very small way to convert color but not a fast one obviously
-export function hexToRgba(hex: string): number[] {
+export function hexToRgba(hex: string): [number, number, number, number] {
   context.clearRect(0, 0, 1, 1);
   context.fillStyle = hex;
   context.fillRect(0, 0, 1, 1);
-  return [...context.getImageData(0, 0, 1, 1).data];
+  return [...context.getImageData(0, 0, 1, 1).data] as [number, number, number, number];
 }
 
 // DO NOT USE FOR REAL TIME COLOR CHANGES
@@ -27,16 +27,24 @@ export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
-export function range(start: number, end: number, interval = 1) {
-  let lastValue = start - interval;
-  // @ts-ignore
-  return new Array(Math.ceil((end - start)/interval)).fill().map(_ => lastValue += interval);
-}
-
 export function moveValueTowardsTarget(currentValue: number, maxValue: number, step: number) {
   const isIncrease = maxValue >= currentValue;
   if (isIncrease) {
     return Math.min(currentValue + step, maxValue);
   }
   return Math.max(currentValue - step, maxValue);
+}
+
+export function gripCurve(x: number) {
+  if (x < 0.5) {
+    return Math.min(8 * x * x * x + x * 1.5, 1);
+  } else {
+    return Math.min(1 - ((x - 0.5) **2), 1);
+  }
+}
+
+export function getRankFromScore(score: number) {
+  const scoreThresholds = [40000, 20000, 10000, 1000, 500, 0];
+  const ranks: string[] = ['S', 'A', 'B', 'C', 'D', 'F'];
+  return ranks.find((rank, index) => score >= scoreThresholds[index])!;
 }

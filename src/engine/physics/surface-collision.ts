@@ -3,17 +3,14 @@ import { EnhancedDOMPoint } from "@/engine/enhanced-dom-point";
 
 export const halfLevelSize = 1024;
 export const maxHalfLevelValue = halfLevelSize - 1;
-const cellSize = 128;
+const cellSize = 64;
 
-const cellsInOneDirection = 8;
+const cellsInOneDirection = 16;
 
 export function getGridPosition(point: EnhancedDOMPoint) {
   return Math.floor((point.x + halfLevelSize) / cellSize) + (Math.floor((point.z + halfLevelSize) / cellSize) * cellsInOneDirection);
 }
 
-// TODO: Make this return multiple floors and sort by height. Currently
-// this requires floor faces to be sent in from highest to lowest, which with angles
-// won't always be possible in a good way
 export function findFloorHeightAtPosition(floorFaces: Face[], position: EnhancedDOMPoint) {
   let height: number;
 
@@ -36,7 +33,7 @@ export function findFloorHeightAtPosition(floorFaces: Face[], position: Enhanced
 
     height = -(position.x * floor.normal.x + floor.normal.z * position.z + floor.originOffset) / floor.normal.y;
 
-    const buffer = -1; // original mario 64 code uses a 78 unit buffer, but mario is 160 units tall compared to our presently much smaller sizes
+    const buffer = -3; // original mario 64 code uses a 78 unit buffer, but mario is 160 units tall compared to our presently much smaller sizes
     if (position.y - (height + buffer) < 0) {
       continue;
     }

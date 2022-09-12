@@ -1,4 +1,3 @@
-import { Mesh } from './mesh';
 import { radsToDegrees } from '@/engine/math-helpers';
 import { EnhancedDOMPoint } from "@/engine/enhanced-dom-point";
 
@@ -39,24 +38,38 @@ export class Object3d {
     this.children = this.children.filter(child => child !== object3d);
   }
 
+  rotation = new EnhancedDOMPoint();
   rotate(xRads: number, yRads: number, zRads: number) {
+    this.rotation.add({x: radsToDegrees(xRads), y: radsToDegrees(yRads), z: radsToDegrees(zRads)});
     this.rotationMatrix.rotateSelf(radsToDegrees(xRads), radsToDegrees(yRads), radsToDegrees(zRads));
   }
 
   setRotation(xRads: number, yRads: number, zRads: number) {
     this.rotationMatrix = new DOMMatrix();
+    this.rotation.set(radsToDegrees(xRads), radsToDegrees(yRads), radsToDegrees(zRads));
     this.rotationMatrix.rotateSelf(radsToDegrees(xRads), radsToDegrees(yRads), radsToDegrees(zRads));
   }
 
+  isUsingLookAt = false;
   getMatrix() {
     const matrix = new DOMMatrix();
     matrix.translateSelf(this.position.x, this.position.y, this.position.z);
-    matrix.multiplySelf(this.rotationMatrix);
+    if (this.isUsingLookAt) {
+      matrix.multiplySelf(this.rotationMatrix);
+    } else {
+      matrix.rotateSelf(this.rotation.x, this.rotation.y, this.rotation.z);
+    }
     matrix.scaleSelf(this.scale.x, this.scale.y, this.scale.z);
     return matrix;
   }
 
   updateWorldMatrix() {
+    // Don't udpate spirites to save time on matrix multiplication. Bit of a hack but ya it works...
+    // @ts-ignore
+    if (this.color !== undefined) {
+      return;
+    }
+
     this.localMatrix = this.getMatrix();
 
     if (this.parent) {
@@ -65,7 +78,7 @@ export class Object3d {
       this.worldMatrix = DOMMatrix.fromMatrix(this.localMatrix);
     }
 
-    this.children.forEach(child => child.updateWorldMatrix());
+      this.children.forEach(child => child.updateWorldMatrix());
   }
 
   allChildren(): Object3d[] {
@@ -81,27 +94,14 @@ export class Object3d {
     return allChildren;
   }
 
-  clone() {
-    const copy = new Object3d();
-    copy.position = new EnhancedDOMPoint().set(this.position);
-    copy.scale = new EnhancedDOMPoint().set(this.scale);
-    copy.localMatrix = this.localMatrix.scale(1, 1, 1); // copy matrix by just scaling by 1
-    copy.worldMatrix = this.worldMatrix.scale(1, 1, 1); // copy matrix by just scaling by 1
-    copy.up = new EnhancedDOMPoint().set(this.up);
-    copy.rotationMatrix = this.rotationMatrix.scale(1, 1, 1) // copy matrix by just scaling by 1
-
-    this.children.forEach(child => copy.add(child.clone()))
-
-    return copy;
-  }
-
   private lookAtX = new EnhancedDOMPoint();
   private lookAtY = new EnhancedDOMPoint();
   private lookAtZ = new EnhancedDOMPoint();
-  // Consider removing up argument as it should probably just be the up of object3d
-  lookAt(target: EnhancedDOMPoint, up?: EnhancedDOMPoint) {
+
+  lookAt(target: EnhancedDOMPoint) {
+    this.isUsingLookAt = true;
     this.lookAtZ.subtractVectors(this.position, target).normalize();
-    this.lookAtX.crossVectors((up ?? this.up), this.lookAtZ).normalize();
+    this.lookAtX.crossVectors(this.up, this.lookAtZ).normalize();
     this.lookAtY.crossVectors(this.lookAtZ, this.lookAtX).normalize();
 
     this.rotationMatrix = new DOMMatrix([

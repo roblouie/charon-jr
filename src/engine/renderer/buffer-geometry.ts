@@ -45,15 +45,6 @@ export class BufferGeometry {
     return this.indices;
   }
 
-  // miniUpdate() {
-  //   lilgl.gl.bindBuffer(lilgl.gl.ARRAY_BUFFER, this.buffer);
-  //   lilgl.gl.bufferData(lilgl.gl.ARRAY_BUFFER, this.fullBuffer, lilgl.gl.STATIC_DRAW);
-  //
-  //   lilgl.gl.bindVertexArray(this.vao);
-  //   lilgl.gl.bindBuffer(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-  //   lilgl.gl.bufferData(lilgl.gl.ELEMENT_ARRAY_BUFFER, this.indices!, lilgl.gl.STATIC_DRAW);
-  // }
-
   bindGeometry() {
     this.buffer = gl.createBuffer()!;
     this.populateFullBuffer();
@@ -74,6 +65,6 @@ export class BufferGeometry {
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
     }
 
-    gl.bindVertexArray(null);
+    // gl.bindVertexArray(null);
   }
 }

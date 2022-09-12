@@ -116,10 +116,6 @@ export class Spirit extends Object3d {
 
   cachedMatrixData: Float32Array;
 
-  static isSpirit(object3d: Object3d): object3d is Spirit  {
-    return (object3d as Spirit).color !== undefined;
-  }
-
   constructor(position: EnhancedDOMPoint) {
     super(new Mesh(staticBodyGeo, materials.spiritMaterial), new Mesh(iconGeo, new Material()));
     this.spiritMesh = this.children[0] as Mesh;

@@ -38,7 +38,7 @@ export class ThirdPersonPlayer {
   isCarryingSpirit = false;
   carriedSpirit?: Spirit;
 
-  private drivingThroughWaterGain: GainNode;
+  drivingThroughWaterGain: GainNode;
   engineGain: GainNode;
 
   constructor(camera: Camera) {
@@ -58,6 +58,7 @@ export class ThirdPersonPlayer {
     this.drivingThroughWaterGain = audioCtx.createGain();
     this.drivingThroughWaterGain.gain.value = 0;
     drivingThroughWaterAudio.connect(this.drivingThroughWaterGain).connect(audioCtx.destination);
+    drivingThroughWaterAudio.start();
   }
 
   private transformIdeal(ideal: EnhancedDOMPoint): EnhancedDOMPoint {
@@ -214,7 +215,7 @@ export class ThirdPersonPlayer {
   private readonly baseDecelerationRate = 0.015;
   private decelerationRate = 0.015;
 
-  private speed = 0;
+  speed = 0;
   private maxSpeed = 2.1;
   private readonly baseAccelerationRate = 0.021;
   private accelerationRate = 0.021;

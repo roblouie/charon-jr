@@ -98,7 +98,8 @@ export class Renderer {
         // @ts-ignore
         gl.drawElementsInstanced(gl.TRIANGLES, mesh.geometry.getIndices()!.length, gl.UNSIGNED_SHORT, 0, mesh.count);
       } else {
-        gl.uniformMatrix4fv(this.normalMatrixLocation, true, Spirit.isSpirit(mesh) ? mesh.cachedMatrixData : mesh.worldMatrix.inverse().toFloat32Array());
+        // @ts-ignore
+        gl.uniformMatrix4fv(this.normalMatrixLocation, true, mesh.color ? mesh.cachedMatrixData : mesh.worldMatrix.inverse().toFloat32Array());
         gl.uniformMatrix4fv(this.modelviewProjectionLocation, false, modelViewProjectionMatrix.toFloat32Array());
         gl.drawElements(gl.TRIANGLES, mesh.geometry.getIndices()!.length, gl.UNSIGNED_SHORT, 0);
       }

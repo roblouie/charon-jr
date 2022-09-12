@@ -131,7 +131,6 @@ class NoiseMaker {
   }
 
   noiseCache: {[key: string]: number} = {};
-  noiseCacheUsedCount = 0;
   noiseImage(
     size: number,
     frequency: number,

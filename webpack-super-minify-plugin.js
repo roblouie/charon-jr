@@ -93,6 +93,7 @@ async function embedJs(html, javascript) {
       data: closureJs,
       type: 'js',
       action: 'eval',
+      allowFreeVars: true,
     },
   ];
   const options = {};

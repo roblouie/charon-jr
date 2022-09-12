@@ -47,7 +47,7 @@ export class GameState implements State {
   arrowGuideWrapper: Object3d;
   arrowGuide: Mesh;
 
-  private timePerDistanceUnit = 0.015;
+  private timePerDistanceUnit = 0.016;
 
   spiritsTransported = 0;
   currentLevel: Level;
@@ -83,11 +83,11 @@ export class GameState implements State {
     this.levelNumber = levelNumber;
     if (levelNumber === 0) {
       noiseMaker.seed(22);
-      const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 3, NoiseType.Perlin, 80);
+      const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 4, NoiseType.Perlin, 100);
       this.currentLevel = new Level(
         sampleHeightMap,
         createSkybox(drawEarthSky),
-        -47,
+        -12,
         39,
         26,
         materials.grass,
@@ -100,7 +100,7 @@ export class GameState implements State {
         new EnhancedDOMPoint(907, -41, 148),
         new EnhancedDOMPoint(-940, 45, -85),
         new EnhancedDOMPoint(61, -26, -390),
-        new EnhancedDOMPoint(-556, 26, -760),
+        new EnhancedDOMPoint(-556, 11, -760),
         []
       );
     } else if (levelNumber === 1) {
@@ -203,15 +203,15 @@ export class GameState implements State {
         // -485.98986525035406, -6.351797407448845, 404.71459643568846 - -12.406139571300404
         [
           {
-            position: new EnhancedDOMPoint(-130, 31 + 5.5, -67),
+            position: new EnhancedDOMPoint(-130, 36.3, -67),
             rotation: -0.7
           },
           {
-            position: new EnhancedDOMPoint(-480, -6 + 5.5, 400),
+            position: new EnhancedDOMPoint(-480, -1.3, 400),
             rotation: -0.3
           },
           {
-            position: new EnhancedDOMPoint(138, 1 + 5.5, 501),
+            position: new EnhancedDOMPoint(138, 6.3, 501),
             rotation: 4
           }
         ]
@@ -219,7 +219,7 @@ export class GameState implements State {
     }
 
     this.player.chassisCenter.set(0, 10, 60);
-    this.player.velocity.set(0, 0, 0);
+    this.player.speed = 0;
     this.player.isCarryingSpirit = false;
     if (levelNumber === 1) {
       this.currentLevel.spiritPositions = this.currentLevel.spiritPositions.filter((spirit, index) => index % 2 === 0);
@@ -275,13 +275,12 @@ export class GameState implements State {
     this.isLoaded = true;
     draw2dEngine.clear();
     this.player.engineGain.gain.value = 0.4;
-    drivingThroughWaterAudio.start();
   }
 
   onLeave() {
     draw2dEngine.clear();
     this.player.engineGain.gain.value = 0;
-    drivingThroughWaterAudio.stop();
+    this.player.drivingThroughWaterGain.gain.value = 0;
     this.spirits.forEach(spirit => spirit.audioPlayer?.stop());
   }
 
@@ -315,9 +314,9 @@ export class GameState implements State {
       if (this.player.velocity.magnitude < 0.2) {
         this.spirits.some((spirit, index) => {
           this.spiritPlayerDistance.subtractVectors(spirit.position, this.player.chassisCenter)
-          if (Math.abs(this.spiritPlayerDistance.x) < 15 && Math.abs(this.spiritPlayerDistance.z) < 15) {
+          if (Math.abs(this.spiritPlayerDistance.x) < 16 && Math.abs(this.spiritPlayerDistance.z) < 16) {
             this.arrowGuide.material.color = spirit.color.map(val => val * 1.5);
-            this.dropoffs[spirit.dropOffPoint].scale.y = 500;
+            this.dropoffs[spirit.dropOffPoint].scale.y = 800;
 
             // Find distance from spirit pickup point to it's drop off point and add a relative amount of time
             this.spiritDropOffDistance.subtractVectors(this.currentLevel.dropOffs[spirit.dropOffPoint], spirit.position);

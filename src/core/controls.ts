@@ -11,6 +11,8 @@ class Controls {
   rightTrigger = 0;
   isGamepadAttached = false;
 
+  keyMap: any = {};
+
   constructor() {
     document.addEventListener('keydown', event => this.toggleKey(event, true));
     document.addEventListener('keyup', event => this.toggleKey(event, false));
@@ -36,25 +38,26 @@ class Controls {
   }
 
   private toggleKey(event: KeyboardEvent, isPressed: boolean) {
-    switch (event.code) {
-      case 'KeyW':
-        this.isUp = isPressed;
-        break;
-      case 'KeyS':
-        this.isDown = isPressed;
-        break;
-      case 'KeyA':
-        this.isLeft = isPressed;
-        break;
-      case 'KeyD':
-        this.isRight = isPressed;
-        break;
-      case 'Enter':
-        this.isEnter = isPressed;
-        break;
-    }
-    this.direction.x = (Number(this.isLeft) * -1) + Number(this.isRight);
-    this.direction.z = (Number(this.isUp) * -1) + Number(this.isDown);
+    this.keyMap[event.code] = isPressed;
+    // switch (event.code) {
+    //   case 'KeyW':
+    //     this.isUp = isPressed;
+    //     break;
+    //   case 'KeyS':
+    //     this.isDown = isPressed;
+    //     break;
+    //   case 'KeyA':
+    //     this.isLeft = isPressed;
+    //     break;
+    //   case 'KeyD':
+    //     this.isRight = isPressed;
+    //     break;
+    //   case 'Enter':
+    //     this.isEnter = isPressed;
+    //     break;
+    // }
+    // this.direction.x = (Number(this.isLeft) * -1) + Number(this.isRight);
+    // this.direction.z = (Number(this.isUp) * -1) + Number(this.isDown);
   }
 }
 

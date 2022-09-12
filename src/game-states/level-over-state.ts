@@ -32,7 +32,7 @@ export class LevelOverState implements State {
     draw2dEngine.context.fillStyle = '#0008';
     draw2dEngine.context.fillRect(0, 0, 1280, 720);
 
-    draw2dEngine.drawText('TIME UP','Times New Roman', 80, 640, 170, 1);
+    draw2dEngine.drawText('TIME UP','Times New Roman', 80, 640, 160);
 
     draw2dEngine.drawText('SPIRITS TRANSPORTED','monospace', 30,320, 300, 1, 'left');
     draw2dEngine.drawText(this.spiritsTransported.toString(), 'monospace', 30, 960, 300, 1, 'right');
@@ -42,8 +42,8 @@ export class LevelOverState implements State {
     draw2dEngine.drawText('TOTAL SCORE', 'monospace', 30, 320, 400, 1, 'left');
     draw2dEngine.drawText(this.score.toString(), 'monospace', 30, 960, 400,  1, 'right');
 
-    draw2dEngine.drawText('RANK', 'monospace', 30, 640, 500, 1);
-    draw2dEngine.drawText(this.rank, 'Times New Roman', 120, 640, 620, 1);
+    draw2dEngine.drawText('RANK', 'monospace', 30, 640, 500);
+    draw2dEngine.drawText(this.rank, 'Times New Roman', 120, 640, 620);
   }
 
   onLeave() {

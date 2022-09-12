@@ -44,7 +44,7 @@ export function gripCurve(x: number) {
 }
 
 export function getRankFromScore(score: number) {
-  const scoreThresholds = [25000, 15000, 10000, 1000, 500, 0];
+  const scoreThresholds = [40000, 20000, 10000, 1000, 500, 0];
   const ranks: string[] = ['S', 'A', 'B', 'C', 'D', 'F'];
   return ranks.find((rank, index) => score >= scoreThresholds[index])!;
 }

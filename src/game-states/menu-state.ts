@@ -58,7 +58,7 @@ export class MenuState implements State {
 
     draw2dEngine.clear();
 
-    draw2dEngine.drawText('CHARON JR.', 'Times New Roman', 100, 640, 150, 1);
+    draw2dEngine.drawText('CHARON JR.', 'Times New Roman', 100, 640, 150);
 
     const level1Score = this.getScore(2);
     this.drawEngraving('UNDERWORLD', 55, 640, 270, this.selectedOption === 0 ? 1 : 0);
@@ -89,7 +89,7 @@ export class MenuState implements State {
         draw2dEngine.context.canvas.style.transform = '';
         draw2dEngine.context.fillStyle = 'black';
         draw2dEngine.context.fillRect(0, 0, 1920, 1080);
-        draw2dEngine.drawText('Loading...', 'Times New Roman', 80, 640, 360, 1);
+        draw2dEngine.drawText('Loading...', 'Times New Roman', 80, 640, 360);
         ghostThankYouAudio().start();
         setTimeout(() => {
           getGameStateMachine().setState(gameStates.gameState, 2 - this.selectedOption);

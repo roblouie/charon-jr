@@ -5,7 +5,7 @@ import { Camera } from '@/engine/renderer/camera';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { renderer } from '@/engine/renderer/renderer';
 import { controls } from '@/core/controls';
-import { getGameStateMachine } from '@/game-state-machine';
+import { gameStateMachine } from '@/game-state-machine';
 import { draw2dEngine } from '@/core/draw2d-engine';
 import { makeTruck, TruckObject3d } from '@/modeling/truck.modeling';
 import { gameStates } from '@/index';
@@ -92,7 +92,7 @@ export class MenuState implements State {
         draw2dEngine.drawText('Loading...', 'Times New Roman', 80, 640, 360);
         ghostThankYouAudio().start();
         setTimeout(() => {
-          getGameStateMachine().setState(gameStates.gameState, 2 - this.selectedOption);
+          gameStateMachine.setState(gameStates.gameState, 2 - this.selectedOption);
         });
       } else {
         debounce(() => this.toggleFullScreen(), 30);

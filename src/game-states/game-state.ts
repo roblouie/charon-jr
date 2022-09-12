@@ -1,8 +1,5 @@
 import { State } from '@/core/state';
 import {
-  audioCtx,
-  drivingThroughWaterAudio,
-  engineAudio,
   ghostFlyAwayAudio,
   ghostThankYouAudio
 } from '@/engine/audio/audio-player';
@@ -18,7 +15,7 @@ import { Material } from '@/engine/renderer/material';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { renderer } from '@/engine/renderer/renderer';
 import { Face } from '@/engine/physics/face';
-import { getGameStateMachine } from '@/game-state-machine';
+import { gameStateMachine } from '@/game-state-machine';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
 import { getGridPosition } from '@/engine/physics/surface-collision';
@@ -375,7 +372,7 @@ export class GameState implements State {
     renderer.render(this.player.camera, this.scene);
 
     if (hud.timeRemaining <= 0) {
-      getGameStateMachine().setState(gameStates.levelOverState, this.spiritsTransported, hud.score, this.levelNumber);
+      gameStateMachine.setState(gameStates.levelOverState, this.spiritsTransported, hud.score, this.levelNumber);
     }
   }
 }

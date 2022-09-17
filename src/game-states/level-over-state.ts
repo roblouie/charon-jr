@@ -17,7 +17,7 @@ export class LevelOverState implements State {
     this.rank = getRankFromScore(this.score)
     const pastScore = window.localStorage.getItem(`ddamt_score-${levelNumber}`);
     if (!pastScore || this.score > parseInt(pastScore)) {
-      window.localStorage.setItem(`ddamt_score-${levelNumber}`, this.score.toString()); //s
+      window.localStorage.setItem(`ddamt_score-${levelNumber}`, this.score.toString());
     }
     setTimeout(() => {
       gameStateMachine.setState(gameStates.menuState);

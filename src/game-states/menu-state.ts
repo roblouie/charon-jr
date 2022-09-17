@@ -13,7 +13,7 @@ import { createSkybox, drawSkyPurple, materials } from '@/texture-maker';
 import { debounce } from '@/core/timing-helpers';
 import { clamp, getRankFromScore } from '@/engine/helpers';
 import { Mesh } from '@/engine/renderer/mesh';
-import { ghostThankYouAudio } from '@/engine/audio/audio-player';
+import { ghostThankYouAudio, landingAudio } from '@/engine/audio/audio-player';
 import { makeTombstoneGeo } from '@/modeling/stone.modeling';
 
 export class MenuState implements State {
@@ -74,12 +74,17 @@ export class MenuState implements State {
 
     this.drawEngraving('FULLSCREEN', 40, 640, 610, this.selectedOption === 3 ? 1 : 0);
 
-    if (controls.isDown || controls.direction.y > 0) {
-      debounce(() => this.selectedOption++, 30);
+    const onChange = (direction: number) => {
+      landingAudio().start();
+      this.selectedOption += direction;
     }
 
-    if (controls.isUp || controls.direction.y < 0) {
-      debounce(() => this.selectedOption--, 30);
+    if (controls.isDown) {
+      debounce(() => onChange(1), 30);
+    }
+
+    if (controls.isUp) {
+      debounce(() => onChange(-1), 30);
     }
 
     this.selectedOption = clamp(this.selectedOption, 0, 3);

@@ -126,7 +126,7 @@ export class GameState implements State {
         materials.purgatoryGrass,
         materials.purgatoryRocks,
         materials.lake,
-        materials.wood,
+        materials.purgatoryBark,
         new EnhancedDOMPoint(-331, 50, -553),
         new EnhancedDOMPoint(700, -1.3, -765),
         new EnhancedDOMPoint(700, -7, 770),
@@ -194,13 +194,11 @@ export class GameState implements State {
         materials.underworldBark,
         new EnhancedDOMPoint(22, 35, 891),
         new EnhancedDOMPoint(-411, 17, 215),
-        new EnhancedDOMPoint(471, 7, -687),
         new EnhancedDOMPoint(-556, 26, -760),
-        // -130.80326185103107, 31.988282043103016, -67.86333913563085 - -0.73536226864383
-        // -485.98986525035406, -6.351797407448845, 404.71459643568846 - -12.406139571300404
+        new EnhancedDOMPoint(471, 7, -687),
         [
           {
-            position: new EnhancedDOMPoint(-130, 36.3, -67),
+            position: new EnhancedDOMPoint(-142, 32, -50),
             rotation: -0.7
           },
           {
@@ -215,9 +213,9 @@ export class GameState implements State {
       );
     }
 
-    this.player.chassisCenter.set(0, 10, 60);
+    this.player.chassisCenter.set(-60, 51, -245);
     this.player.speed = 0;
-    this.player.isCarryingSpirit = false;
+    this.player.carriedSpirit = undefined;
     if (levelNumber === 1) {
       this.currentLevel.spiritPositions = this.currentLevel.spiritPositions.filter((spirit, index) => index % 2 === 0);
     }
@@ -252,11 +250,16 @@ export class GameState implements State {
       });
     });
 
-    const dropOffGeo = new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).done();
-    this.dropoffs = this.currentLevel.dropOffs.map((dropOff, index) => {
-      const dropOffMesh = new Mesh(dropOffGeo, new Material({ texture: materials.dropOff.texture, emissive: Spirit.Colors[index], isTransparent: true }));
+    this.dropoffs = [];
+    this.currentLevel.dropOffs.forEach((dropOff, index) => {
+      const dropOffMesh = new Mesh(new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).done(), new Material({ texture: materials.dropOff.texture, emissive: Spirit.Colors[index], isTransparent: true }));
       dropOffMesh.position.set(dropOff);
-      return dropOffMesh
+      this.dropoffs.push(dropOffMesh);
+      const dropOffGeo = new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).done();
+      dropOffGeo.getIndices()?.reverse();
+      const dropOffMesh2 = new Mesh(dropOffGeo, new Material({ texture: materials.dropOff.texture, emissive: Spirit.Colors[index], isTransparent: true }));
+      dropOffMesh2.position.set(dropOff);
+      this.dropoffs.push(dropOffMesh2);
     })
 
     this.scene.add(this.player.mesh, ...this.spirits, ...this.dropoffs);
@@ -273,11 +276,16 @@ export class GameState implements State {
     this.player.engineGain.gain.value = 0.4;
   }
 
+  private resetSpiritBody() {
+    this.dynamicBody.position.set(-10000, -10000, -10000);
+  }
+
   onLeave() {
     draw2dEngine.clear();
     this.player.engineGain.gain.value = 0;
     this.player.drivingThroughWaterGain.gain.value = 0;
     this.spirits.forEach(spirit => spirit.audioPlayer?.stop());
+    this.resetSpiritBody();
   }
 
   private spiritPlayerDistance = new EnhancedDOMPoint();
@@ -287,19 +295,20 @@ export class GameState implements State {
   handleDropOffPickUp() {
 
     // Drop Off
-    if (this.player.isCarryingSpirit) {
+    if (this.player.carriedSpirit) {
       if (this.player.velocity.magnitude < 0.2) {
-        const dropOffPosition = this.currentLevel.dropOffs[this.player.carriedSpirit!.dropOffPoint];
+        const dropOffPosition = this.currentLevel.dropOffs[this.player.carriedSpirit.dropOffPoint];
         this.dropOffPlayerDistance.subtractVectors(dropOffPosition, this.player.chassisCenter);
         if (Math.abs(this.dropOffPlayerDistance.x) <= 40 && Math.abs(this.dropOffPlayerDistance.z) <= 40) {
-          this.dropoffs[this.player.carriedSpirit!.dropOffPoint].scale.y = 1;
+          this.dropoffs[this.player.carriedSpirit.dropOffPoint * 2].scale.y = 2;
+          this.dropoffs[this.player.carriedSpirit.dropOffPoint * 2 + 1].scale.y = 2;
           ghostFlyAwayAudio().start();
 
-          this.dynamicBody.position.set(-10000, -10000, -10000);
+          this.resetSpiritBody();
           this.player.mesh.wrapper.remove(this.dynamicBody);
           this.scene.remove(this.arrowGuideWrapper);
           this.scene.remove(this.arrowGuide)
-          this.player.isCarryingSpirit = false;
+          this.player.carriedSpirit = undefined;
 
           this.spiritsTransported++;
         }
@@ -310,9 +319,10 @@ export class GameState implements State {
       if (this.player.velocity.magnitude < 0.2) {
         this.spirits.some((spirit, index) => {
           this.spiritPlayerDistance.subtractVectors(spirit.position, this.player.chassisCenter)
-          if (Math.abs(this.spiritPlayerDistance.x) < 16 && Math.abs(this.spiritPlayerDistance.z) < 16) {
+          if (Math.abs(this.spiritPlayerDistance.x) < 17 && Math.abs(this.spiritPlayerDistance.z) < 17) {
             this.arrowGuide.material.color = spirit.color.map(val => val * 1.5);
-            this.dropoffs[spirit.dropOffPoint].scale.y = 800;
+            this.dropoffs[spirit.dropOffPoint * 2].scale.y = 800;
+            this.dropoffs[spirit.dropOffPoint * 2 + 1].scale.y = 800;
 
             // Find distance from spirit pickup point to it's drop off point and add a relative amount of time
             this.spiritDropOffDistance.subtractVectors(this.currentLevel.dropOffs[spirit.dropOffPoint], spirit.position);
@@ -326,7 +336,6 @@ export class GameState implements State {
             this.dynamicBody.position.set(0, 3, -3);
             this.dynamicBody.setRotation(0, Math.PI, 0);
             this.player.mesh.wrapper.add(this.dynamicBody);
-            this.player.isCarryingSpirit = true;
             this.player.carriedSpirit = spirit;
             spirit.audioPlayer?.stop();
             this.scene.add(this.arrowGuideWrapper);
@@ -355,7 +364,7 @@ export class GameState implements State {
     // particle.rotate(-1, 0, 0);
     // particle2.rotate(-1, 0, 0);
 
-    if (this.player.isCarryingSpirit) {
+    if (this.player.carriedSpirit) {
       this.arrowGuideWrapper.position.set(this.player.chassisCenter);
       this.arrowGuideWrapper.position.y += 14;
       this.arrowLookAtDropOff = this.currentLevel.dropOffs[this.player.carriedSpirit!.dropOffPoint];
@@ -363,7 +372,7 @@ export class GameState implements State {
       this.arrowGuideWrapper.lookAt(this.arrowLookAtDropOff);
     }
 
-    this.dropoffs.forEach(dropoff => dropoff.rotate(0, 0.01, 0));
+    this.dropoffs.forEach(dropoff => dropoff.rotate(0, 0.008, 0));
 
 
     this.scene.updateWorldMatrix();

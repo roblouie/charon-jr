@@ -11,8 +11,4 @@ export class Mesh extends Object3d {
     this.geometry = geometry;
     this.material = material;
   }
-
-  static isMesh(object3d: Object3d): object3d is Mesh  {
-    return (object3d as Mesh).geometry !== undefined;
-  }
 }

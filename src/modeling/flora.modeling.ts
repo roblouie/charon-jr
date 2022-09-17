@@ -1,8 +1,5 @@
 import { doTimes } from '@/engine/helpers';
 import { noiseMaker } from '@/engine/texture-creation/noise-maker';
-import { Mesh } from '@/engine/renderer/mesh';
-import { materials } from '@/texture-maker';
-import { Object3d } from '@/engine/renderer/object-3d';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 
 

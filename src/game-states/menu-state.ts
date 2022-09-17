@@ -84,7 +84,7 @@ export class MenuState implements State {
 
     this.selectedOption = clamp(this.selectedOption, 0, 3);
 
-    if (controls.isEnter) {
+    if (controls.isSelect) {
       if (this.selectedOption < 3) {
         draw2dEngine.context.canvas.style.transform = '';
         draw2dEngine.context.fillStyle = 'black';

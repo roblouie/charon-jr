@@ -1,6 +1,6 @@
 import {populateMaterials } from '@/texture-maker';
 import { controls } from '@/core/controls';
-import { createGameStateMachine, getGameStateMachine } from '@/game-state-machine';
+import { createGameStateMachine, gameStateMachine } from '@/game-state-machine';
 import { GameState } from '@/game-states/game-state';
 import { MenuState } from '@/game-states/menu-state';
 import { LevelOverState } from '@/game-states/level-over-state';
@@ -33,7 +33,7 @@ async function startGame() {
     if (delta >= interval) {
       previousTime = currentTime - (delta % interval);
 
-      getGameStateMachine().getState().onUpdate(delta);
+      gameStateMachine.getState().onUpdate(delta);
     }
 
     requestAnimationFrame(draw);

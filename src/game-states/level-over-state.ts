@@ -1,6 +1,5 @@
 import { State } from '@/core/state';
-import { controls } from '@/core/controls';
-import { getGameStateMachine } from '@/game-state-machine';
+import { gameStateMachine } from '@/game-state-machine';
 import { draw2dEngine } from '@/core/draw2d-engine';
 import { gameStates } from '@/index';
 import { getRankFromScore } from '@/engine/helpers';
@@ -21,7 +20,7 @@ export class LevelOverState implements State {
       window.localStorage.setItem(`ddamt_score-${levelNumber}`, this.score.toString()); //s
     }
     setTimeout(() => {
-      getGameStateMachine().setState(gameStates.menuState);
+      gameStateMachine.setState(gameStates.menuState);
     }, 4000);
   }
 

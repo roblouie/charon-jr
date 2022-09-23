@@ -93,12 +93,18 @@ async function embedJs(html, javascript) {
       data: closureJs,
       type: 'js',
       action: 'eval',
-      allowFreeVars: true,
     },
   ];
-  const options = {};
+  const options = {
+    allowFreeVars: true,
+    modelMaxCount: 3,
+    recipLearningRate: 2090,
+    modelRecipBaseCount: 49,
+    precision: 16,
+    sparseSelectors: [1,2,3,5,6,13,14,23,42,49,449]
+  };
   const packer = new Packer(inputs, options);
-  await packer.optimize(2);
+  console.log(await packer.optimize(2));
   const { firstLine, secondLine } = packer.makeDecoder();
   return `<script>\n${firstLine}\n${secondLine}\n</script>`;
 }

@@ -1,19 +1,19 @@
-import { BufferGeometry } from '@/engine/renderer/buffer-geometry';
 import { gl } from '@/engine/renderer/lil-gl';
 import { AttributeLocation } from '@/engine/renderer/renderer';
 import { Material } from '@/engine/renderer/material';
 import { Object3d } from '@/engine/renderer/object-3d';
+import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 
 export class InstancedMesh extends Object3d {
   transformData: Float32Array;
   transforms: DOMMatrix[];
   count: number;
 
-  geometry: BufferGeometry;
+  geometry: MoldableCubeGeometry;
   material: Material;
   transformBuffer: WebGLBuffer;
 
-  constructor(geometry: BufferGeometry, transforms: DOMMatrix[], count: number, material: Material) {
+  constructor(geometry: MoldableCubeGeometry, transforms: DOMMatrix[], count: number, material: Material) {
     super();
     this.material = material;
     this.transforms = transforms;

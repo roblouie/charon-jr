@@ -1,5 +1,5 @@
-import { radsToDegrees } from '@/engine/math-helpers';
 import { EnhancedDOMPoint } from "@/engine/enhanced-dom-point";
+import { radsToDegrees } from '@/engine/helpers';
 
 export class Object3d {
   position: EnhancedDOMPoint;

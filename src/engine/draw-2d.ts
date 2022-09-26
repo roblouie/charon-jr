@@ -22,4 +22,4 @@ class DrawEngine {
   }
 }
 
-export const draw2dEngine = new DrawEngine();
+export const draw2d = new DrawEngine();

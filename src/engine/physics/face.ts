@@ -1,5 +1,5 @@
-import { calculateFaceNormal } from '@/engine/math-helpers';
 import { EnhancedDOMPoint } from "@/engine/enhanced-dom-point";
+import { calculateFaceNormal } from '@/engine/helpers';
 
 export class Face {
   points: EnhancedDOMPoint[];

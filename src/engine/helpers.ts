@@ -1,3 +1,5 @@
+import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
+
 const canvas = document.createElement('canvas');
 const context = canvas.getContext('2d')!;
 
@@ -22,7 +24,6 @@ export function doTimes(times: number, callback: (index: number) => void) {
   }
 }
 
-
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
@@ -35,16 +36,34 @@ export function moveValueTowardsTarget(currentValue: number, maxValue: number, s
   return Math.max(currentValue - step, maxValue);
 }
 
-export function gripCurve(x: number) {
-  if (x < 0.5) {
-    return Math.min(8 * x * x * x + x * 1.5, 1);
-  } else {
-    return Math.min(1 - ((x - 0.5) **2), 1);
-  }
-}
-
 export function getRankFromScore(score: number) {
   const scoreThresholds = [40000, 20000, 10000, 1000, 500, 0];
   const ranks: string[] = ['S', 'A', 'B', 'C', 'D', 'F'];
   return ranks.find((rank, index) => score >= scoreThresholds[index])!;
+}
+
+export function radsToDegrees(radians: number): number {
+  return radians * (180 / Math.PI)
+}
+
+function unormalizedNormal(points: EnhancedDOMPoint[]): EnhancedDOMPoint {
+  const u = points[2].clone().subtract(points[1]);
+  const v = points[0].clone().subtract(points[1]);
+  return new EnhancedDOMPoint().crossVectors(u, v)
+}
+
+export function calculateFaceNormal(points: EnhancedDOMPoint[]): EnhancedDOMPoint {
+  return unormalizedNormal(points).normalize();
+}
+
+export function calculateVertexNormals(points: EnhancedDOMPoint[], indices: number[] | Uint16Array): EnhancedDOMPoint[] {
+  const vertexNormals = points.map(point => new EnhancedDOMPoint());
+  for (let i = 0; i < indices.length; i+= 3) {
+    const faceNormal = unormalizedNormal([points[indices[i]], points[indices[i + 1]], points[indices[i + 2]]]);
+    vertexNormals[indices[i]].add(faceNormal);
+    vertexNormals[indices[i + 1]].add(faceNormal);
+    vertexNormals[indices[i + 2]].add(faceNormal);
+  }
+
+  return vertexNormals.map(vector => vector.normalize());
 }

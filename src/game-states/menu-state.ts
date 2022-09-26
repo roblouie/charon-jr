@@ -1,18 +1,18 @@
 import { Scene } from '@/engine/renderer/scene';
-import { State } from '@/core/state';
+import { State } from '@/engine/state-machine/state';
 import { Skybox } from '@/skybox';
 import { Camera } from '@/engine/renderer/camera';
 import { renderer } from '@/engine/renderer/renderer';
-import { controls } from '@/core/controls';
-import { gameStateMachine } from '@/game-state-machine';
-import { draw2dEngine } from '@/core/draw2d-engine';
+import { controls } from '@/controls';
+import { gameStateMachine } from '@/game-states/game-state-machine';
+import { draw2d } from '@/engine/draw-2d';
 import { makeTruck, TruckObject3d } from '@/modeling/truck.modeling';
 import { gameStates } from '@/index';
 import { createSkybox, drawSkyPurple, materials } from '@/texture-maker';
 import { clamp, getRankFromScore } from '@/engine/helpers';
 import { Mesh } from '@/engine/renderer/mesh';
-import { ghostThankYouAudio, landingAudio } from '@/engine/audio/audio-player';
 import { makeTombstoneGeo } from '@/modeling/stone.modeling';
+import { ghostThankYouAudio, landingAudio } from '@/sound-effects';
 
 export class MenuState implements State {
   scene?: Scene;
@@ -39,7 +39,7 @@ export class MenuState implements State {
     this.scene.skybox = new Skybox(...createSkybox(drawSkyPurple));
     this.scene.skybox.bindGeometry();
     this.scene.add(this.truck, this.tombstone);
-    draw2dEngine.context.canvas.style.transform = 'translate3d(13%, 5%, -27px) rotate3d(0, 1, 0, 337deg)'
+    draw2d.context.canvas.style.transform = 'translate3d(13%, 5%, -27px) rotate3d(0, 1, 0, 337deg)'
   }
 
   private getScore(levelNumber: number) {
@@ -67,9 +67,9 @@ export class MenuState implements State {
 
     renderer.render(this.camera, this.scene!);
 
-    draw2dEngine.clear();
+    draw2d.clear();
 
-    draw2dEngine.drawText('CHARON JR.', 'Times New Roman', 100, 640, 150);
+    draw2d.drawText('CHARON JR.', 'Times New Roman', 100, 640, 150);
 
     const level1Score = this.getScore(2);
     this.drawEngraving('UNDERWORLD', 55, 640, 270, this.selectedOption === 0 ? 1 : 0);
@@ -91,10 +91,10 @@ export class MenuState implements State {
 
     if (controls.isSelect && !controls.previousState.isSelect) {
       if (this.selectedOption < 3) {
-        draw2dEngine.context.canvas.style.transform = '';
-        draw2dEngine.context.fillStyle = 'black';
-        draw2dEngine.context.fillRect(0, 0, 1920, 1080);
-        draw2dEngine.drawText('Loading...', 'Times New Roman', 80, 640, 360);
+        draw2d.context.canvas.style.transform = '';
+        draw2d.context.fillStyle = 'black';
+        draw2d.context.fillRect(0, 0, 1920, 1080);
+        draw2d.drawText('Loading...', 'Times New Roman', 80, 640, 360);
         ghostThankYouAudio().start();
         setTimeout(() => {
           gameStateMachine.setState(gameStates.gameState, 2 - this.selectedOption);
@@ -106,8 +106,8 @@ export class MenuState implements State {
   }
 
   drawEngraving(text: string, size: number, x: number, y: number, lineWidth = 0) {
-    draw2dEngine.drawText(text, 'Times New Roman', size, x - 1, y - 1, 0, 'center', true, '#000');
-    draw2dEngine.drawText(text, 'Times New Roman', size, x, y, lineWidth, 'center', true, 'rgba(45,48,61,0.73)');
+    draw2d.drawText(text, 'Times New Roman', size, x - 1, y - 1, 0, 'center', true, '#000');
+    draw2d.drawText(text, 'Times New Roman', size, x, y, lineWidth, 'center', true, 'rgba(45,48,61,0.73)');
   }
 
   toggleFullScreen() {

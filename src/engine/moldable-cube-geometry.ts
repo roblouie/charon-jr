@@ -1,7 +1,6 @@
 import { AttributeLocation } from '@/engine/renderer/renderer';
 import { EnhancedDOMPoint, VectorLike } from '@/engine/enhanced-dom-point';
-import { doTimes } from "@/engine/helpers";
-import { calculateVertexNormals, radsToDegrees } from "@/engine/math-helpers";
+import { calculateVertexNormals, doTimes, radsToDegrees } from "@/engine/helpers";
 import { noiseMaker } from "@/engine/noise-maker";
 import { Texture } from '@/engine/renderer/texture';
 import { gl } from '@/engine/renderer/lil-gl';

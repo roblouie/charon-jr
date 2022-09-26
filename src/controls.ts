@@ -3,7 +3,7 @@ import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 class Controls {
   isUp = false;
   isDown = false;
-  isSelect = false;
+  isSelect?: boolean = false;
   accel = 0;
   decel = 0;
   direction: EnhancedDOMPoint;
@@ -39,7 +39,6 @@ class Controls {
 
     this.accel = keyboardUp ? 1 : (gamepad?.buttons[7]?.value ?? 0);
     this.decel = keyboardDown ? 1 : (gamepad?.buttons[6]?.value ?? 0);
-    // @ts-ignore
     this.isSelect = this.keyMap.get('Enter') || gamepad?.buttons[0].pressed || gamepad?.buttons[9].pressed;
   }
 

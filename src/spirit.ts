@@ -5,9 +5,9 @@ import { Object3d } from '@/engine/renderer/object-3d';
 import { materials } from '@/texture-maker';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { hexToWebgl } from '@/engine/helpers';
-import { sadGhostAudio, sadGhostAudio2 } from '@/engine/audio/audio-player';
 import { createBox } from '@/modeling/building-blocks.modeling';
 import { Material } from '@/engine/renderer/material';
+import { sadGhostAudio, sadGhostAudio2 } from '@/sound-effects';
 
 const neck = new MoldableCubeGeometry(1, 0.4, 1, 2, 1, 2).cylindrify(0.3).translate(0, 1.3, 0).computeNormalsCrossPlane().done();
 

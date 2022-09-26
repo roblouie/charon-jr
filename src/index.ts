@@ -1,10 +1,10 @@
 import {populateMaterials } from '@/texture-maker';
-import { controls } from '@/core/controls';
-import { createGameStateMachine, gameStateMachine } from '@/game-state-machine';
+import { controls } from '@/controls';
+import { createGameStateMachine, gameStateMachine } from '@/game-states/game-state-machine';
 import { GameState } from '@/game-states/game-state';
 import { MenuState } from '@/game-states/menu-state';
 import { LevelOverState } from '@/game-states/level-over-state';
-import { State } from '@/core/state';
+import { State } from '@/engine/state-machine/state';
 
 export const gameStates = {
   gameState: {} as State,

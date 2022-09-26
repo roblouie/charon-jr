@@ -1,4 +1,3 @@
-// Sad Ghost 1:
 import { addGap, createAudioNode, createPannerNode, zzfxG, zzfxP } from '@/engine/audio/audio-player';
 
 const sadGhostBuffer2 = addGap(zzfxG(...[2.11,.85,100,.38,.58,.08,1,,-0.1,-0.2,350,.14,,,4,.1,.05,-0.6,.26,.17]), 0.8);

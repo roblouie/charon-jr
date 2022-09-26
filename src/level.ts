@@ -1,7 +1,7 @@
 import { Mesh } from '@/engine/renderer/mesh';
 import { PlaneGeometry } from '@/engine/plane-geometry';
 import { materials } from '@/texture-maker';
-import { Skybox } from '@/skybox';
+import { Skybox } from '@/engine/skybox';
 import { getGroupedFaces, meshToFaces } from '@/engine/physics/parse-faces';
 import { clamp, doTimes } from '@/engine/helpers';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';

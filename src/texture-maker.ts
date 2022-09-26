@@ -47,10 +47,6 @@ function drawGrass() {
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   const purgatoryPlants = mainImageData();
 
-  // clearWith('#008a44');
-  // drawContext.globalCompositeOperation = 'screen';
-  // drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  // const purgatoryPlants = mainImageData();
   return { earthGrass, purgatoryPlants };
 }
 

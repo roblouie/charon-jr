@@ -17,11 +17,12 @@ import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { getGridPosition } from '@/engine/physics/surface-collision';
 import { clamp } from '@/engine/helpers';
 import { Level } from '@/level';
-import { makeDynamicBody, Spirit } from '@/spirit';
+import { Spirit } from '@/spirit';
 import { draw2d } from '@/engine/draw-2d';
 import { hud } from '@/hud';
 import { gameStates } from '@/index';
 import { ghostFlyAwayAudio, ghostThankYouAudio } from '@/sound-effects';
+import { makeDynamicBody } from '@/modeling/spirit.modeling';
 
 const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)
@@ -58,9 +59,7 @@ export class GameState implements State {
     this.gridFaces = [];
     this.groupedFaces = { floorFaces: [], wallFaces: [], ceilingFaces: [] }
 
-    const arrowMaterial = new Material();
-    arrowMaterial.color = [1.7, 1.7, 1.7, 1];
-    this.arrowGuide = new Mesh(arrowGuideGeo, arrowMaterial);
+    this.arrowGuide = new Mesh(arrowGuideGeo, new Material());
     this.arrowGuideWrapper = new Object3d(this.arrowGuide);
 
     this.currentLevel = {} as Level;

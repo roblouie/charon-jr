@@ -1,6 +1,6 @@
 import { Scene } from '@/engine/renderer/scene';
 import { State } from '@/engine/state-machine/state';
-import { Skybox } from '@/skybox';
+import { Skybox } from '@/engine/skybox';
 import { Camera } from '@/engine/renderer/camera';
 import { renderer } from '@/engine/renderer/renderer';
 import { controls } from '@/controls';

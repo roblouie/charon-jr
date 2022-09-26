@@ -21,7 +21,3 @@ export function createBox(width: number, height: number, depth: number, widthSeg
   const verticalWalls = createHallway(sideWidth, height, segmentWidth, Math.ceil(widthSegments * (sideWidth / width)), heightSegments, depthSegments, sideSpacing).all().rotate(0, Math.PI / 2, 0).done();
   return createHallway(width, height, depth, widthSegments, heightSegments, depthSegments, spacing).merge(verticalWalls).computeNormalsPerPlane();
 }
-
-const body = new MoldableCubeGeometry(2, 2, 2, 2, 2, 2)
-.spherify(1)
-.done();

@@ -7,7 +7,7 @@ import { clamp, doTimes } from '@/engine/helpers';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 import { makeLargeTreeGeo, makePlantGeo, makeTreeLeavesGeo } from '@/modeling/flora.modeling';
-import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
+import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { AttributeLocation } from '@/engine/renderer/renderer';
 import { Face } from '@/engine/physics/face';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';

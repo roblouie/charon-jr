@@ -1,4 +1,4 @@
-import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
+import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 import { doTimes } from '@/engine/helpers';

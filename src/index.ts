@@ -27,12 +27,12 @@ async function startGame() {
   draw(0);
 
   function draw(currentTime: number) {
-    controls.queryController();
     const delta = currentTime - previousTime;
 
     if (delta >= interval) {
       previousTime = currentTime - (delta % interval);
 
+      controls.queryController();
       gameStateMachine.getState().onUpdate(delta);
     }
 

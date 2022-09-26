@@ -2,7 +2,6 @@ import { Scene } from '@/engine/renderer/scene';
 import { State } from '@/core/state';
 import { Skybox } from '@/skybox';
 import { Camera } from '@/engine/renderer/camera';
-import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { renderer } from '@/engine/renderer/renderer';
 import { controls } from '@/core/controls';
 import { gameStateMachine } from '@/game-state-machine';
@@ -10,7 +9,6 @@ import { draw2dEngine } from '@/core/draw2d-engine';
 import { makeTruck, TruckObject3d } from '@/modeling/truck.modeling';
 import { gameStates } from '@/index';
 import { createSkybox, drawSkyPurple, materials } from '@/texture-maker';
-import { debounce } from '@/core/timing-helpers';
 import { clamp, getRankFromScore } from '@/engine/helpers';
 import { Mesh } from '@/engine/renderer/mesh';
 import { ghostThankYouAudio, landingAudio } from '@/engine/audio/audio-player';
@@ -49,6 +47,19 @@ export class MenuState implements State {
   }
 
   onUpdate() {
+    const onChange = (direction: number) => {
+      landingAudio().start();
+      this.selectedOption += direction;
+    }
+
+    if (controls.isDown && !controls.previousState.isDown) {
+      onChange(1);
+    }
+
+    if (controls.isUp && !controls.previousState.isUp) {
+      onChange(-1);
+    }
+
     this.truck.wrapper.rotate(0, -0.01, 0);
     this.truck.setDriveRotationRate(0.1);
     this.truck.setSteeringAngle(-0.3);
@@ -74,22 +85,11 @@ export class MenuState implements State {
 
     this.drawEngraving('FULLSCREEN', 40, 640, 610, this.selectedOption === 3 ? 1 : 0);
 
-    const onChange = (direction: number) => {
-      landingAudio().start();
-      this.selectedOption += direction;
-    }
 
-    if (controls.isDown) {
-      debounce(() => onChange(1), 30);
-    }
-
-    if (controls.isUp) {
-      debounce(() => onChange(-1), 30);
-    }
 
     this.selectedOption = clamp(this.selectedOption, 0, 3);
 
-    if (controls.isSelect) {
+    if (controls.isSelect && !controls.previousState.isSelect) {
       if (this.selectedOption < 3) {
         draw2dEngine.context.canvas.style.transform = '';
         draw2dEngine.context.fillStyle = 'black';
@@ -100,7 +100,7 @@ export class MenuState implements State {
           gameStateMachine.setState(gameStates.gameState, 2 - this.selectedOption);
         });
       } else {
-        debounce(() => this.toggleFullScreen(), 30);
+        this.toggleFullScreen();
       }
     }
   }

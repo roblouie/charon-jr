@@ -1,6 +1,6 @@
 import { Mesh } from '@/engine/renderer/mesh';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
-import { noiseMaker } from '@/engine/texture-creation/noise-maker';
+import { noiseMaker } from '@/engine/noise-maker';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { materials } from '@/texture-maker';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';

@@ -17,10 +17,10 @@ import { renderer } from '@/engine/renderer/renderer';
 import { Face } from '@/engine/physics/face';
 import { gameStateMachine } from '@/game-state-machine';
 import { Object3d } from '@/engine/renderer/object-3d';
-import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
+import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { getGridPosition } from '@/engine/physics/surface-collision';
 import { clamp } from '@/engine/helpers';
-import { Level } from '@/Level';
+import { Level } from '@/level';
 import { makeDynamicBody, Spirit } from '@/spirit';
 import { draw2dEngine } from '@/core/draw2d-engine';
 import { hud } from '@/hud';
@@ -359,10 +359,6 @@ export class GameState implements State {
 
     this.player.update(this.gridFaces, this.currentLevel.waterLevel);
     this.handleDropOffPickUp();
-    // particle.lookAt(this.player.camera.position);
-    // particle2.lookAt(this.player.camera.position);
-    // particle.rotate(-1, 0, 0);
-    // particle2.rotate(-1, 0, 0);
 
     if (this.player.carriedSpirit) {
       this.arrowGuideWrapper.position.set(this.player.chassisCenter);

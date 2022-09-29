@@ -1,7 +1,5 @@
 const path = require('path');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const CopyPlugin = require("copy-webpack-plugin");
-const glslLoader = path.resolve(__dirname, 'webpack-glsl-loader.js');
 
 module.exports = {
   entry: './src/index.ts',

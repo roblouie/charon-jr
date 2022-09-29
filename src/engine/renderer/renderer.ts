@@ -1,6 +1,6 @@
 import { gl, lilgl } from "@/engine/renderer/lil-gl";
 import { Camera } from "@/engine/renderer/camera";
-import { Skybox } from '@/skybox';
+import { Skybox } from '@/engine/skybox';
 import {
   COLOR,
   EMISSIVE,

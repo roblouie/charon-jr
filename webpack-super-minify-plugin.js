@@ -88,17 +88,24 @@ async function embedJs(html, javascript) {
   const htmlInJs = `document.write('${scriptTagRemoved}');` + javascript;
   const closureJs = await applyClosure(htmlInJs);
 
+  /// `-Zab33 -Zlr2737 -Zmc3 -Zmd49 -Zpr16 -S0,1,2,3,6,7,13,21,26,57,194,417`
   const inputs = [
     {
       data: closureJs,
       type: 'js',
       action: 'eval',
-      allowFreeVars: true,
     },
   ];
-  const options = {};
+  const options = {
+    numAbbreviations: 33,
+    modelMaxCount: 3,
+    recipLearningRate: 2737,
+    modelRecipBaseCount: 49,
+    precision: 16,
+    sparseSelectors: [0,1,2,3,6,7,13,21,26,57,194,417]
+  };
   const packer = new Packer(inputs, options);
-  await packer.optimize(2);
+  console.log(await packer.optimize());
   const { firstLine, secondLine } = packer.makeDecoder();
   return `<script>\n${firstLine}\n${secondLine}\n</script>`;
 }

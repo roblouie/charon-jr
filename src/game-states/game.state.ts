@@ -1,8 +1,4 @@
-import { State } from '@/core/state';
-import {
-  ghostFlyAwayAudio,
-  ghostThankYouAudio
-} from '@/engine/audio/audio-player';
+import { State } from '@/engine/state-machine/state';
 import {
   drawEarthSky, materials, createSkybox, drawPurgatorySky, drawSkyPurple,
 } from '@/texture-maker';
@@ -15,16 +11,18 @@ import { Material } from '@/engine/renderer/material';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { renderer } from '@/engine/renderer/renderer';
 import { Face } from '@/engine/physics/face';
-import { gameStateMachine } from '@/game-state-machine';
+import { gameStateMachine } from '@/game-states/game-state-machine';
 import { Object3d } from '@/engine/renderer/object-3d';
-import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
+import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { getGridPosition } from '@/engine/physics/surface-collision';
 import { clamp } from '@/engine/helpers';
-import { Level } from '@/Level';
-import { makeDynamicBody, Spirit } from '@/spirit';
-import { draw2dEngine } from '@/core/draw2d-engine';
+import { Level } from '@/level';
+import { Spirit } from '@/spirit';
+import { draw2d } from '@/engine/draw-2d';
 import { hud } from '@/hud';
 import { gameStates } from '@/index';
+import { ghostFlyAwayAudio, ghostThankYouAudio } from '@/sound-effects';
+import { makeDynamicBody } from '@/modeling/spirit.modeling';
 
 const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)
@@ -61,9 +59,7 @@ export class GameState implements State {
     this.gridFaces = [];
     this.groupedFaces = { floorFaces: [], wallFaces: [], ceilingFaces: [] }
 
-    const arrowMaterial = new Material();
-    arrowMaterial.color = [1.7, 1.7, 1.7, 1];
-    this.arrowGuide = new Mesh(arrowGuideGeo, arrowMaterial);
+    this.arrowGuide = new Mesh(arrowGuideGeo, new Material());
     this.arrowGuideWrapper = new Object3d(this.arrowGuide);
 
     this.currentLevel = {} as Level;
@@ -272,7 +268,7 @@ export class GameState implements State {
     this.spiritsTransported = 0;
     hud.reset();
     this.isLoaded = true;
-    draw2dEngine.clear();
+    draw2d.clear();
     this.player.engineGain.gain.value = 0.4;
   }
 
@@ -281,7 +277,7 @@ export class GameState implements State {
   }
 
   onLeave() {
-    draw2dEngine.clear();
+    draw2d.clear();
     this.player.engineGain.gain.value = 0;
     this.player.drivingThroughWaterGain.gain.value = 0;
     this.spirits.forEach(spirit => spirit.audioPlayer?.stop());
@@ -359,10 +355,6 @@ export class GameState implements State {
 
     this.player.update(this.gridFaces, this.currentLevel.waterLevel);
     this.handleDropOffPickUp();
-    // particle.lookAt(this.player.camera.position);
-    // particle2.lookAt(this.player.camera.position);
-    // particle.rotate(-1, 0, 0);
-    // particle2.rotate(-1, 0, 0);
 
     if (this.player.carriedSpirit) {
       this.arrowGuideWrapper.position.set(this.player.chassisCenter);

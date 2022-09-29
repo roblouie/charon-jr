@@ -1,32 +1,23 @@
 import { Camera } from '@/engine/renderer/camera';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { Face } from '@/engine/physics/face';
-import { controls } from '@/core/controls';
+import { controls } from '@/controls';
 import {
   findFloorHeightAtPosition,
   findWallCollisionsFromList,
   getGridPosition, maxHalfLevelValue
 } from '@/engine/physics/surface-collision';
-import {
-  audioCtx,
-  drivingThroughWaterAudio,
-  engineAudio,
-  landingAudio
-} from '@/engine/audio/audio-player';
+import { audioCtx } from '@/engine/audio/audio-player';
 import { makeTruck, TruckObject3d } from '@/modeling/truck.modeling';
-import { clamp, gripCurve, moveValueTowardsTarget } from '@/engine/helpers';
-import { radsToDegrees } from '@/engine/math-helpers';
+import { clamp, moveValueTowardsTarget, radsToDegrees } from '@/engine/helpers';
 import { Spirit } from '@/spirit';
 import { hud } from '@/hud';
+import { drivingThroughWaterAudio, engineAudio, landingAudio } from '@/sound-effects';
 
 export class ThirdPersonPlayer {
   isJumping = false;
   chassisCenter = new EnhancedDOMPoint(0, 0, 0);
-  readonly origin = new EnhancedDOMPoint(0, 0, 0);
-  frontLeftWheel = new EnhancedDOMPoint();
-  frontRightWheel = new EnhancedDOMPoint();
   velocity = new EnhancedDOMPoint(0, 0, 0);
-
 
   mesh: TruckObject3d;
   camera: Camera;
@@ -107,12 +98,6 @@ export class ThirdPersonPlayer {
     const playerGridPosition = getGridPosition(this.chassisCenter);
     this.velocity.y = clamp(this.velocity.y, -1, 1);
     this.collideWithLevel(gridFaces[playerGridPosition]); // do collision detection, if collision is found, feetCenter gets pushed out of the collision
-
-
-    // 4 wheels in the right place
-    this.frontLeftWheel.set(this.mesh.leftFrontWheel.worldMatrix.transformPoint(this.origin));
-    this.frontRightWheel.set(this.mesh.rightFrontWheel.worldMatrix.transformPoint(this.origin));
-
 
     this.mesh.position.set(this.chassisCenter); // at this point, feetCenter is in the correct spot, so draw the mesh there
     this.mesh.position.y += 2; // move up by half height so mesh ends at feet position
@@ -215,13 +200,21 @@ export class ThirdPersonPlayer {
   private readonly baseAccelerationRate = 0.021;
   private accelerationRate = 0.021;
 
+  private gripCurve(x: number) {
+    if (x < 0.5) {
+      return Math.min(8 * x * x * x + x * 1.5, 1);
+    } else {
+      return Math.min(1 - ((x - 0.5) **2), 1);
+    }
+  }
+
 
   private determineAbilityToRotateCar() {
     this.tractionPercent = 0.6;
     this.turningAbilityPercent = 1;
 
     const percentOfMaxSpeed = Math.abs(this.speed / this.maxSpeed);
-    this.turningAbilityPercent = gripCurve(percentOfMaxSpeed);
+    this.turningAbilityPercent = this.gripCurve(percentOfMaxSpeed);
 
     if (this.jumpTimer > 30) {
       this.tractionPercent = 0.2;
@@ -307,6 +300,5 @@ export class ThirdPersonPlayer {
       this.listener.forwardX.value = cameraPlayerDirection.x;
       this.listener.forwardZ.value = cameraPlayerDirection.z;
     }
-
   }
 }

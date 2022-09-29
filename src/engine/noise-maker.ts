@@ -1,6 +1,5 @@
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { doTimes, hexToRgba } from "@/engine/helpers";
-import { debounce } from '@/core/timing-helpers';
 
 export const enum NoiseType {
   Perlin,
@@ -147,10 +146,6 @@ class NoiseMaker {
     const [red, green, blue] = hexToRgba(color);
     const imageData = new ImageData(size, size);
     let imageDataIndex = 0;
-
-    // TESTING
-    // return imageData;
-    // END TESTING
 
     const position = new EnhancedDOMPoint();
     const flipBase = size - 1;

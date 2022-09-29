@@ -1,8 +1,8 @@
-import { BufferGeometry } from '@/engine/renderer/buffer-geometry';
 import { AttributeLocation } from '@/engine/renderer/renderer';
 import { gl } from '@/engine/renderer/lil-gl';
+import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 
-export class Skybox extends BufferGeometry {
+export class Skybox extends MoldableCubeGeometry {
   constructor(...textureSources: (ImageData | HTMLCanvasElement)[]) {
     super();
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, gl.createTexture());

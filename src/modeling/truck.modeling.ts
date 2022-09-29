@@ -182,4 +182,3 @@ export function makeTruck() {
   truckObject.scale.set(0.7, 0.7, 0.7);
   return truckObject;
 }
-

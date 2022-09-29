@@ -3,12 +3,13 @@ import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 class Controls {
   isUp = false;
   isDown = false;
-  isSelect = false;
+  isSelect?: boolean = false;
   accel = 0;
   decel = 0;
   direction: EnhancedDOMPoint;
 
   keyMap: Map<string, boolean> = new Map();
+  previousState = { isUp: this.isUp, isDown: this.isDown, isSelect: this.isSelect };
 
   constructor() {
     document.addEventListener('keydown', event => this.toggleKey(event, true));
@@ -17,6 +18,9 @@ class Controls {
   }
 
   queryController() {
+    this.previousState.isUp = this.isUp;
+    this.previousState.isDown = this.isDown;
+    this.previousState.isSelect = this.isSelect;
     const gamepad = navigator.getGamepads()[0];
     const leftVal = (this.keyMap.get('KeyA') || this.keyMap.get('ArrowLeft') || gamepad?.buttons[14]?.pressed) ? -1 : 0;
     const rightVal = (this.keyMap.get('KeyD') || this.keyMap.get('ArrowRight') || gamepad?.buttons[15].pressed) ? 1 : 0;
@@ -35,7 +39,6 @@ class Controls {
 
     this.accel = keyboardUp ? 1 : (gamepad?.buttons[7]?.value ?? 0);
     this.decel = keyboardDown ? 1 : (gamepad?.buttons[6]?.value ?? 0);
-    // @ts-ignore
     this.isSelect = this.keyMap.get('Enter') || gamepad?.buttons[0].pressed || gamepad?.buttons[9].pressed;
   }
 

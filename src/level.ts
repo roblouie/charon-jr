@@ -1,13 +1,13 @@
 import { Mesh } from '@/engine/renderer/mesh';
 import { PlaneGeometry } from '@/engine/plane-geometry';
 import { materials } from '@/texture-maker';
-import { Skybox } from '@/skybox';
+import { Skybox } from '@/engine/skybox';
 import { getGroupedFaces, meshToFaces } from '@/engine/physics/parse-faces';
 import { clamp, doTimes } from '@/engine/helpers';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 import { makeLargeTreeGeo, makePlantGeo, makeTreeLeavesGeo } from '@/modeling/flora.modeling';
-import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
+import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { AttributeLocation } from '@/engine/renderer/renderer';
 import { Face } from '@/engine/physics/face';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
@@ -75,11 +75,8 @@ export class Level {
     // Draw Paths
     if (pathSeed) {
       noiseMaker.seed(pathSeed);
-      path = noiseMaker.noiseLandscape(256, 1 / 128, 2, NoiseType.Lines,8).map(modifyNoiseValue);
-      // TODO: This will need modified for new levels to fix the textures to within the ground / path id range
-      function modifyNoiseValue(noiseValue: number) {
-        return clamp(noiseValue * 4, 0, 1);
-      }
+      path = noiseMaker.noiseLandscape(256, 1 / 128, 2, NoiseType.Lines,8)
+        .map(noiseValue => clamp(noiseValue * 4, 0, 1));
 
       const pathTextureIds = path.map(val => val + pathMaterial!.texture!.id);
       this.floorMesh.geometry.setAttribute(AttributeLocation.TextureDepth, new Float32Array(pathTextureIds), 1);
@@ -157,7 +154,6 @@ export class Level {
         if (!hasAClosePosition) {
           this.spiritPositions.push(spiritPosition);
         }
-        // spiritTransforms.push(new DOMMatrix().translateSelf(spiritPosition.x, spiritPosition.y, spiritPosition.z))
       }
 
       // With rocks and spirits drawn, filter out all other values less than 1 before continuing.

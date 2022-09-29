@@ -1,4 +1,4 @@
-import { noiseMaker, NoiseType } from '@/engine/texture-creation/noise-maker';
+import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 import { doTimes } from '@/engine/helpers';
@@ -47,10 +47,6 @@ function drawGrass() {
   drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
   const purgatoryPlants = mainImageData();
 
-  // clearWith('#008a44');
-  // drawContext.globalCompositeOperation = 'screen';
-  // drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  // const purgatoryPlants = mainImageData();
   return { earthGrass, purgatoryPlants };
 }
 

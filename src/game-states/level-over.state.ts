@@ -15,9 +15,9 @@ export class LevelOverState implements State {
     this.payment = payment;
     this.score = this.payment * this.spiritsTransported;
     this.rank = getRankFromScore(this.score)
-    const pastScore = window.localStorage.getItem(`ddamt_score-${levelNumber}`);
+    const pastScore = localStorage.getItem(`ddamt_score-${levelNumber}`);
     if (!pastScore || this.score > parseInt(pastScore)) {
-      window.localStorage.setItem(`ddamt_score-${levelNumber}`, this.score.toString());
+      localStorage.setItem(`ddamt_score-${levelNumber}`, this.score.toString());
     }
     setTimeout(() => {
       gameStateMachine.setState(gameStates.menuState);

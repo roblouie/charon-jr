@@ -2,7 +2,8 @@ class DrawEngine {
   context: CanvasRenderingContext2D;
 
   constructor() {
-    this.context = document.querySelector<HTMLCanvasElement>('#oc')!.getContext('2d')!;
+    // @ts-ignore
+    this.context = c2d.getContext('2d')!;
   }
 
   clear() {

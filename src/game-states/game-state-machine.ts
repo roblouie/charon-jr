@@ -1,5 +1,5 @@
-import { StateMachine } from '../engine/state-machine/state-machine';
-import { State } from '../engine/state-machine/state';
+import { StateMachine } from '@/engine/state-machine/state-machine';
+import { State } from '@/engine/state-machine/state';
 
 // @ts-ignore
 export let gameStateMachine;

@@ -9,7 +9,7 @@ import { ThirdPersonPlayer } from '@/third-person-player';
 import { Mesh } from '@/engine/renderer/mesh';
 import { Material } from '@/engine/renderer/material';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
-import { renderer } from '@/engine/renderer/renderer';
+import { render } from '@/engine/renderer/renderer';
 import { Face } from '@/engine/physics/face';
 import { gameStateMachine } from '@/game-states/game-state-machine';
 import { Object3d } from '@/engine/renderer/object-3d';
@@ -366,11 +366,9 @@ export class GameState implements State {
 
     this.dropoffs.forEach(dropoff => dropoff.rotate(0, 0.008, 0));
 
-
     this.scene.updateWorldMatrix();
 
-
-    renderer.render(this.player.camera, this.scene);
+    render(this.player.camera, this.scene);
 
     if (hud.timeRemaining <= 0) {
       gameStateMachine.setState(gameStates.levelOverState, this.spiritsTransported, hud.score, this.levelNumber);

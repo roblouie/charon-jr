@@ -52,7 +52,6 @@ class Hud {
 
     draw2d.context.filter = 'grayscale(100%)';
 
-
     draw2d.context.save();
     draw2d.context.translate(50, 58);
     if (this.isTimeBonusActive) {

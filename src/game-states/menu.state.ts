@@ -2,7 +2,7 @@ import { Scene } from '@/engine/renderer/scene';
 import { State } from '@/engine/state-machine/state';
 import { Skybox } from '@/engine/skybox';
 import { Camera } from '@/engine/renderer/camera';
-import { renderer } from '@/engine/renderer/renderer';
+import { render } from '@/engine/renderer/renderer';
 import { controls } from '@/controls';
 import { gameStateMachine } from '@/game-states/game-state-machine';
 import { draw2d } from '@/engine/draw-2d';
@@ -43,7 +43,7 @@ export class MenuState implements State {
   }
 
   private getScore(levelNumber: number) {
-    return parseInt(window.localStorage.getItem(`ddamt_score-${levelNumber}`) ?? '0')
+    return parseInt(localStorage.getItem(`ddamt_score-${levelNumber}`) ?? '0')
   }
 
   onUpdate() {
@@ -65,7 +65,7 @@ export class MenuState implements State {
     this.truck.setSteeringAngle(-0.3);
     this.scene!.updateWorldMatrix();
 
-    renderer.render(this.camera, this.scene!);
+    render(this.camera, this.scene!);
 
     draw2d.clear();
 

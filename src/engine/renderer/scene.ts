@@ -23,14 +23,17 @@ export class Scene extends Object3d {
 
   remove(object3d: Object3d) {
     super.remove(object3d);
-    // @ts-ignore
-    if (object3d.geometry) {
+    [object3d, ...object3d.allChildren()]
+      .forEach(obj => {
       // @ts-ignore
-      if (object3d.material.isTransparent) {
-        this.transparentMeshes = this.transparentMeshes.filter(mesh => mesh !== object3d);
-      } else {
-        this.solidMeshes = this.solidMeshes.filter(mesh => mesh !== object3d);
+      if (obj.geometry) {
+        // @ts-ignore
+        if (obj.material.isTransparent) {
+          this.transparentMeshes = this.transparentMeshes.filter(mesh => mesh !== obj);
+        } else {
+          this.solidMeshes = this.solidMeshes.filter(mesh => mesh !== obj);
+        }
       }
-    }
+    });
   }
 }

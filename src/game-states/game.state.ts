@@ -303,7 +303,6 @@ export class GameState implements State {
           this.resetSpiritBody();
           this.player.mesh.wrapper.remove(this.dynamicBody);
           this.scene.remove(this.arrowGuideWrapper);
-          this.scene.remove(this.arrowGuide)
           this.player.carriedSpirit = undefined;
 
           this.spiritsTransported++;
@@ -335,8 +334,7 @@ export class GameState implements State {
             this.player.carriedSpirit = spirit;
             spirit.audioPlayer?.stop();
             this.scene.add(this.arrowGuideWrapper);
-            this.scene.remove(spirit.spiritMesh);
-            this.scene.remove(spirit.iconMesh);
+            this.scene.remove(spirit);
             this.spirits.splice(index, 1);
             return true;
           }

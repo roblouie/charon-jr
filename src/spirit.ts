@@ -26,13 +26,11 @@ export class Spirit extends Object3d {
     this.spiritMesh = this.children[0] as Mesh;
     this.iconMesh = this.children[1] as Mesh;
     this.position = new EnhancedDOMPoint().set(position);
-    const dropOffs: number[] = [0, 1, 2, 3];
-    const dropOffIndex = Math.abs(Math.floor(noiseMaker.randomNumber(position.x + position.z) * 3));
+    this.dropOffPoint = Math.abs(Math.floor(noiseMaker.randomNumber(position.x + position.z) * 3));
     this.rotation.y = Math.random() * 6;
-    this.dropOffPoint = dropOffs[dropOffIndex];
 
     this.updateWorldMatrix();
-    this.color = Spirit.Colors.map(hexToWebgl)[dropOffIndex];
+    this.color = Spirit.Colors.map(hexToWebgl)[this.dropOffPoint];
     this.iconMesh.material.emissive = this.color;
     this.cachedMatrixData = this.worldMatrix.inverse().toFloat32Array()
     const randomBetween0and3 = Math.random() * 4;

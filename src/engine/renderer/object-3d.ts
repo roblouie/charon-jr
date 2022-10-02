@@ -27,7 +27,7 @@ export class Object3d {
   add(...object3ds: Object3d[]) {
     object3ds.forEach(object3d => {
       if (object3d.parent) {
-        object3d.parent.remove(this);
+        object3d.parent.children = object3d.parent.children.filter(child => child !== this);
       }
       object3d.parent = this;
       this.children.push(object3d);

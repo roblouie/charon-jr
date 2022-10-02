@@ -3,8 +3,6 @@ import { coinAudio } from '@/sound-effects';
 
 class Hud {
   timeRemaining = 0;
-  private readonly initialTimeRemaining = 100;
-
   score = 0;
   currentScoreBonus = 0;
   isScoreBonusActive = false;
@@ -17,7 +15,7 @@ class Hud {
   timeBonusRotator = 0;
 
   reset() {
-    this.timeRemaining = this.initialTimeRemaining;
+    this.timeRemaining = 100;
     this.score = 0;
     this.currentScoreBonus = 0;
     this.isScoreBonusActive = false;

@@ -30,7 +30,7 @@ rl.question('How many seconds should RoadRoller spend looking for the best confi
       const configPieces = endSizeRemoved.split(' ').filter(param => !param.startsWith('-Sx'));
       configPieces.forEach(singleParam => {
         cliToApiMaps.forEach(mapper => {
-          if (singleParam.startsWith(mapper.cli) && mapper.type !== 'unused') {
+          if (singleParam.startsWith(mapper.cli)) {
             bestConfigJs[mapper.api] = convertValue(mapper, singleParam);
           }
         })

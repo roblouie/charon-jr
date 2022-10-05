@@ -10,9 +10,9 @@ export const gameStates = {
   gameState: {} as State,
   menuState: {} as State,
   levelOverState: {} as State,
-}
+};
 
-async function startGame() {
+(async () => {
   await populateMaterials();
 
   gameStates.gameState = new GameState();
@@ -38,6 +38,4 @@ async function startGame() {
 
     requestAnimationFrame(draw);
   }
-}
-
-startGame();
+})();

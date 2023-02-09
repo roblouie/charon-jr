@@ -2,6 +2,7 @@ import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 import { doTimes } from '@/engine/helpers';
+import { NewNoiseType, NoiseImage } from '@/engine/new-noise-maker';
 
 const resolution = 128;
 
@@ -245,6 +246,35 @@ export function drawEarthSky(firstDimension: 'x' | 'y' | 'z', secondDimension: '
   return tileContext.getImageData(0, 0, 256, 256);
 }
 
+function drawHeightmap(seed: number, frequency: number | [number, number], octals: number, colorScale = 1) {
+  return new NoiseImage(seed, 250, frequency, octals, NewNoiseType.Fractal)
+    .addColorMatrix([
+      0, colorScale, 0, 0, 0,
+      0, colorScale, 0, 0, 0,
+      0, colorScale, 0, 0, 0,
+      0, 0, 0, 0, 1,
+    ]);
+}
+
+export async function newDrawSky() {
+  const skyImage = drawHeightmap(9, 0.01, 5, 1.8)
+    .addComponentTransfer(
+      NoiseImage.makeFeFunc('R', 'table', [1, 0]),
+      NoiseImage.makeFeFunc('G', 'table', [1, 0]),
+      NoiseImage.makeFeFunc('B', 'table', [1, 1]),
+    );
+  const sidesOfSkybox = [];
+  for (let i = 0; i < 6; i++) {
+    const image = new Image();
+    image.src = skyImage.getImage();
+    sidesOfSkybox.push(new Promise<HTMLImageElement>(resolve => {
+      image.addEventListener('load', () => resolve(image));
+    }));
+  }
+
+  return await Promise.all(sidesOfSkybox);
+}
+
 // *********************
 // Drop Off Point
 // *********************
@@ -291,6 +321,11 @@ export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimensio
 
 
 export const materials: {[key: string]: Material} = {};
+export const skyboxes: {[key: string]: TexImageSource[]} = {};
+
+export async function populateSkyboxes() {
+  skyboxes.earthSky = await newDrawSky();
+}
 
 export async function populateMaterials() {
   const dirtPath = new Material({texture: textureLoader.load(drawDirtPath())})

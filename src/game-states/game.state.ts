@@ -1,6 +1,6 @@
 import { State } from '@/engine/state-machine/state';
 import {
-  drawEarthSky, materials, createSkybox, drawPurgatorySky, drawSkyPurple,
+  drawEarthSky, materials, createSkybox, drawPurgatorySky, drawSkyPurple, newDrawSky, skyboxes,
 } from '@/texture-maker';
 import { Scene } from '@/engine/renderer/scene';
 import { Camera } from '@/engine/renderer/camera';
@@ -79,7 +79,7 @@ export class GameState implements State {
       const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 4, NoiseType.Perlin, 100);
       this.currentLevel = new Level(
         sampleHeightMap,
-        createSkybox(drawEarthSky),
+        skyboxes.earthSky,
         -12,
         39,
         26,

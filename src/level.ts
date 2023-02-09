@@ -30,7 +30,7 @@ export class Level {
 
   constructor(
     heightmap: number[],
-    skyboxImages: ImageData[],
+    skyboxImages: TexImageSource[],
     waterLevel: number,
     pathSeed: number | undefined,
     scenerySeed: number,

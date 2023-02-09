@@ -3,7 +3,7 @@ import { gl } from '@/engine/renderer/lil-gl';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 
 export class Skybox extends MoldableCubeGeometry {
-  constructor(...textureSources: (ImageData | HTMLCanvasElement)[]) {
+  constructor(...textureSources: TexImageSource[]) {
     super();
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, gl.createTexture());
     textureSources.forEach((tex, index) => {

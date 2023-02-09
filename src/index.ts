@@ -1,4 +1,4 @@
-import {populateMaterials } from '@/texture-maker';
+import { populateMaterials, populateSkyboxes } from '@/texture-maker';
 import { controls } from '@/controls';
 import { createGameStateMachine, gameStateMachine } from '@/game-states/game-state-machine';
 import { GameState } from '@/game-states/game.state';
@@ -14,6 +14,7 @@ export const gameStates = {
 
 (async () => {
   await populateMaterials();
+  await populateSkyboxes();
 
   gameStates.gameState = new GameState();
   gameStates.menuState = new MenuState();

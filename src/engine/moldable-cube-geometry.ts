@@ -1,9 +1,9 @@
 import { AttributeLocation } from '@/engine/renderer/renderer';
 import { EnhancedDOMPoint, VectorLike } from '@/engine/enhanced-dom-point';
 import { calculateVertexNormals, doTimes, radsToDegrees } from "@/engine/helpers";
-import { noiseMaker } from "@/engine/noise-maker";
 import { Texture } from '@/engine/renderer/texture';
 import { gl } from '@/engine/renderer/lil-gl';
+import { randomNumber } from '@/engine/new-noise-maker';
 
 type BufferInfo = { data: Float32Array; size: number };
 
@@ -199,10 +199,9 @@ export class MoldableCubeGeometry {
   noisify(seed: number, scale: number) {
     const {indexReplacers, indicesToUniqueVertices} = this.getUniqueIndices();
 
-    noiseMaker.seed(seed);
     indicesToUniqueVertices.forEach(vertexIndex => {
       const vertex = this.verticesToActOn[vertexIndex];
-      const angle = noiseMaker.getDirection(vertexIndex);
+      const angle = new EnhancedDOMPoint(randomNumber(vertexIndex), randomNumber(vertexIndex * 10), randomNumber(vertexIndex * 20));
       vertex.x += angle.x * scale;
       vertex.y += angle.y * scale;
       vertex.z += angle.z * scale;

@@ -1,7 +1,5 @@
 import { State } from '@/engine/state-machine/state';
-import {
-  materials, skyboxes,
-} from '@/texture-maker';
+import { materials, skyboxes, } from '@/texture-maker';
 import { Scene } from '@/engine/renderer/scene';
 import { Camera } from '@/engine/renderer/camera';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
@@ -13,7 +11,6 @@ import { render } from '@/engine/renderer/renderer';
 import { Face } from '@/engine/physics/face';
 import { gameStateMachine } from '@/game-states/game-state-machine';
 import { Object3d } from '@/engine/renderer/object-3d';
-import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { getGridPosition } from '@/engine/physics/surface-collision';
 import { clamp } from '@/engine/helpers';
 import { Level } from '@/level';
@@ -23,6 +20,7 @@ import { hud } from '@/hud';
 import { gameStates } from '@/index';
 import { ghostFlyAwayAudio, ghostThankYouAudio } from '@/sound-effects';
 import { makeDynamicBody } from '@/modeling/spirit.modeling';
+import { newNoiseLandscape, NewNoiseType } from '@/engine/new-noise-maker';
 
 const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)
@@ -70,13 +68,12 @@ export class GameState implements State {
 
   private levelNumber = 0;
   private isLoaded = false;
-  onEnter(levelNumber: 0 | 1 | 2) {
+  async onEnter(levelNumber: 0 | 1 | 2) {
     this.gridFaces = [];
     this.groupedFaces = { floorFaces: [], wallFaces: [], ceilingFaces: [] }
     this.levelNumber = levelNumber;
     if (levelNumber === 0) {
-      noiseMaker.seed(22);
-      const sampleHeightMap = noiseMaker.noiseLandscape(256, 1 / 64, 4, NoiseType.Perlin, 100);
+      const sampleHeightMap = await newNoiseLandscape(256, 22, 1/64, 4, NewNoiseType.Fractal, 100);
       this.currentLevel = new Level(
         sampleHeightMap,
         skyboxes.earthSky,
@@ -97,8 +94,7 @@ export class GameState implements State {
         []
       );
     } else if (levelNumber === 1) {
-      noiseMaker.seed(75);
-      const sampleHeightMap2 = noiseMaker.noiseLandscape(256, 1 / 64, 2, NoiseType.Perlin, 30)
+      const sampleHeightMap2 =  (await newNoiseLandscape(256, 75, 1/64, 2, NewNoiseType.Fractal, 30))
         .map(val => {
           if (val > 0) {
             return val + 40;
@@ -171,10 +167,7 @@ export class GameState implements State {
         ]
       );
     } else {
-      noiseMaker.seed(3);
-      const sampleHeightMap3 = noiseMaker.noiseLandscape(256, 1 / 128, 3, NoiseType.Perlin, 180);
-      // @ts-ignore
-      // const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
+      const sampleHeightMap3 = await newNoiseLandscape(256, 3, 1/28, 3, NewNoiseType.Fractal, 180);
       this.currentLevel = new Level(
         sampleHeightMap3,
         skyboxes.underworldSky,
@@ -208,6 +201,8 @@ export class GameState implements State {
         ]
       );
     }
+
+    await this.currentLevel.drawingFinishedPromise;
 
     this.player.chassisCenter.set(-60, 51, -245);
     this.player.speed = 0;

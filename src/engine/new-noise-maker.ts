@@ -79,3 +79,30 @@ export function noiseImageReplacement(
       Svg.feFunc('A', 'table', [fromColorArray[3], toColorArray[3]]),
     );
 }
+
+export async function svgImageBuilderTextToImage(svgImageBuilder: Svg): Promise<HTMLImageElement> {
+  const image = new Image();
+  image.src = svgImageBuilder.getImage();
+  return new Promise(resolve => image.addEventListener('load', () => resolve(image)));
+}
+
+export async function svgImageBuilderToHeightmapValues(svgImageBuilder: Svg, scale: number): Promise<number[]> {
+  const { size } = svgImageBuilder;
+  const canvas = new OffscreenCanvas(size, size) as HTMLCanvasElement;
+  const context = canvas.getContext('2d')!;
+  context.drawImage(await svgImageBuilderTextToImage(svgImageBuilder), 0, 0);
+  return [...context.getImageData(0, 0, size, size).data]
+    .filter((value, index) => !(index % 4))
+    .map(value => {
+      return (value / 255 - 0.5) * scale;
+    });
+}
+
+export async function newNoiseLandscape(size: number,seed: number, frequency: number, octaves: number, noiseType: NewNoiseType, scale: number) {
+  const image = noiseImageReplacement(size, seed, frequency, octaves, noiseType, 'black', 'white');
+  return svgImageBuilderToHeightmapValues(image, scale);
+}
+
+export function randomNumber(seed: number): number {
+  return (Math.sin(seed * 127.1 + 38481) * 43780) % 1;
+}

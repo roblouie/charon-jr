@@ -1,12 +1,12 @@
 import { Mesh } from '@/engine/renderer/mesh';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
-import { noiseMaker } from '@/engine/noise-maker';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { materials } from '@/texture-maker';
 import { hexToWebgl } from '@/engine/helpers';
 import { Material } from '@/engine/renderer/material';
 import { sadGhostAudio, sadGhostAudio2 } from '@/sound-effects';
 import { iconGeo, staticBodyGeo } from '@/modeling/spirit.modeling';
+import { randomNumber } from '@/engine/new-noise-maker';
 
 export class Spirit extends Object3d {
   static Colors = ['#f00', '#0f0', '#00f', '#f90'];
@@ -26,7 +26,7 @@ export class Spirit extends Object3d {
     this.spiritMesh = this.children[0] as Mesh;
     this.iconMesh = this.children[1] as Mesh;
     this.position = new EnhancedDOMPoint().set(position);
-    this.dropOffPoint = Math.abs(Math.floor(noiseMaker.randomNumber(position.x + position.z) * 3));
+    this.dropOffPoint = Math.abs(Math.floor(randomNumber(position.x + position.z) * 3));
     this.rotation.y = Math.random() * 6;
 
     this.updateWorldMatrix();

@@ -1,6 +1,6 @@
 import { doTimes } from '@/engine/helpers';
-import { noiseMaker } from '@/engine/noise-maker';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
+import { randomNumber } from '@/engine/new-noise-maker';
 
 
 function makeTree(treeHeight: number, verticalSegments: number, radius: number, seed: number) {
@@ -17,7 +17,7 @@ function makeTree(treeHeight: number, verticalSegments: number, radius: number, 
     if (index % 2 === 0) {
       scale *= 0.7;
     } else {
-      largeTreeBase.translate(noiseMaker.randomNumber(index + treeHeight + seed), 0, noiseMaker.randomNumber(index + treeHeight + seed));
+      largeTreeBase.translate(randomNumber(index + treeHeight + seed), 0, randomNumber(index + treeHeight + seed));
     }
 
     if (index === verticalSegments) {

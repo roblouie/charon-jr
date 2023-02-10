@@ -1,52 +1,36 @@
-import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
-import { doTimes, hexToWebgl } from '@/engine/helpers';
-import { NewNoiseType, Svg, noiseImageReplacement } from '@/engine/new-noise-maker';
+import { doTimes } from '@/engine/helpers';
+import {
+  NewNoiseType,
+  Svg,
+  noiseImageReplacement,
+  svgImageBuilderTextToImage,
+} from '@/engine/new-noise-maker';
 
 const resolution = 128;
 
-const [drawContext, tileContext, noiseContext] = ['draw', 'tile', 'noise'].map(id => {
-  const canvas = document.createElement('canvas');
-  canvas.id = id;
-  canvas.width = id === 'tile' ? 256 : resolution;
-  canvas.height = id === 'tile' ? 256 : resolution;
-  return canvas.getContext('2d')!;
-});
-
+const canvas = new OffscreenCanvas(128, 128);
+const drawContext = canvas.getContext('2d')!;
 
 // *********************
 // Dirt Path
 // *********************
-export function drawDirtPath() {
-  clearWith('#525200');
-  noiseMaker.seed(33);
-  noiseContext.putImageData(noiseMaker.noiseImage(resolution, 1 / 16, 4, NoiseType.Perlin, '#804b10', 128), 0, 0);
-  drawContext.globalCompositeOperation = 'screen';
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  noisify(drawContext, 10);
-  return mainImageData();
+export async function drawDirtPath() {
+  const imageBuilder = noiseImageReplacement(128, 33, 1 / 16, 4, NewNoiseType.Fractal, '#525200', '#804b10', 1);
+
+  return svgImageBuilderTextToImage(imageBuilder);
 }
 
 // *********************
 // Grass
 // *********************
-function drawGrass() {
-  noiseMaker.seed(12);
-  noiseContext.putImageData(noiseMaker.noiseImage(resolution, 1 / 32, 3, NoiseType.Perlin, '#009303', 128), 0, 0);
+async function drawGrass() {
+  const earthGrassBuilder = noiseImageReplacement(128, 12, 1 / 32, 3, NewNoiseType.Fractal, '#007002', '#009303', 1);
+  const earthGrass = await svgImageBuilderTextToImage(earthGrassBuilder);
 
-  clearWith('#007002');
-  // drawContext.globalCompositeOperation = 'screen';
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  noisify(drawContext, 8);
-  const earthGrass = mainImageData();
-
-  noiseMaker.seed(12);
-  noiseContext.putImageData(noiseMaker.noiseImage(resolution, 1 / 32, 3, NoiseType.Perlin, '#66b47f', 128), 0, 0);
-
-  clearWith('#45835a');
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  const purgatoryPlants = mainImageData();
+  const purgatoryPlantsBuilder = noiseImageReplacement(128, 12, 1 / 32, 3, NewNoiseType.Fractal, '#45835a', '#66b47f', 1);
+  const purgatoryPlants = await svgImageBuilderTextToImage(purgatoryPlantsBuilder);
 
   return { earthGrass, purgatoryPlants };
 }
@@ -54,13 +38,12 @@ function drawGrass() {
 // *********************
 // Water
 // *********************
-export function drawWater() {
-  clearWith('#030eaf');
-  noiseMaker.seed(10);
-  noiseContext.putImageData(noiseMaker.noiseImage(resolution, 1 / 64, 1, NoiseType.Edge, '#3264ff', 220), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  const lakeTexture = textureLoader.load(mainImageData());
-  lakeTexture.repeat.x = 6; lakeTexture.repeat.y = 6;
+export async function drawWater() {
+  const waterBuilder = noiseImageReplacement(128, 12, 1 / 64, 1, NewNoiseType.Turbulence, '#030eaf', '#3264ff', 1);
+  const water = await svgImageBuilderTextToImage(waterBuilder);
+
+  const lakeTexture = textureLoader.load(water);
+  lakeTexture.repeat.set(6, 6);
 
   return new Material({texture: lakeTexture, isTransparent: true, color: '#fffc'});
 }
@@ -68,22 +51,14 @@ export function drawWater() {
 // *********************
 // Rocks
 // *********************
-export function drawRocks() {
-  noiseMaker.seed(23);
-  const noiseImage = noiseMaker.noiseImage(resolution, 1 / 64, 2, NoiseType.Edge, '#82826e', 220, true, 'x', 'y', 'z', 0);
-  noiseContext.putImageData(noiseImage, 0, 0);
+export async function drawRocks() {
+  const earthRocksBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NewNoiseType.Turbulence, '#929292', '#82826e', 1);
+  const earthRocks = await svgImageBuilderTextToImage(earthRocksBuilder);
 
-  clearWith('#929292');
-  drawContext.globalCompositeOperation = 'color-dodge';
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  const earthRocks = mainImageData();
+  const underworldRocksBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NewNoiseType.Turbulence, '#3f4d62', '#82826e', 1);
+  const underworldRocks = await svgImageBuilderTextToImage(underworldRocksBuilder);
 
-  clearWith('#3f4d62');
-  drawContext.globalCompositeOperation = 'color-dodge';
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  noisify(drawContext, 9);
-  const underworldRocks = mainImageData();
-
+  drawContext.drawImage(underworldRocks, 0, 0);
   drawContext.globalCompositeOperation = 'source-over';
   drawContext.fillStyle = '#333';
   drawContext.scale(1, -0.7);
@@ -92,17 +67,11 @@ export function drawRocks() {
   drawContext.fillText('RIP', 64, -40);
   const tombstoneFront = mainImageData();
 
-  clearWith('#4d1d00');
-  drawContext.globalCompositeOperation = 'color-dodge';
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  noisify(drawContext, 9);
-  const purgatoryRocks = mainImageData();
+  const purgatoryRocksBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NewNoiseType.Turbulence, '#833700', '#4d1d00', 1);
+  const purgatoryRocks = await svgImageBuilderTextToImage(purgatoryRocksBuilder);
 
-  clearWith('#833700');
-  drawContext.globalCompositeOperation = 'color-dodge';
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  noisify(drawContext, 12);
-  const purgatoryFloor = mainImageData();
+  const purgatoryFloorBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NewNoiseType.Turbulence, '#4d1d00', '#833700', 1);
+  const purgatoryFloor = await svgImageBuilderTextToImage(purgatoryFloorBuilder);
 
   return { earthRocks, underworldRocks, purgatoryRocks, purgatoryFloor, tombstoneFront };
 }
@@ -110,22 +79,15 @@ export function drawRocks() {
 // *********************
 // Tree Barks
 // *********************
-export function drawTreeBarks() {
-  noiseMaker.seed(33);
-  const noiseImage = noiseMaker.noiseImage(resolution, 1 / 64, 1, NoiseType.Lines, '#141414', 200, true, 'x', 'y', 'z', 0)
-  noiseContext.putImageData(noiseImage, 0, 0);
+export async function drawTreeBarks() {
+  const earthBarkBuilder = noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#933d02', '#4d1d00', 1);
+  const earthBark = await svgImageBuilderTextToImage(earthBarkBuilder);
 
-  clearWith('#933d02');
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  const earthBark = mainImageData();
+  const purgatoryBarkBuilder = noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#320600', '#4d1d00', 1);
+  const purgatoryBark = await svgImageBuilderTextToImage(purgatoryBarkBuilder);
 
-  clearWith('#320600');
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  const purgatoryBark = mainImageData();
-
-  clearWith('#9a9a9a');
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  const underworldBark = mainImageData();
+  const underworldBarkBuilder = noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#9a9a9a', '#4d1d00', 1);
+  const underworldBark = await svgImageBuilderTextToImage(underworldBarkBuilder);
 
   return { earthBark, underworldBark, purgatoryBark };
 }
@@ -225,11 +187,7 @@ export async function newDrawSky(fromColor: string, toColor: string, seed: numbe
   return sidesOfSkybox;
 }
 
-async function svgImageBuilderTextToImage(svgImageBuilder: Svg): Promise<HTMLImageElement> {
-  const image = new Image();
-  image.src = svgImageBuilder.getImage();
-  return new Promise(resolve => image.addEventListener('load', () => resolve(image)));
-}
+
 
 // *********************
 // Drop Off Point
@@ -245,12 +203,9 @@ function drawDropoff() {
 // Underworld Water
 // *********************
 function drawUnderworldWater() {
-  clearWith('#90ca6c'); // '#16e868'
-  noiseMaker.seed(10);
-  noiseContext.putImageData(noiseMaker.noiseImage(resolution, 1 / 64, 1, NoiseType.Edge, '#2d9f52', 220), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
+  const imageBuilder = noiseImageReplacement(128, 10, 1/64, 1, NewNoiseType.Turbulence, '#90ca6c', '#2d9f52', 1);
 
-  return mainImageData();
+  return svgImageBuilderTextToImage(imageBuilder);
 }
 
 export const materials: {[key: string]: Material} = {};
@@ -263,11 +218,11 @@ export async function populateSkyboxes() {
 }
 
 export async function populateMaterials() {
-  const dirtPath = new Material({texture: textureLoader.load(drawDirtPath())})
+  const dirtPath = new Material({texture: textureLoader.load(await drawDirtPath())})
   dirtPath.texture?.repeat.set(16, 16);
   materials.dirtPath = dirtPath;
 
-  const { earthGrass, purgatoryPlants } = drawGrass();
+  const { earthGrass, purgatoryPlants } = await drawGrass();
   const floorTexture = textureLoader.load(earthGrass);
   floorTexture.repeat.x = 12; floorTexture.repeat.y = 12;
   materials.grass = new Material({texture: floorTexture});
@@ -280,7 +235,7 @@ export async function populateMaterials() {
   materials.treeLeaves = new Material({texture: treeTexture });
 
 
-  materials.lake = drawWater();
+  materials.lake = await drawWater();
 
   materials.tire = new Material({ color: '#000'});
   materials.wheel = new Material({ color: '#888'});
@@ -293,7 +248,7 @@ export async function populateMaterials() {
   underworldGroundTexture.repeat.x = 60; underworldGroundTexture.repeat.y = 60;
   materials.underworldGround = new Material({texture: underworldGroundTexture});
 
-  const { earthRocks, underworldRocks, purgatoryRocks, purgatoryFloor, tombstoneFront } = drawRocks();
+  const { earthRocks, underworldRocks, purgatoryRocks, purgatoryFloor, tombstoneFront } = await drawRocks();
   materials.underworldRocks = new Material({texture: textureLoader.load(underworldRocks)});
   materials.marble = new Material({texture: textureLoader.load(earthRocks)})
   materials.purgatoryRocks = new Material({texture: textureLoader.load(purgatoryRocks)});
@@ -311,7 +266,7 @@ export async function populateMaterials() {
 
 
 
-  const { underworldBark, earthBark, purgatoryBark } = drawTreeBarks();
+  const { underworldBark, earthBark, purgatoryBark } = await drawTreeBarks();
   materials.underworldBark = new Material({texture: textureLoader.load(underworldBark)});
   materials.purgatoryBark = new Material({texture: textureLoader.load(purgatoryBark)})
   materials.wood = new Material({texture: textureLoader.load(earthBark)});
@@ -321,7 +276,7 @@ export async function populateMaterials() {
   materials.spiritMaterial = new Material({ texture: materials.marble.texture, color: '#fff9', isTransparent: true })
   materials.spiritMaterial.emissive = [1.4, 1.4, 1.4, 1.0];
 
-  const underworldWaterTexture = textureLoader.load(drawUnderworldWater());
+  const underworldWaterTexture = textureLoader.load(await drawUnderworldWater());
   underworldWaterTexture.repeat.x = 10; underworldWaterTexture.repeat.y = 10;
   materials.underworldWater = new Material({texture: underworldWaterTexture, isTransparent: true, color: '#fffc'})
 
@@ -330,20 +285,17 @@ export async function populateMaterials() {
   textureLoader.bindTextures();
 }
 
-
-
 function mainImageData() {
   return drawContext.getImageData(0, 0, resolution, resolution);
 }
 
-function clearWith(color: string, context = drawContext) {
+function clearWith(color: string) {
   drawContext.resetTransform();
-  tileContext.resetTransform();
-  context.clearRect(0, 0, resolution, resolution);
-  context.globalCompositeOperation = 'source-over';
-  context.filter = 'none';
-  context.fillStyle = color;
-  context.fillRect(0, 0, resolution, resolution);
+  drawContext.clearRect(0, 0, resolution, resolution);
+  drawContext.globalCompositeOperation = 'source-over';
+  drawContext.filter = 'none';
+  drawContext.fillStyle = color;
+  drawContext.fillRect(0, 0, resolution, resolution);
 }
 
 function noisify(context: CanvasRenderingContext2D, roughness = 1) {

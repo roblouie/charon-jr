@@ -7,12 +7,12 @@ import { clamp, doTimes } from '@/engine/helpers';
 import { EnhancedDOMPoint } from '@/engine/enhanced-dom-point';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 import { makeLargeTreeGeo, makePlantGeo, makeTreeLeavesGeo } from '@/modeling/flora.modeling';
-import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { AttributeLocation } from '@/engine/renderer/renderer';
 import { Face } from '@/engine/physics/face';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
 import { makeRock, makeTombstoneGeo } from '@/modeling/stone.modeling';
+import { newNoiseLandscape, NewNoiseType } from '@/engine/new-noise-maker';
 
 function getRandomArbitrary(min: number, max: number) {
   return Math.random() * (max - min) + min;
@@ -26,7 +26,9 @@ export class Level {
   skybox: Skybox;
   spiritPositions: EnhancedDOMPoint[] = [];
 
-  dropOffs: EnhancedDOMPoint[]
+  dropOffs: EnhancedDOMPoint[];
+
+  drawingFinishedPromise: Promise<void>;
 
   constructor(
     heightmap: number[],
@@ -47,6 +49,7 @@ export class Level {
     orangeDropOff: EnhancedDOMPoint,
     rampData: { position: EnhancedDOMPoint, rotation: number }[]
   ) {
+    // Raise the edges of the map
     doTimes(256, y => {
       doTimes(256, x => {
         if (y === 0 || y === 255 || x === 0 || x === 255) {
@@ -56,6 +59,9 @@ export class Level {
       })
     })
 
+    let resolve: () => void;
+    this.drawingFinishedPromise = new Promise<void>(internalResolve => resolve = internalResolve);
+
     this.dropOffs = [];
     this.dropOffs.push(redDropOff);
     this.dropOffs.push(greenDropOff);
@@ -64,23 +70,12 @@ export class Level {
 
     const treeCollision = new MoldableCubeGeometry(3, 12, 3, 2, 1, 2).cylindrify(2).translate(0, 3).done();
     const treeCollisionMesh = new Mesh(treeCollision, new Material({color: '#0000'}));
-    this.facesToCollideWith = { floorFaces: [], wallFaces: [], ceilingFaces: [] };
+    this.facesToCollideWith = {floorFaces: [], wallFaces: [], ceilingFaces: []};
 
     this.floorMesh = new Mesh(
       new PlaneGeometry(2047, 2047, 255, 255, heightmap.map(val => Math.max(val, waterLevel - 2.6))),
       groundMaterial
     );
-
-    let path: number[] = [];
-    // Draw Paths
-    if (pathSeed) {
-      noiseMaker.seed(pathSeed);
-      path = noiseMaker.noiseLandscape(256, 1 / 128, 2, NoiseType.Lines,8)
-        .map(noiseValue => clamp(noiseValue * 4, 0, 1));
-
-      const pathTextureIds = path.map(val => val + pathMaterial!.texture!.id);
-      this.floorMesh.geometry.setAttribute(AttributeLocation.TextureDepth, new Float32Array(pathTextureIds), 1);
-    }
 
     const floorFaces = meshToFaces([this.floorMesh]);
     getGroupedFaces(floorFaces, this.facesToCollideWith);
@@ -101,9 +96,29 @@ export class Level {
       this.placeRamps(rampData.position, rampData.rotation);
     });
 
+    this.buildPath(pathSeed, pathMaterial)
+      .then(path => {
+        return this.drawScenery(scenerySeed, heightmap, waterLevel, path, treeCollisionMesh, plantMaterial, treeMaterial, isTreeLeavesShowing, rockMaterial)
+      })
+      .then(() => resolve());
+  }
+
+
+  private async buildPath(pathSeed: number | undefined, pathMaterial: Material | undefined) {
+    if (!pathSeed) {
+      return []
+    }
+    const path = (await newNoiseLandscape(256, pathSeed, 1 / 128, 2, NewNoiseType.Turbulence, 80)) //noiseMaker.noiseLandscape(256, 1 / 128, 2, NoiseType.Lines, 8)
+      .map(noiseValue => clamp(noiseValue * -100, 0, 1));
+
+    const pathTextureIds = path.map(val => val + pathMaterial!.texture!.id);
+    this.floorMesh.geometry.setAttribute(AttributeLocation.TextureDepth, new Float32Array(pathTextureIds), 1);
+    return path;
+  }
+
+  private async drawScenery(scenerySeed: number, heightmap: number[], waterLevel: number, path: number[], treeCollisionMesh: Mesh, plantMaterial: Material, treeMaterial: Material, isTreeLeavesShowing: boolean, rockMaterial: Material) {
     // Draw Scenery
-    noiseMaker.seed(scenerySeed);
-    const landscapeItemPositionNoise = noiseMaker.noiseLandscape(256, 1 / 16, 4, NoiseType.Perlin,3);
+    const landscapeItemPositionNoise = await newNoiseLandscape(256, scenerySeed, 1 / 16, 4, NewNoiseType.Fractal, 6); //noiseMaker.noiseLandscape(256, 1 / 16, 4, NoiseType.Perlin, 3);
     const grassTransforms: DOMMatrix[] = [];
     const treeTransforms: DOMMatrix[] = [];
     const rockTransforms: DOMMatrix[] = [];
@@ -128,7 +143,7 @@ export class Level {
       }
 
       // Rock Positions
-      if (currentNoiseValue < 0 && currentNoiseValue >= -0.005) {
+      if (currentNoiseValue < -0.04 && currentNoiseValue >= -0.05) {
         // @ts-ignore
         const rockGeoTransform = getMatrixForPosition(this.floorMesh.geometry.vertices[index], yPosition, 1, 2);
         const rockFaces = meshToFaces([rock], rockGeoTransform);

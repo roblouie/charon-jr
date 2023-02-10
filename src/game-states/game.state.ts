@@ -1,6 +1,6 @@
 import { State } from '@/engine/state-machine/state';
 import {
-  drawEarthSky, materials, createSkybox, drawPurgatorySky, drawSkyPurple, newDrawSky, skyboxes,
+  materials, skyboxes,
 } from '@/texture-maker';
 import { Scene } from '@/engine/renderer/scene';
 import { Camera } from '@/engine/renderer/camera';
@@ -112,7 +112,7 @@ export class GameState implements State {
         .map(val => clamp(val, -50, 50));
       this.currentLevel = new Level(
         sampleHeightMap2,
-        createSkybox(drawPurgatorySky),
+        skyboxes.purgatorySky,
         -10000,
         undefined,
         4,
@@ -177,7 +177,7 @@ export class GameState implements State {
       // const sampleHeightMap3 = new Array(256 * 256).fill(0)//.map(item => 0);
       this.currentLevel = new Level(
         sampleHeightMap3,
-        createSkybox(drawSkyPurple),
+        skyboxes.underworldSky,
         -8,
         106,
         9,

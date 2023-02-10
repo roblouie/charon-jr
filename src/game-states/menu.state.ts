@@ -8,7 +8,7 @@ import { gameStateMachine } from '@/game-states/game-state-machine';
 import { draw2d } from '@/engine/draw-2d';
 import { makeTruck, TruckObject3d } from '@/modeling/truck.modeling';
 import { gameStates } from '@/index';
-import { createSkybox, drawSkyPurple, materials } from '@/texture-maker';
+import { materials, skyboxes } from '@/texture-maker';
 import { clamp, getRankFromScore } from '@/engine/helpers';
 import { Mesh } from '@/engine/renderer/mesh';
 import { makeTombstoneGeo } from '@/modeling/stone.modeling';
@@ -36,7 +36,7 @@ export class MenuState implements State {
     this.truck.position.set(-6, -1, -23);
     this.truck.setRotation(0.3, 0, 0);
     this.scene = new Scene();
-    this.scene.skybox = new Skybox(...createSkybox(drawSkyPurple));
+    this.scene.skybox = new Skybox(...skyboxes.underworldSky);
     this.scene.skybox.bindGeometry();
     this.scene.add(this.truck, this.tombstone);
     draw2d.context.canvas.style.transform = 'translate3d(13%, 5%, -27px) rotate3d(0, 1, 0, 337deg)'

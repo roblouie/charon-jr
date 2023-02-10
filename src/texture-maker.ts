@@ -1,8 +1,8 @@
 import { noiseMaker, NoiseType } from '@/engine/noise-maker';
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
-import { doTimes } from '@/engine/helpers';
-import { NewNoiseType, NoiseImage } from '@/engine/new-noise-maker';
+import { doTimes, hexToWebgl } from '@/engine/helpers';
+import { NewNoiseType, Svg, noiseImageReplacement } from '@/engine/new-noise-maker';
 
 const resolution = 128;
 
@@ -196,94 +196,48 @@ export function drawTruckCabRear() {
 // Underworld Path
 // *********************
 export function drawUnderworldPath() {
-  clearWith('#143454');
-  noiseMaker.seed(4);
-  noiseContext.putImageData(noiseMaker.noiseImage(resolution, 1 / 64, 1, NoiseType.Lines, '#519290', 180, true, 'x', 'y', 'z', 0), 0, 0);
-  drawContext.filter = 'contrast(500%)';
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  noisify(drawContext, 5);
-  return mainImageData();
-}
-
-
-// *********************
-// Underworld Ground
-// *********************
-export function drawUnderworldGround() {
-  clearWith('#153456');
-  noiseMaker.seed(4);
-  noiseContext.putImageData(noiseMaker.noiseImage(resolution, 1 / 64, 1, NoiseType.Lines, '#090511', 180, true, 'x', 'y', 'z', 0), 0, 0);
-  drawContext.filter = 'contrast(500%)';
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  noisify(drawContext, 8);
-  return mainImageData();
-}
-
-
-
-// *********************
-// Underworld Sky
-// *********************
-export function drawSkyPurple(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
-  clearWith('#180625');
-  noiseMaker.seed(100);
-  noiseContext.putImageData(noiseMaker.noiseImage(resolution, 1 / 128, 6, NoiseType.Perlin, '#3c1163', 210, true,firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  tileContext.scale(2, secondDimension=== 'z' ? 2 : 1);
-  tileDrawn();
-  return tileContext.getImageData(0, 0, 256, 256);
-}
-
-// *********************
-// Earth Sky
-// *********************
-export function drawEarthSky(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
-  clearWith('#0256b4');
-  noiseMaker.seed(100);
-  noiseContext.putImageData(noiseMaker.noiseImage(resolution, 1 / 64, 6, NoiseType.Perlin, '#fff', 210, true, firstDimension, secondDimension, sliceDimension, slice, flip), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  tileDrawn();
-  return tileContext.getImageData(0, 0, 256, 256);
-}
-
-function drawHeightmap(seed: number, frequency: number | [number, number], octals: number, colorScale = 1) {
-  return new NoiseImage(seed, 250, frequency, octals, NewNoiseType.Fractal)
+  const imageBuilder = new Svg(128).addTurbulence(7, [0.03, 0.03], 1)
     .addColorMatrix([
-      0, colorScale, 0, 0, 0,
-      0, colorScale, 0, 0, 0,
-      0, colorScale, 0, 0, 0,
+      0, 0, 0, 0.01, 0.01,
+      0, 0, 0, 0.2, 0.1,
+      0, 0, 0, 0.03, 0.01,
       0, 0, 0, 0, 1,
     ]);
+
+  return svgImageBuilderTextToImage(imageBuilder);
 }
 
-export async function newDrawSky() {
-  const skyImage = drawHeightmap(9, 0.01, 5, 1.8)
-    .addComponentTransfer(
-      NoiseImage.makeFeFunc('R', 'table', [1, 0]),
-      NoiseImage.makeFeFunc('G', 'table', [1, 0]),
-      NoiseImage.makeFeFunc('B', 'table', [1, 1]),
-    );
+
+function drawUnderworldGround() {
+  const imageBuilder = noiseImageReplacement(128, 8, 0.03, 1, NewNoiseType.Turbulence, '#000522', '#0e3454', 3);
+
+  return svgImageBuilderTextToImage(imageBuilder);
+}
+
+export async function newDrawSky(fromColor: string, toColor: string, seed: number, frequency: number | [number, number], octals: number, colorScale = 1) {
+  const skyImage = noiseImageReplacement(256, seed, frequency, octals, NewNoiseType.Fractal, fromColor, toColor, colorScale)
   const sidesOfSkybox = [];
+  const image = await svgImageBuilderTextToImage(skyImage);
   for (let i = 0; i < 6; i++) {
-    const image = new Image();
-    image.src = skyImage.getImage();
-    sidesOfSkybox.push(new Promise<HTMLImageElement>(resolve => {
-      image.addEventListener('load', () => resolve(image));
-    }));
+    sidesOfSkybox.push(image);
   }
 
-  return await Promise.all(sidesOfSkybox);
+  return sidesOfSkybox;
+}
+
+async function svgImageBuilderTextToImage(svgImageBuilder: Svg): Promise<HTMLImageElement> {
+  const image = new Image();
+  image.src = svgImageBuilder.getImage();
+  return new Promise(resolve => image.addEventListener('load', () => resolve(image)));
 }
 
 // *********************
 // Drop Off Point
 // *********************
 function drawDropoff() {
-  clearWith('#0000');
-  noiseMaker.seed(100);
-  noiseContext.putImageData(noiseMaker.noiseImage(resolution, 1 / 32, 2, NoiseType.Perlin, '#fff', 70, false, 'x', 'y', 'z', 0), 0, 0);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  return drawContext.getImageData(0, 0, 128, 128);
+  const imageBuilder = noiseImageReplacement(128, 100, 1 / 32, 2, NewNoiseType.Fractal, '#0000', '#fff', 1);
+
+  return svgImageBuilderTextToImage(imageBuilder);
 }
 
 
@@ -299,32 +253,13 @@ function drawUnderworldWater() {
   return mainImageData();
 }
 
-
-
-// *********************
-// Purgatory Sky
-// *********************
-export function drawPurgatorySky(firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip = false) {
-  clearWith('#e8671c');
-
-  noiseMaker.seed(100);
-
-  const noiseImage = noiseMaker.noiseImage(resolution, 1 / 128, 1, NoiseType.Perlin, '#c1597e', 180, true, firstDimension, secondDimension, sliceDimension, slice, flip);
-  noiseContext.putImageData(noiseImage, 0, 0);
-  drawContext.globalCompositeOperation = 'difference';
-  noiseContext.putImageData(noiseImage, 0, 0, 0, 0, 256, 256);
-  drawContext.drawImage(noiseContext.canvas, 0, 0, resolution, resolution);
-  tileDrawn();
-  return tileContext.getImageData(0, 0, 256, 256);
-}
-
-
-
 export const materials: {[key: string]: Material} = {};
 export const skyboxes: {[key: string]: TexImageSource[]} = {};
 
 export async function populateSkyboxes() {
-  skyboxes.earthSky = await newDrawSky();
+  skyboxes.earthSky = await newDrawSky('#fff', '#00f',9, 0.01, 5, 1.8);
+  skyboxes.purgatorySky = await newDrawSky('#c1597e', '#e8671c', 100,1/128, 1, 2);
+  skyboxes.underworldSky = await newDrawSky('#180625', '#3c1163', 100, 1/128, 6, 1);
 }
 
 export async function populateMaterials() {
@@ -350,11 +285,11 @@ export async function populateMaterials() {
   materials.tire = new Material({ color: '#000'});
   materials.wheel = new Material({ color: '#888'});
 
-  const underworldPathTexture = textureLoader.load(drawUnderworldPath());
+  const underworldPathTexture = textureLoader.load(await drawUnderworldPath());
   underworldPathTexture.repeat.x = 60; underworldPathTexture.repeat.y = 60;
   materials.underworldPath = new Material({texture: underworldPathTexture});
 
-  const underworldGroundTexture = textureLoader.load(drawUnderworldGround());
+  const underworldGroundTexture = textureLoader.load(await drawUnderworldGround());
   underworldGroundTexture.repeat.x = 60; underworldGroundTexture.repeat.y = 60;
   materials.underworldGround = new Material({texture: underworldGroundTexture});
 
@@ -381,7 +316,7 @@ export async function populateMaterials() {
   materials.purgatoryBark = new Material({texture: textureLoader.load(purgatoryBark)})
   materials.wood = new Material({texture: textureLoader.load(earthBark)});
 
-  materials.dropOff = new Material({texture: textureLoader.load(drawDropoff())});
+  materials.dropOff = new Material({texture: textureLoader.load(await drawDropoff())});
 
   materials.spiritMaterial = new Material({ texture: materials.marble.texture, color: '#fff9', isTransparent: true })
   materials.spiritMaterial.emissive = [1.4, 1.4, 1.4, 1.0];
@@ -424,34 +359,4 @@ function noisify(context: CanvasRenderingContext2D, roughness = 1) {
     imageData.data[i + 2] = blue + (adjuster * blue / 256);
   }
   context.putImageData(imageData, 0, 0);
-}
-
-function tileDrawn() {
-  tileContext.drawImage(drawContext.canvas, 0, 0, resolution, resolution);
-  tileContext.drawImage(drawContext.canvas, resolution, 0, resolution, resolution);
-  tileContext.drawImage(drawContext.canvas, resolution, resolution, resolution, resolution);
-  tileContext.drawImage(drawContext.canvas, 0, resolution, resolution, resolution);
-}
-
-
-// Cuts slices off the edges of a 3d texture to create a skybox. An easier to read version of this would be the following:
-//
-// const skyRight = skyboxDrawCallback('z', 'y', 'x', 0, true);
-// const skyLeft = skyboxDrawCallback('z', 'y', 'x', 127);
-//
-// const skyCeiling = skyboxDrawCallback('x', 'z', 'y', 0);
-// const skyFloor = skyboxDrawCallback('x', 'z', 'y', 127);
-//
-// const skyFront = skyboxDrawCallback('x', 'y', 'z', 0);
-// const skyBack = skyboxDrawCallback('x', 'y', 'z', 127, true);
-//
-// return [skyRight, skyLeft, skyCeiling, skyFloor, skyFront, skyBack];
-//
-// This is functionally equivalent to the code-golfed version below.
-// @ts-ignore
-export function createSkybox(callback: (firstDimension: 'x' | 'y' | 'z', secondDimension: 'x' | 'y' | 'z', sliceDimension: 'x' | 'y' | 'z', slice: number, flip: boolean) => ImageData) {
-  return ['zyx', 'zyx', 'xzy', 'xzy', 'xyz', 'xyz'].map((coordinates, i) => {
-    // @ts-ignore
-    return callback(...coordinates.split(''), i % 2 === 0 ? 0 : 127, i === 0 || i === 5);
-  });
 }

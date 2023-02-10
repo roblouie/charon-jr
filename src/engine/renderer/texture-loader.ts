@@ -4,7 +4,7 @@ import { Texture } from '@/engine/renderer/texture';
 class TextureLoader {
   textures: Texture[] = [];
 
-  load(textureSource: ImageData | HTMLCanvasElement): Texture {
+  load(textureSource: TexImageSource): Texture {
     const texture = new Texture(this.textures.length, textureSource);
     this.textures.push(texture);
     return texture;

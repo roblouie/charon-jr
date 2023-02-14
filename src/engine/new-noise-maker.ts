@@ -1,6 +1,6 @@
 import { hexToWebgl } from '@/engine/helpers';
 
-export enum NewNoiseType {
+export const enum NewNoiseType {
   Turbulence = 'turbulence',
   Fractal = 'fractalNoise',
 }

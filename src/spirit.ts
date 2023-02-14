@@ -6,7 +6,7 @@ import { hexToWebgl } from '@/engine/helpers';
 import { Material } from '@/engine/renderer/material';
 import { sadGhostAudio, sadGhostAudio2 } from '@/sound-effects';
 import { iconGeo, staticBodyGeo } from '@/modeling/spirit.modeling';
-import { randomNumber } from '@/engine/new-noise-maker';
+import { randomNumber } from '@/engine/new-new-noise';
 
 export class Spirit extends Object3d {
   static Colors = ['#f00', '#0f0', '#00f', '#f90'];

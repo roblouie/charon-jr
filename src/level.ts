@@ -12,7 +12,7 @@ import { Face } from '@/engine/physics/face';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
 import { makeRock, makeTombstoneGeo } from '@/modeling/stone.modeling';
-import { newNoiseLandscape, NewNoiseType } from '@/engine/new-noise-maker';
+import { newNoiseLandscape, NewNoiseType } from '@/engine/new-new-noise';
 
 function getRandomArbitrary(min: number, max: number) {
   return Math.random() * (max - min) + min;

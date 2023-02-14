@@ -20,7 +20,7 @@ import { hud } from '@/hud';
 import { gameStates } from '@/index';
 import { ghostFlyAwayAudio, ghostThankYouAudio } from '@/sound-effects';
 import { makeDynamicBody } from '@/modeling/spirit.modeling';
-import { newNoiseLandscape, NewNoiseType } from '@/engine/new-noise-maker';
+import { newNoiseLandscape, NewNoiseType } from '@/engine/new-new-noise';
 
 const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)

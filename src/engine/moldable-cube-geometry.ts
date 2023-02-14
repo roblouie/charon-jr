@@ -3,7 +3,7 @@ import { EnhancedDOMPoint, VectorLike } from '@/engine/enhanced-dom-point';
 import { calculateVertexNormals, doTimes, radsToDegrees } from "@/engine/helpers";
 import { Texture } from '@/engine/renderer/texture';
 import { gl } from '@/engine/renderer/lil-gl';
-import { randomNumber } from '@/engine/new-noise-maker';
+import { randomNumber } from '@/engine/new-new-noise';
 
 type BufferInfo = { data: Float32Array; size: number };
 

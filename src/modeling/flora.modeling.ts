@@ -1,6 +1,6 @@
 import { doTimes } from '@/engine/helpers';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
-import { randomNumber } from '@/engine/new-noise-maker';
+import { randomNumber } from '@/engine/new-new-noise';
 
 
 function makeTree(treeHeight: number, verticalSegments: number, radius: number, seed: number) {

@@ -124,15 +124,15 @@ export class MoldableCubeGeometry {
       buildPlane(...sides[index]);
     });
 
-    this.setAttribute(AttributeLocation.TextureCoords, new Float32Array(uvs), 2);
+    this.setAttributeMc(AttributeLocation.TextureCoords, new Float32Array(uvs), 2);
     this.setIndices(new Uint16Array(indices));
     this
       .computeNormalsPerPlane()
-      .done()
-      .all();
+      .doneMc()
+      .allMc();
   }
 
-  all() {
+  allMc() {
     this.verticesToActOn = this.vertices;
     return this;
   }
@@ -147,18 +147,18 @@ export class MoldableCubeGeometry {
     return this;
   }
 
-  translate(x = 0, y = 0, z = 0) {
+  translateMc(x = 0, y = 0, z = 0) {
     this.verticesToActOn.forEach(vertex => vertex.add({x, y, z}));
     return this;
   }
 
-  scale(x = 1, y = 1, z = 1) {
+  scaleMc(x = 1, y = 1, z = 1) {
     const scaleMatrix = new DOMMatrix().scaleSelf(x, y, z);
     this.verticesToActOn.forEach(vertex => vertex.set(scaleMatrix.transformPoint(vertex)));
     return this;
   }
 
-  rotate(x = 0, y = 0, z = 0) {
+  rotateMc(x = 0, y = 0, z = 0) {
     const rotationMatrix = new DOMMatrix().rotateSelf(radsToDegrees(x), radsToDegrees(y), radsToDegrees(z));
     this.verticesToActOn.forEach(vertex => vertex.set(rotationMatrix.transformPoint(vertex)));
     return this;
@@ -171,7 +171,7 @@ export class MoldableCubeGeometry {
 
   spherify(radius: number) {
     this.verticesToActOn.forEach(vertex => {
-      vertex.normalize().scale(radius);
+      vertex.normalizePoint().scale(radius);
     });
     return this;
   }
@@ -182,15 +182,15 @@ export class MoldableCubeGeometry {
 
     this.vertices.push(...otherMoldable.vertices);
 
-    const thisTextureCoords = this.getAttribute(AttributeLocation.TextureCoords).data;
-    const otherTextureCoords = otherMoldable.getAttribute(AttributeLocation.TextureCoords).data;
+    const thisTextureCoords = this.getAttributeMc(AttributeLocation.TextureCoords).data;
+    const otherTextureCoords = otherMoldable.getAttributeMc(AttributeLocation.TextureCoords).data;
     const combinedCoords = new Float32Array([...thisTextureCoords, ...otherTextureCoords]);
-    this.setAttribute(AttributeLocation.TextureCoords, combinedCoords, 2);
+    this.setAttributeMc(AttributeLocation.TextureCoords, combinedCoords, 2);
 
-    const thisNormals = this.getAttribute(AttributeLocation.Normals).data;
-    const otherNormals = otherMoldable.getAttribute(AttributeLocation.Normals).data;
+    const thisNormals = this.getAttributeMc(AttributeLocation.Normals).data;
+    const otherNormals = otherMoldable.getAttributeMc(AttributeLocation.Normals).data;
     const combinedNormals = new Float32Array([...thisNormals, ...otherNormals]);
-    this.setAttribute(AttributeLocation.Normals, combinedNormals, 3);
+    this.setAttributeMc(AttributeLocation.Normals, combinedNormals, 3);
 
     return this;
   }
@@ -216,7 +216,7 @@ export class MoldableCubeGeometry {
     this.verticesToActOn.forEach(vertex => {
       const originalAxis = vertex[aroundAxis];
       vertex[aroundAxis] = 0;
-      vertex.subtract(circleCenter).normalize().scale(radius);
+      vertex.subtract(circleCenter).normalizePoint().scale(radius);
       vertex[aroundAxis] = originalAxis;
     });
     return this;
@@ -228,7 +228,7 @@ export class MoldableCubeGeometry {
    */
   computeNormalsPerPlane() {
     const updatedNormals = calculateVertexNormals(this.vertices, this.getIndices()!);
-    this.setAttribute(AttributeLocation.Normals, new Float32Array(updatedNormals.flatMap(point => point.toArray())), 3);
+    this.setAttributeMc(AttributeLocation.Normals, new Float32Array(updatedNormals.flatMap(point => point.toArray())), 3);
     return this;
   }
 
@@ -251,7 +251,7 @@ export class MoldableCubeGeometry {
       updatedNormals[replacer.index] = updatedNormals[replacer.firstIndex];
     });
 
-    const originalNormals = this.getAttribute(AttributeLocation.Normals).data;
+    const originalNormals = this.getAttributeMc(AttributeLocation.Normals).data;
     this.verticesToActOn.forEach(vertex => {
       const originalVertexIndex = this.vertices.indexOf(vertex);
       const newNormalIndex = this.verticesToActOn.indexOf(vertex);
@@ -263,7 +263,7 @@ export class MoldableCubeGeometry {
     });
 
     // // Now just set our new normals and we're done.
-    this.setAttribute(AttributeLocation.Normals, originalNormals, 3);
+    this.setAttributeMc(AttributeLocation.Normals, originalNormals, 3);
 
     return this;
   }
@@ -339,8 +339,8 @@ export class MoldableCubeGeometry {
     return {indexReplacers, indicesToUniqueVertices};
   }
 
-  done() {
-    this.setAttribute(AttributeLocation.Positions, new Float32Array(this.vertices.flatMap(point => point.toArray())), 3);
+  doneMc() {
+    this.setAttributeMc(AttributeLocation.Positions, new Float32Array(this.vertices.flatMap(point => point.toArray())), 3);
     return this;
   }
 
@@ -354,11 +354,11 @@ export class MoldableCubeGeometry {
     });
   }
 
-  getAttribute(attributeLocation: AttributeLocation) {
+  getAttributeMc(attributeLocation: AttributeLocation) {
     return this.buffers.get(attributeLocation)!;
   }
 
-  setAttribute(attributeLocation: AttributeLocation, data: Float32Array, size: number) {
+  setAttributeMc(attributeLocation: AttributeLocation, data: Float32Array, size: number) {
     this.buffers.set(attributeLocation, { data, size });
   }
 

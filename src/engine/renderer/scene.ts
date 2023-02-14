@@ -21,8 +21,8 @@ export class Scene extends Object3d {
     })
   }
 
-  remove(object3d: Object3d) {
-    super.remove(object3d);
+  removeO3d(object3d: Object3d) {
+    super.removeO3d(object3d);
     [object3d, ...object3d.allChildren()]
       .forEach(obj => {
       // @ts-ignore

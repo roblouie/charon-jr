@@ -24,17 +24,17 @@ export class MenuState implements State {
   constructor() {
     this.camera = new Camera(Math.PI / 6, 16 / 9, 1, 400);
     this.truck = makeTruck();
-    this.truck.scale.set(0.4, 0.4, 0.4);
+    this.truck.scaleO3d.set(0.4, 0.4, 0.4);
 
     this.tombstone = new Mesh(makeTombstoneGeo(15, 10, 5, 9,18), materials.underworldRocks);
-    this.tombstone.position.set(4.6, -1.5, -27.0);
-    this.tombstone.setRotation(0.1, -0.6, 0);
+    this.tombstone.positionO3d.set(4.6, -1.5, -27.0);
+    this.tombstone.setRotationO3d(0.1, -0.6, 0);
   }
 
   onEnter() {
     this.scene = new Scene();
-    this.truck.position.set(-6, -1, -23);
-    this.truck.setRotation(0.3, 0, 0);
+    this.truck.positionO3d.set(-6, -1, -23);
+    this.truck.setRotationO3d(0.3, 0, 0);
     this.scene = new Scene();
     this.scene.skybox = new Skybox(...skyboxes.underworldSky);
     this.scene.skybox.bindGeometry();
@@ -60,7 +60,7 @@ export class MenuState implements State {
       onChange(-1);
     }
 
-    this.truck.wrapper.rotate(0, -0.01, 0);
+    this.truck.wrapper.rotateO3d(0, -0.01, 0);
     this.truck.setDriveRotationRate(0.1);
     this.truck.setSteeringAngle(-0.3);
     this.scene!.updateWorldMatrix();

@@ -24,10 +24,10 @@ import { newNoiseLandscape, NewNoiseType } from '@/engine/new-new-noise';
 
 const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)
-  .scale(0, 1, 0)
-  .merge(new MoldableCubeGeometry(1, 0.3, 2.5).selectBy(vertex => vertex.z < 0).scale(0.6, 1, 1).all().translate(0, 0, 3.5).done())
+  .scaleMc(0, 1, 0)
+  .merge(new MoldableCubeGeometry(1, 0.3, 2.5).selectBy(vertex => vertex.z < 0).scaleMc(0.6, 1, 1).allMc().translateMc(0, 0, 3.5).doneMc())
   .computeNormalsPerPlane()
-  .done();
+  .doneMc();
 
 export class GameState implements State {
   player: ThirdPersonPlayer;
@@ -51,7 +51,7 @@ export class GameState implements State {
 
   constructor() {
     const camera = new Camera(1.68, 16 / 9, 1, 1700);
-    camera.position = new EnhancedDOMPoint(0, 5, -17);
+    camera.positionO3d = new EnhancedDOMPoint(0, 5, -17);
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();
     this.gridFaces = [];
@@ -62,7 +62,7 @@ export class GameState implements State {
 
     this.currentLevel = {} as Level;
     this.dynamicBody = makeDynamicBody();
-    this.dynamicBody.position.set(-10000, -10000, -10000);
+    this.dynamicBody.positionO3d.set(-10000, -10000, -10000);
     this.dropoffs = [];
   }
 
@@ -125,44 +125,44 @@ export class GameState implements State {
         new EnhancedDOMPoint(-706, 50, 259),
         [
           {
-            position: new EnhancedDOMPoint(252, -7.5 + 5.5, 117),
-            rotation: 1.6,
+            rampPosition: new EnhancedDOMPoint(252, -7.5 + 5.5, 117),
+            rampRotation: 1.6,
           },
           {
-            position: new EnhancedDOMPoint(685, -7.5 + 5.5, -60),
-            rotation: 2.59,
+            rampPosition: new EnhancedDOMPoint(685, -7.5 + 5.5, -60),
+            rampRotation: 2.59,
           },
           {
-            position: new EnhancedDOMPoint(148, -3.7 + 5.5, -371),
-            rotation: 5.6,
+            rampPosition: new EnhancedDOMPoint(148, -3.7 + 5.5, -371),
+            rampRotation: 5.6,
           },
           {
-            position: new EnhancedDOMPoint(-455, -9 + 5.5, 419),
-            rotation: -2,
+            rampPosition: new EnhancedDOMPoint(-455, -9 + 5.5, 419),
+            rampRotation: -2,
           },
           {
-            position: new EnhancedDOMPoint(32, 41 + 5.5, 237),
-            rotation: -1.8,
+            rampPosition: new EnhancedDOMPoint(32, 41 + 5.5, 237),
+            rampRotation: -1.8,
           },
           {
-            position: new EnhancedDOMPoint(692, -7 + 5.5, -333),
-            rotation: 6.23,
+            rampPosition: new EnhancedDOMPoint(692, -7 + 5.5, -333),
+            rampRotation: 6.23,
           },
           {
-            position: new EnhancedDOMPoint(-223, 41 + 5.5, 55),
-            rotation: -3.7,
+            rampPosition: new EnhancedDOMPoint(-223, 41 + 5.5, 55),
+            rampRotation: -3.7,
           },
           {
-            position: new EnhancedDOMPoint(475, 49 + 5.5, 400),
-            rotation: 0.7,
+            rampPosition: new EnhancedDOMPoint(475, 49 + 5.5, 400),
+            rampRotation: 0.7,
           },
           {
-            position: new EnhancedDOMPoint(-630, -11.5 + 5.5, -291),
-            rotation: 8.2,
+            rampPosition: new EnhancedDOMPoint(-630, -11.5 + 5.5, -291),
+            rampRotation: 8.2,
           },
           {
-            position: new EnhancedDOMPoint(876, 42 + 5.5, -253),
-            rotation: 3.2,
+            rampPosition: new EnhancedDOMPoint(876, 42 + 5.5, -253),
+            rampRotation: 3.2,
           }
         ]
       );
@@ -187,16 +187,16 @@ export class GameState implements State {
         new EnhancedDOMPoint(471, 7, -687),
         [
           {
-            position: new EnhancedDOMPoint(-142, 32, -50),
-            rotation: -0.7
+            rampPosition: new EnhancedDOMPoint(-142, 32, -50),
+            rampRotation: -0.7
           },
           {
-            position: new EnhancedDOMPoint(-480, -1.3, 400),
-            rotation: -0.3
+            rampPosition: new EnhancedDOMPoint(-480, -1.3, 400),
+            rampRotation: -0.3
           },
           {
-            position: new EnhancedDOMPoint(138, 6.3, 501),
-            rotation: 4
+            rampPosition: new EnhancedDOMPoint(138, 6.3, 501),
+            rampRotation: 4
           }
         ]
       );
@@ -243,13 +243,13 @@ export class GameState implements State {
 
     this.dropoffs = [];
     this.currentLevel.dropOffs.forEach((dropOff, index) => {
-      const dropOffMesh = new Mesh(new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).done(), new Material({ texture: materials.dropOff.texture, emissive: Spirit.Colors[index], isTransparent: true }));
-      dropOffMesh.position.set(dropOff);
+      const dropOffMesh = new Mesh(new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).doneMc(), new Material({ texture: materials.dropOff.texture, emissive: Spirit.Colors[index], isTransparent: true }));
+      dropOffMesh.positionO3d.set(dropOff);
       this.dropoffs.push(dropOffMesh);
-      const dropOffGeo = new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).done();
+      const dropOffGeo = new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).doneMc();
       dropOffGeo.getIndices()?.reverse();
       const dropOffMesh2 = new Mesh(dropOffGeo, new Material({ texture: materials.dropOff.texture, emissive: Spirit.Colors[index], isTransparent: true }));
-      dropOffMesh2.position.set(dropOff);
+      dropOffMesh2.positionO3d.set(dropOff);
       this.dropoffs.push(dropOffMesh2);
     })
 
@@ -268,7 +268,7 @@ export class GameState implements State {
   }
 
   private resetSpiritBody() {
-    this.dynamicBody.position.set(-10000, -10000, -10000);
+    this.dynamicBody.positionO3d.set(-10000, -10000, -10000);
   }
 
   onLeave() {
@@ -291,13 +291,13 @@ export class GameState implements State {
         const dropOffPosition = this.currentLevel.dropOffs[this.player.carriedSpirit.dropOffPoint];
         this.dropOffPlayerDistance.subtractVectors(dropOffPosition, this.player.chassisCenter);
         if (Math.abs(this.dropOffPlayerDistance.x) <= 40 && Math.abs(this.dropOffPlayerDistance.z) <= 40) {
-          this.dropoffs[this.player.carriedSpirit.dropOffPoint * 2].scale.y = 2;
-          this.dropoffs[this.player.carriedSpirit.dropOffPoint * 2 + 1].scale.y = 2;
+          this.dropoffs[this.player.carriedSpirit.dropOffPoint * 2].scaleO3d.y = 2;
+          this.dropoffs[this.player.carriedSpirit.dropOffPoint * 2 + 1].scaleO3d.y = 2;
           ghostFlyAwayAudio().start();
 
           this.resetSpiritBody();
-          this.player.mesh.wrapper.remove(this.dynamicBody);
-          this.scene.remove(this.arrowGuideWrapper);
+          this.player.mesh.wrapper.removeO3d(this.dynamicBody);
+          this.scene.removeO3d(this.arrowGuideWrapper);
           this.player.carriedSpirit = undefined;
 
           this.spiritsTransported++;
@@ -308,14 +308,14 @@ export class GameState implements State {
       // Pick Up
       if (this.player.velocity.magnitude < 0.2) {
         this.spirits.some((spirit, index) => {
-          this.spiritPlayerDistance.subtractVectors(spirit.position, this.player.chassisCenter)
+          this.spiritPlayerDistance.subtractVectors(spirit.positionO3d, this.player.chassisCenter)
           if (Math.abs(this.spiritPlayerDistance.x) < 17 && Math.abs(this.spiritPlayerDistance.z) < 17) {
             this.arrowGuide.material.color = spirit.color.map(val => val * 1.5);
-            this.dropoffs[spirit.dropOffPoint * 2].scale.y = 800;
-            this.dropoffs[spirit.dropOffPoint * 2 + 1].scale.y = 800;
+            this.dropoffs[spirit.dropOffPoint * 2].scaleO3d.y = 800;
+            this.dropoffs[spirit.dropOffPoint * 2 + 1].scaleO3d.y = 800;
 
             // Find distance from spirit pickup point to it's drop off point and add a relative amount of time
-            this.spiritDropOffDistance.subtractVectors(this.currentLevel.dropOffs[spirit.dropOffPoint], spirit.position);
+            this.spiritDropOffDistance.subtractVectors(this.currentLevel.dropOffs[spirit.dropOffPoint], spirit.positionO3d);
             this.spiritDropOffDistance.y = 0;
             const bonus = this.spiritDropOffDistance.magnitude * this.timePerDistanceUnit;
             hud.setTimeBonus(bonus);
@@ -323,13 +323,13 @@ export class GameState implements State {
 
             ghostThankYouAudio().start();
 
-            this.dynamicBody.position.set(0, 3, -3);
-            this.dynamicBody.setRotation(0, Math.PI, 0);
+            this.dynamicBody.positionO3d.set(0, 3, -3);
+            this.dynamicBody.setRotationO3d(0, Math.PI, 0);
             this.player.mesh.wrapper.add(this.dynamicBody);
             this.player.carriedSpirit = spirit;
             spirit.audioPlayer?.stop();
             this.scene.add(this.arrowGuideWrapper);
-            this.scene.remove(spirit);
+            this.scene.removeO3d(spirit);
             this.spirits.splice(index, 1);
             return true;
           }
@@ -350,14 +350,14 @@ export class GameState implements State {
     this.handleDropOffPickUp();
 
     if (this.player.carriedSpirit) {
-      this.arrowGuideWrapper.position.set(this.player.chassisCenter);
-      this.arrowGuideWrapper.position.y += 14;
+      this.arrowGuideWrapper.positionO3d.set(this.player.chassisCenter);
+      this.arrowGuideWrapper.positionO3d.y += 14;
       this.arrowLookAtDropOff = this.currentLevel.dropOffs[this.player.carriedSpirit!.dropOffPoint];
-      this.arrowLookAtDropOff.y = this.arrowGuideWrapper.position.y - 10;
+      this.arrowLookAtDropOff.y = this.arrowGuideWrapper.positionO3d.y - 10;
       this.arrowGuideWrapper.lookAt(this.arrowLookAtDropOff);
     }
 
-    this.dropoffs.forEach(dropoff => dropoff.rotate(0, 0.008, 0));
+    this.dropoffs.forEach(dropoff => dropoff.rotateO3d(0, 0.008, 0));
 
     this.scene.updateWorldMatrix();
 

@@ -10,7 +10,7 @@ export class Skybox extends MoldableCubeGeometry {
       gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + index, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     });
     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-    this.setAttribute(AttributeLocation.Positions, new Float32Array([
+    this.setAttributeMc(AttributeLocation.Positions, new Float32Array([
       -1, -1,
       1, -1,
       -1, 1,

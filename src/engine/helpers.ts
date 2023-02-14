@@ -53,7 +53,7 @@ function unormalizedNormal(points: EnhancedDOMPoint[]): EnhancedDOMPoint {
 }
 
 export function calculateFaceNormal(points: EnhancedDOMPoint[]): EnhancedDOMPoint {
-  return unormalizedNormal(points).normalize();
+  return unormalizedNormal(points).normalizePoint();
 }
 
 export function calculateVertexNormals(points: EnhancedDOMPoint[], indices: number[] | Uint16Array): EnhancedDOMPoint[] {
@@ -65,5 +65,5 @@ export function calculateVertexNormals(points: EnhancedDOMPoint[], indices: numb
     vertexNormals[indices[i + 2]].add(faceNormal);
   }
 
-  return vertexNormals.map(vector => vector.normalize());
+  return vertexNormals.map(vector => vector.normalizePoint());
 }

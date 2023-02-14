@@ -11,7 +11,7 @@ export class PlaneGeometry extends MoldableCubeGeometry {
           vertex.y = heightmap[index]
         })
         .computeNormalsPerPlane()
-        .done();
+        .doneMc();
     }
   }
 }

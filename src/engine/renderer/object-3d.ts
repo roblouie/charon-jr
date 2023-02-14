@@ -2,19 +2,19 @@ import { EnhancedDOMPoint } from "@/engine/enhanced-dom-point";
 import { radsToDegrees } from '@/engine/helpers';
 
 export class Object3d {
-  position: EnhancedDOMPoint;
-  scale: EnhancedDOMPoint;
-  children: Object3d[];
-  parent?: Object3d;
+  positionO3d: EnhancedDOMPoint;
+  scaleO3d: EnhancedDOMPoint;
+  childrenO3d: Object3d[];
+  parentO3d?: Object3d;
   localMatrix: DOMMatrix;
   worldMatrix: DOMMatrix;
   up: EnhancedDOMPoint;
   rotationMatrix: DOMMatrix;
 
   constructor(...children: Object3d[]) {
-    this.position = new EnhancedDOMPoint();
-    this.scale = new EnhancedDOMPoint(1, 1, 1);
-    this.children = [];
+    this.positionO3d = new EnhancedDOMPoint();
+    this.scaleO3d = new EnhancedDOMPoint(1, 1, 1);
+    this.childrenO3d = [];
     this.localMatrix = new DOMMatrix();
     this.worldMatrix = new DOMMatrix();
     this.up = new EnhancedDOMPoint(0, 1, 0);
@@ -26,40 +26,40 @@ export class Object3d {
 
   add(...object3ds: Object3d[]) {
     object3ds.forEach(object3d => {
-      if (object3d.parent) {
-        object3d.parent.children = object3d.parent.children.filter(child => child !== this);
+      if (object3d.parentO3d) {
+        object3d.parentO3d.childrenO3d = object3d.parentO3d.childrenO3d.filter(child => child !== this);
       }
-      object3d.parent = this;
-      this.children.push(object3d);
+      object3d.parentO3d = this;
+      this.childrenO3d.push(object3d);
     })
   }
 
-  remove(object3d: Object3d) {
-    this.children = this.children.filter(child => child !== object3d);
+  removeO3d(object3d: Object3d) {
+    this.childrenO3d = this.childrenO3d.filter(child => child !== object3d);
   }
 
-  rotation = new EnhancedDOMPoint();
-  rotate(xRads: number, yRads: number, zRads: number) {
-    this.rotation.add({x: radsToDegrees(xRads), y: radsToDegrees(yRads), z: radsToDegrees(zRads)});
+  rotationO3d = new EnhancedDOMPoint();
+  rotateO3d(xRads: number, yRads: number, zRads: number) {
+    this.rotationO3d.add({x: radsToDegrees(xRads), y: radsToDegrees(yRads), z: radsToDegrees(zRads)});
     this.rotationMatrix.rotateSelf(radsToDegrees(xRads), radsToDegrees(yRads), radsToDegrees(zRads));
   }
 
-  setRotation(xRads: number, yRads: number, zRads: number) {
+  setRotationO3d(xRads: number, yRads: number, zRads: number) {
     this.rotationMatrix = new DOMMatrix();
-    this.rotation.set(radsToDegrees(xRads), radsToDegrees(yRads), radsToDegrees(zRads));
+    this.rotationO3d.set(radsToDegrees(xRads), radsToDegrees(yRads), radsToDegrees(zRads));
     this.rotationMatrix.rotateSelf(radsToDegrees(xRads), radsToDegrees(yRads), radsToDegrees(zRads));
   }
 
   isUsingLookAt = false;
   getMatrix() {
     const matrix = new DOMMatrix();
-    matrix.translateSelf(this.position.x, this.position.y, this.position.z);
+    matrix.translateSelf(this.positionO3d.x, this.positionO3d.y, this.positionO3d.z);
     if (this.isUsingLookAt) {
       matrix.multiplySelf(this.rotationMatrix);
     } else {
-      matrix.rotateSelf(this.rotation.x, this.rotation.y, this.rotation.z);
+      matrix.rotateSelf(this.rotationO3d.x, this.rotationO3d.y, this.rotationO3d.z);
     }
-    matrix.scaleSelf(this.scale.x, this.scale.y, this.scale.z);
+    matrix.scaleSelf(this.scaleO3d.x, this.scaleO3d.y, this.scaleO3d.z);
     return matrix;
   }
 
@@ -72,18 +72,18 @@ export class Object3d {
 
     this.localMatrix = this.getMatrix();
 
-    if (this.parent) {
-      this.worldMatrix = this.parent.worldMatrix.multiply(this.localMatrix);
+    if (this.parentO3d) {
+      this.worldMatrix = this.parentO3d.worldMatrix.multiply(this.localMatrix);
     } else {
       this.worldMatrix = DOMMatrix.fromMatrix(this.localMatrix);
     }
 
-      this.children.forEach(child => child.updateWorldMatrix());
+      this.childrenO3d.forEach(child => child.updateWorldMatrix());
   }
 
   allChildren(): Object3d[] {
     function getChildren(object3d: Object3d, all: Object3d[]) {
-      object3d.children.forEach(child => {
+      object3d.childrenO3d.forEach(child => {
         all.push(child);
         getChildren(child, all);
       });
@@ -100,9 +100,9 @@ export class Object3d {
 
   lookAt(target: EnhancedDOMPoint) {
     this.isUsingLookAt = true;
-    this.lookAtZ.subtractVectors(this.position, target).normalize();
-    this.lookAtX.crossVectors(this.up, this.lookAtZ).normalize();
-    this.lookAtY.crossVectors(this.lookAtZ, this.lookAtX).normalize();
+    this.lookAtZ.subtractVectors(this.positionO3d, target).normalizePoint();
+    this.lookAtX.crossVectors(this.up, this.lookAtZ).normalizePoint();
+    this.lookAtY.crossVectors(this.lookAtZ, this.lookAtX).normalizePoint();
 
     this.rotationMatrix = new DOMMatrix([
       this.lookAtX.x, this.lookAtX.y, this.lookAtX.z, 0,

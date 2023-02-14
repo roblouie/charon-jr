@@ -47,7 +47,7 @@ export class Level {
     greenDropOff: EnhancedDOMPoint,
     blueDropOff: EnhancedDOMPoint,
     orangeDropOff: EnhancedDOMPoint,
-    rampData: { position: EnhancedDOMPoint, rotation: number }[]
+    rampData: { rampPosition: EnhancedDOMPoint, rampRotation: number }[]
   ) {
     // Raise the edges of the map
     doTimes(256, y => {
@@ -68,7 +68,7 @@ export class Level {
     this.dropOffs.push(blueDropOff);
     this.dropOffs.push(orangeDropOff);
 
-    const treeCollision = new MoldableCubeGeometry(3, 12, 3, 2, 1, 2).cylindrify(2).translate(0, 3).done();
+    const treeCollision = new MoldableCubeGeometry(3, 12, 3, 2, 1, 2).cylindrify(2).translateMc(0, 3).doneMc();
     const treeCollisionMesh = new Mesh(treeCollision, new Material({color: '#0000'}));
     this.facesToCollideWith = {floorFaces: [], wallFaces: [], ceilingFaces: []};
 
@@ -85,7 +85,7 @@ export class Level {
       new PlaneGeometry(2047, 2047, 1, 1),
       waterMaterial
     );
-    lake.position.y = waterLevel;
+    lake.positionO3d.y = waterLevel;
     this.waterLevel = waterLevel;
     this.meshesToRender.push(this.floorMesh, lake);
 
@@ -93,7 +93,7 @@ export class Level {
     this.skybox = new Skybox(...skyboxImages);
 
     rampData.forEach(rampData => {
-      this.placeRamps(rampData.position, rampData.rotation);
+      this.placeRamps(rampData.rampPosition, rampData.rampRotation);
     });
 
     this.buildPath(pathSeed, pathMaterial)
@@ -112,7 +112,7 @@ export class Level {
       .map(noiseValue => clamp(noiseValue * -100, 0, 1));
 
     const pathTextureIds = path.map(val => val + pathMaterial!.texture!.id);
-    this.floorMesh.geometry.setAttribute(AttributeLocation.TextureDepth, new Float32Array(pathTextureIds), 1);
+    this.floorMesh.geometry.setAttributeMc(AttributeLocation.TextureDepth, new Float32Array(pathTextureIds), 1);
     return path;
   }
 
@@ -222,10 +222,10 @@ export class Level {
       materials.underworldRocks.texture!,
       materials.tombstoneFront.texture!,
     );
-    const tombstone = new Mesh(makeTombstoneGeo(35, 50, 6, 30, 8, 1).translate(0, 7, 15).done(), materials.tombstoneFront);
-    tombstone.geometry.setAttribute(AttributeLocation.TextureDepth, new Float32Array(texturesPerSide), 1);
-    tombstone.position.set(rampPosition);
-    tombstone.rotate(0, rampYRotation, 0);
+    const tombstone = new Mesh(makeTombstoneGeo(35, 50, 6, 30, 8, 1).translateMc(0, 7, 15).doneMc(), materials.tombstoneFront);
+    tombstone.geometry.setAttributeMc(AttributeLocation.TextureDepth, new Float32Array(texturesPerSide), 1);
+    tombstone.positionO3d.set(rampPosition);
+    tombstone.rotateO3d(0, rampYRotation, 0);
     tombstone.updateWorldMatrix();
     this.meshesToRender.push(tombstone);
     getGroupedFaces(meshToFaces([tombstone]), this.facesToCollideWith);

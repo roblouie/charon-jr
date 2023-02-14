@@ -11,7 +11,7 @@ export function getGridPosition(point: EnhancedDOMPoint) {
   return Math.floor((point.x + halfLevelSize) / cellSize) + (Math.floor((point.z + halfLevelSize) / cellSize) * cellsInOneDirection);
 }
 
-export function findFloorHeightAtPosition(floorFaces: Face[], position: EnhancedDOMPoint) {
+export function findFloorHeightAtPosition(floorFaces: Face[], positionPoint: EnhancedDOMPoint) {
   let height: number;
 
   for (const floor of floorFaces) {
@@ -19,22 +19,22 @@ export function findFloorHeightAtPosition(floorFaces: Face[], position: Enhanced
     const { x: x2, z: z2 } = floor.points[1];
     const { x: x3, z: z3 } = floor.points[2];
 
-    if ((z1 - position.z) * (x2 - x1) - (x1 - position.x) * (z2 - z1) < 0) {
+    if ((z1 - positionPoint.z) * (x2 - x1) - (x1 - positionPoint.x) * (z2 - z1) < 0) {
       continue;
     }
 
-    if ((z2 - position.z) * (x3 - x2) - (x2 - position.x) * (z3 - z2) < 0) {
+    if ((z2 - positionPoint.z) * (x3 - x2) - (x2 - positionPoint.x) * (z3 - z2) < 0) {
       continue;
     }
 
-    if ((z3 - position.z) * (x1 - x3) - (x3 - position.x) * (z1 - z3) < 0) {
+    if ((z3 - positionPoint.z) * (x1 - x3) - (x3 - positionPoint.x) * (z1 - z3) < 0) {
       continue;
     }
 
-    height = -(position.x * floor.normal.x + floor.normal.z * position.z + floor.originOffset) / floor.normal.y;
+    height = -(positionPoint.x * floor.normal.x + floor.normal.z * positionPoint.z + floor.originOffset) / floor.normal.y;
 
     const buffer = -3; // original mario 64 code uses a 78 unit buffer, but mario is 160 units tall compared to our presently much smaller sizes
-    if (position.y - (height + buffer) < 0) {
+    if (positionPoint.y - (height + buffer) < 0) {
       continue;
     }
 

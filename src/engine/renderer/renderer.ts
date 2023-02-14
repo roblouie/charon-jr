@@ -71,7 +71,7 @@ export function render(camera: Camera, scene: Scene) {
     gl.uniform4fv(isInstancedMesh ? instancedColorLocation : colorLocation, mesh.material.color);
     gl.uniform4fv(isInstancedMesh ? instancedEmissiveLocation : emissiveLocation, mesh.material.emissive);
     gl.vertexAttrib1f(AttributeLocation.TextureDepth, mesh.material.texture?.id ?? -1.0);
-    const textureRepeat = [mesh.material.texture?.repeat.x ?? 1, mesh.material.texture?.repeat.y ?? 1];
+    const textureRepeat = [mesh.material.texture?.textureRepeat.x ?? 1, mesh.material.texture?.textureRepeat.y ?? 1];
     gl.uniform2fv(isInstancedMesh ? instancedTextureRepeatLocation : textureRepeatLocation, textureRepeat);
 
     gl.bindVertexArray(mesh.geometry.vao!);

@@ -14,9 +14,9 @@ export function filter(attributes: SvgFilterAttributes, ...filterElements: Filte
 }
 
 // Rectangle
-type SvgRectAttributes = Filterable & Placeable & Sizeable;
+type SvgRectAttributes = Filterable & Placeable & Sizeable & Drawable;
 export function rect(attributes: SvgRectAttributes): RectString {
-  return `<rect ${attributesToString(attributes, 'x', 'y', 'width', 'height')} ${filterableAttribute(attributes)} />`;
+  return `<rect ${attributesToString(attributes, 'x', 'y', 'width', 'height', 'fill')} ${filterableAttribute(attributes)} />`;
 }
 
 // Ellipse
@@ -28,6 +28,12 @@ interface SvgEllipseAttributes extends Filterable {
 }
 export function ellipse(attributes: SvgEllipseAttributes): EllipseString {
   return `<ellipse ${attributesToString(attributes, 'cx', 'cy', 'rx', 'ry')} ${filterableAttribute(attributes)}/>`;
+}
+
+// Text
+type SvgTextAttributes = Filterable & Placeable & Sizeable & Drawable & Styleable;
+export function text(attributes: SvgTextAttributes, textToDisplay: string): TextString {
+  return `<text ${attributesToString(attributes, 'x', 'y', 'width', 'height', 'fill', 'style')}>${textToDisplay}</text>`;
 }
 
 // Minify-safe attribute converter

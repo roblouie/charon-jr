@@ -12,6 +12,7 @@ type FilterElements = FeTurbulenceString | FeColorMatrixString | FeFuncString | 
 type FilterString = `<filter${string}</filter>`;
 type RectString = `<rect${string}/>`;
 type EllipseString = `<ellipse${string}/>`;
+type TextString = `<text${string}</text>`;
 
 interface Placeable {
   x?: LengthOrPercentage;
@@ -25,4 +26,12 @@ interface Sizeable {
 
 interface Filterable {
   filter?: string;
+}
+
+interface Drawable {
+  fill?: string;
+}
+
+interface Styleable {
+  style?: string;
 }

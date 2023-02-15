@@ -1,14 +1,9 @@
 import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
-import { doTimes } from '@/engine/helpers';
 import { toImage } from '@/engine/svg-maker/converters';
 import { noiseImageReplacement } from '@/engine/new-new-noise';
 import { NewNoiseType } from '@/engine/svg-maker/filters';
-
-const resolution = 128;
-
-const canvas = new OffscreenCanvas(128, 128);
-const drawContext = canvas.getContext('2d')!;
+import { rect, svg, text } from '@/engine/svg-maker/base';
 
 // *********************
 // Dirt Path
@@ -53,14 +48,7 @@ export async function drawRocks() {
   const underworldRocksBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NewNoiseType.Turbulence, '#3f4d62', '#82826e', 1);
   const underworldRocks = await toImage(underworldRocksBuilder);
 
-  drawContext.drawImage(underworldRocks, 0, 0);
-  drawContext.globalCompositeOperation = 'source-over';
-  drawContext.fillStyle = '#333';
-  drawContext.scale(1, -0.7);
-  drawContext.textAlign = 'center';
-  drawContext.font = '70px Times New Roman';
-  drawContext.fillText('RIP', 64, -40);
-  const tombstoneFront = mainImageData();
+  const tombstoneFront = underworldRocks;
 
   const purgatoryRocksBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NewNoiseType.Turbulence, '#833700', '#4d1d00', 1);
   const purgatoryRocks = await toImage(purgatoryRocksBuilder);
@@ -85,64 +73,41 @@ export async function drawTreeBarks() {
 
 export const truckColor = '#333';
 
+function truckBase(...moreArgs: string[]) {
+  return toImage(svg({width: 128, height: 128 },
+    rect({ width: 128, height: 128, fill: '#333' }),
+    ...moreArgs,
+  ));
+}
+
 // *********************
 // Truck Cab Top
 // *********************
 export function drawTruckCabTop() {
-  clearWith(truckColor);
-  drawContext.fillStyle = 'black';
-  drawContext.fillRect(10, 55, 108, 20);
-  drawContext.textAlign = 'center';
-  drawContext.font = '35px sans-serif';
-  drawContext.fillText('💀', 64, 115);
-  return mainImageData();
+  return truckBase(
+    rect({ x: 10, y: 55, width: 108, height: 20, fill: 'black' }),
+    text({ x: 45, y: 115, style: 'font-size: 35px' }, '💀')
+  );
 }
 
 // *********************
 // Truck Cab Front
 // *********************
 export function drawTruckCabFront() {
-  clearWith(truckColor);
-  drawContext.fillStyle = 'black';
-  drawContext.textAlign = 'center';
-  drawContext.font = '35px sans-serif';
-  drawContext.save();
-  drawContext.scale(0.6, 1);
-  drawContext.fillText('⚪', 32, 105);
-  drawContext.fillText('⚪', 180, 105);
-  drawContext.restore();
-
-  doTimes(5, index => {
-    drawContext.fillRect(42 + index * 10, 10, 5, 60);
-  });
-  return mainImageData();
+  return truckBase(
+    text({x: 0, y: 100, style: 'font-size: 35px'}, '⚪'),
+    text({x: 80, y: 100, style: 'font-size: 35px'}, '⚪'),
+  );
 }
 
 // *********************
 // Truck Cab Side
 // *********************
 export function drawTruckCabSide(isRight: boolean) {
-  clearWith(truckColor);
-  drawContext.textAlign = 'center';
-  drawContext.font = '45px sans-serif';
-  drawContext.save();
-  drawContext.scale(0.6, -1);
-  drawContext.fillText('🦴', isRight ? 52 : 152, -40);
-  drawContext.scale(-1, 1);
-  drawContext.fillText('🦴', isRight ? -52 : -152, -40);
-  drawContext.restore();
-  return mainImageData();
+  return truckBase(
+    text({x: isRight ? 0 : 65, y: 70, style: 'font-size: 45px'}, '🦴'),
+  );
 }
-
-
-// *********************
-// Truck Cab Rear
-// *********************
-export function drawTruckCabRear() {
-  clearWith(truckColor);
-  return mainImageData();
-}
-
 
 // *********************
 // Underworld Path
@@ -232,11 +197,11 @@ export async function populateMaterials() {
   materials.tombstoneFront = new Material({texture: textureLoader.load_(tombstoneFront)});
 
   materials.chassis = new Material({color: truckColor});
-  materials.truckCabTop = new Material({texture: textureLoader.load_(drawTruckCabTop())});
-  materials.truckCabFront = new Material({texture: textureLoader.load_(drawTruckCabFront())});
-  materials.truckCabRightSide = new Material({texture: textureLoader.load_(drawTruckCabSide(true))});
-  materials.truckCabLeftSide = new Material({texture: textureLoader.load_(drawTruckCabSide(false))});
-  materials.truckCabRear = new Material({texture: textureLoader.load_(drawTruckCabRear())});
+  materials.truckCabTop = new Material({texture: textureLoader.load_(await drawTruckCabTop())});
+  materials.truckCabFront = new Material({texture: textureLoader.load_(await drawTruckCabFront())});
+  materials.truckCabRightSide = new Material({texture: textureLoader.load_(await drawTruckCabSide(true))});
+  materials.truckCabLeftSide = new Material({texture: textureLoader.load_(await drawTruckCabSide(false))});
+  materials.truckCabRear = new Material({texture: textureLoader.load_(await truckBase())});
 
 
   const { underworldBark, earthBark, purgatoryBark } = await drawTreeBarks();
@@ -256,17 +221,4 @@ export async function populateMaterials() {
   materials.underworldGrassMaterial = new Material({isTransparent: true, color: '#00D9FFBA'});
 
   textureLoader.bindTextures();
-}
-
-function mainImageData() {
-  return drawContext.getImageData(0, 0, resolution, resolution);
-}
-
-function clearWith(color: string) {
-  drawContext.resetTransform();
-  drawContext.clearRect(0, 0, resolution, resolution);
-  drawContext.globalCompositeOperation = 'source-over';
-  drawContext.filter = 'none';
-  drawContext.fillStyle = color;
-  drawContext.fillRect(0, 0, resolution, resolution);
 }

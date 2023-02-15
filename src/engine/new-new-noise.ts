@@ -1,6 +1,14 @@
 import { hexToWebgl } from '@/engine/helpers';
-import { filter, rect, svg } from '@/engine/svg-maker/base';
-import { feColorMatrix, feComponentTransfer, feFunc, feTurbulence } from '@/engine/svg-maker/filters';
+import {
+  feColorMatrix,
+  feComponentTransfer, feFunc,
+  feTurbulence,
+  filter,
+  NoiseType,
+  rect,
+  svg,
+  SvgString
+} from '@/engine/svg-maker/base';
 import { toHeightmap } from '@/engine/svg-maker/converters';
 
 export function noiseImageReplacement(
@@ -8,7 +16,7 @@ export function noiseImageReplacement(
   seed_: number,
   baseFrequency: number | [number, number],
   numOctaves_: number,
-  type_: NewNoiseType,
+  type_: NoiseType,
   fromColor: string,
   toColor: string,
   colorScale = 1,
@@ -35,7 +43,7 @@ export function noiseImageReplacement(
   );
 }
 
-export async function newNoiseLandscape(size: number,seed: number, frequency: number, octaves: number, noiseType: NewNoiseType, scale: number) {
+export async function newNoiseLandscape(size: number,seed: number, frequency: number, octaves: number, noiseType: NoiseType, scale: number) {
   const image = noiseImageReplacement(size, seed, frequency, octaves, noiseType, 'black', 'white');
   return toHeightmap(image, scale);
 }

@@ -2,25 +2,21 @@ import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 import { toImage } from '@/engine/svg-maker/converters';
 import { noiseImageReplacement } from '@/engine/new-new-noise';
-import { NewNoiseType } from '@/engine/svg-maker/filters';
-import { rect, svg, text } from '@/engine/svg-maker/base';
+import { NoiseType, rect, svg, text } from '@/engine/svg-maker/base';
 
 // *********************
 // Dirt Path
 // *********************
 export async function drawDirtPath() {
-  return toImage(noiseImageReplacement(128, 33, 1 / 16, 4, NewNoiseType.Fractal, '#525200', '#804b10', 1));
+  return toImage(noiseImageReplacement(128, 33, 1 / 16, 4, NoiseType.Fractal, '#525200', '#804b10', 1));
 }
 
 // *********************
 // Grass
 // *********************
 async function drawGrass() {
-  const earthGrassBuilder = noiseImageReplacement(128, 12, 1 / 32, 3, NewNoiseType.Fractal, '#007002', '#009303', 1);
-  const earthGrass = await toImage(earthGrassBuilder);
-
-  const purgatoryPlantsBuilder = noiseImageReplacement(128, 12, 1 / 32, 3, NewNoiseType.Fractal, '#45835a', '#66b47f', 1);
-  const purgatoryPlants = await toImage(purgatoryPlantsBuilder);
+  const earthGrass = await toImage(noiseImageReplacement(128, 12, 1 / 32, 3, NoiseType.Fractal, '#007002', '#009303', 1));
+  const purgatoryPlants = await toImage(noiseImageReplacement(128, 12, 1 / 32, 3, NoiseType.Fractal, '#45835a', '#66b47f', 1));
 
   return { earthGrass, purgatoryPlants };
 }
@@ -29,8 +25,7 @@ async function drawGrass() {
 // Water
 // *********************
 export async function drawWater() {
-  const waterBuilder = noiseImageReplacement(128, 12, 1 / 64, 1, NewNoiseType.Turbulence, '#030eaf', '#3264ff', 1);
-  const water = await toImage(waterBuilder);
+  const water = await toImage(noiseImageReplacement(128, 12, 1 / 64, 1, NoiseType.Turbulence, '#030eaf', '#3264ff', 1));
 
   const lakeTexture = textureLoader.load_(water);
   lakeTexture.textureRepeat.set(6, 6);
@@ -42,18 +37,18 @@ export async function drawWater() {
 // Rocks
 // *********************
 export async function drawRocks() {
-  const earthRocksBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NewNoiseType.Turbulence, '#929292', '#82826e', 1);
+  const earthRocksBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NoiseType.Turbulence, '#929292', '#82826e', 1);
   const earthRocks = await toImage(earthRocksBuilder);
 
-  const underworldRocksBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NewNoiseType.Turbulence, '#3f4d62', '#82826e', 1);
+  const underworldRocksBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NoiseType.Turbulence, '#3f4d62', '#82826e', 1);
   const underworldRocks = await toImage(underworldRocksBuilder);
 
   const tombstoneFront = underworldRocks;
 
-  const purgatoryRocksBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NewNoiseType.Turbulence, '#833700', '#4d1d00', 1);
+  const purgatoryRocksBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NoiseType.Turbulence, '#833700', '#4d1d00', 1);
   const purgatoryRocks = await toImage(purgatoryRocksBuilder);
 
-  const purgatoryFloorBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NewNoiseType.Turbulence, '#4d1d00', '#833700', 1);
+  const purgatoryFloorBuilder = noiseImageReplacement(128, 23, 1 / 64, 2, NoiseType.Turbulence, '#4d1d00', '#833700', 1);
   const purgatoryFloor = await toImage(purgatoryFloorBuilder);
 
   return { earthRocks, underworldRocks, purgatoryRocks, purgatoryFloor, tombstoneFront };
@@ -63,9 +58,9 @@ export async function drawRocks() {
 // Tree Barks
 // *********************
 export async function drawTreeBarks() {
-  const earthBark = await toImage(noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#933d02', '#4d1d00', 1));
-  const purgatoryBark = await toImage(noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#320600', '#4d1d00', 1));
-  const underworldBark = await toImage(noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#9a9a9a', '#4d1d00', 1));
+  const earthBark = await toImage(noiseImageReplacement(128, 33, 1 / 64, 2, NoiseType.Turbulence, '#933d02', '#4d1d00', 1));
+  const purgatoryBark = await toImage(noiseImageReplacement(128, 33, 1 / 64, 2, NoiseType.Turbulence, '#320600', '#4d1d00', 1));
+  const underworldBark = await toImage(noiseImageReplacement(128, 33, 1 / 64, 2, NoiseType.Turbulence, '#9a9a9a', '#4d1d00', 1));
 
   return { earthBark, underworldBark, purgatoryBark };
 }
@@ -113,17 +108,17 @@ export function drawTruckCabSide(isRight: boolean) {
 // Underworld Path
 // *********************
 export function drawUnderworldPath() {
-  return toImage(noiseImageReplacement(128, 8, 0.03, 1, NewNoiseType.Turbulence, '#009b1a', '#0e3454', 3));
+  return toImage(noiseImageReplacement(128, 8, 0.03, 1, NoiseType.Turbulence, '#009b1a', '#0e3454', 3));
 }
 
 
 function drawUnderworldGround() {
-  return toImage(noiseImageReplacement(128, 8, 0.03, 1, NewNoiseType.Turbulence, '#000522', '#0e3454', 3));
+  return toImage(noiseImageReplacement(128, 8, 0.03, 1, NoiseType.Turbulence, '#000522', '#0e3454', 3));
 }
 
 export async function newDrawSky(fromColor: string, toColor: string, seed: number, frequency: number | [number, number], octals: number, colorScale = 1) {
   const sidesOfSkybox = [];
-  const image = await toImage(noiseImageReplacement(256, seed, frequency, octals, NewNoiseType.Fractal, fromColor, toColor, colorScale));
+  const image = await toImage(noiseImageReplacement(256, seed, frequency, octals, NoiseType.Fractal, fromColor, toColor, colorScale));
   for (let i = 0; i < 6; i++) {
     sidesOfSkybox.push(image);
   }
@@ -136,7 +131,7 @@ export async function newDrawSky(fromColor: string, toColor: string, seed: numbe
 // Drop Off Point
 // *********************
 function drawDropoff() {
-  return toImage(noiseImageReplacement(128, 100, 1 / 32, 2, NewNoiseType.Fractal, '#0000', '#fff', 1));
+  return toImage(noiseImageReplacement(128, 100, 1 / 32, 2, NoiseType.Fractal, '#0000', '#fff', 1));
 }
 
 
@@ -144,7 +139,7 @@ function drawDropoff() {
 // Underworld Water
 // *********************
 function drawUnderworldWater() {
-  return toImage(noiseImageReplacement(128, 10, 1/64, 1, NewNoiseType.Turbulence, '#90ca6c', '#2d9f52', 1));
+  return toImage(noiseImageReplacement(128, 10, 1/64, 1, NoiseType.Turbulence, '#90ca6c', '#2d9f52', 1));
 }
 
 export const materials: {[key: string]: Material} = {};

@@ -21,7 +21,7 @@ import { gameStates } from '@/index';
 import { ghostFlyAwayAudio, ghostThankYouAudio } from '@/sound-effects';
 import { makeDynamicBody } from '@/modeling/spirit.modeling';
 import { newNoiseLandscape } from '@/engine/new-new-noise';
-import { NewNoiseType } from '@/engine/svg-maker/filters';
+import { NoiseType } from '@/engine/svg-maker/base';
 
 const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)
@@ -74,7 +74,7 @@ export class GameState implements State {
     this.groupedFaces = { floorFaces: [], wallFaces: [], ceilingFaces: [] }
     this.levelNumber = levelNumber;
     if (levelNumber === 0) {
-      const sampleHeightMap = await newNoiseLandscape(256, 22, 1/64, 4, NewNoiseType.Fractal, 100);
+      const sampleHeightMap = await newNoiseLandscape(256, 22, 1/64, 4, NoiseType.Fractal, 100);
       this.currentLevel = new Level(
         sampleHeightMap,
         skyboxes.earthSky,
@@ -95,7 +95,7 @@ export class GameState implements State {
         []
       );
     } else if (levelNumber === 1) {
-      const sampleHeightMap2 =  (await newNoiseLandscape(256, 75, 1/64, 2, NewNoiseType.Fractal, 30))
+      const sampleHeightMap2 =  (await newNoiseLandscape(256, 75, 1/64, 2, NoiseType.Fractal, 30))
         .map(val => {
           if (val > 0) {
             return val + 40;
@@ -168,7 +168,7 @@ export class GameState implements State {
         ]
       );
     } else {
-      const sampleHeightMap3 = await newNoiseLandscape(256, 3, 1/28, 3, NewNoiseType.Fractal, 180);
+      const sampleHeightMap3 = await newNoiseLandscape(256, 3, 1/28, 3, NoiseType.Fractal, 180);
       this.currentLevel = new Level(
         sampleHeightMap3,
         skyboxes.underworldSky,

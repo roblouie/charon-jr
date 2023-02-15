@@ -13,7 +13,7 @@ import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
 import { makeRock, makeTombstoneGeo } from '@/modeling/stone.modeling';
 import { newNoiseLandscape } from '@/engine/new-new-noise';
-import { NewNoiseType } from '@/engine/svg-maker/filters';
+import { NoiseType } from '@/engine/svg-maker/base';
 
 function getRandomArbitrary(min: number, max: number) {
   return Math.random() * (max - min) + min;
@@ -109,7 +109,7 @@ export class Level {
     if (!pathSeed) {
       return []
     }
-    const path = (await newNoiseLandscape(256, pathSeed, 1 / 128, 2, NewNoiseType.Turbulence, 80)) //noiseMaker.noiseLandscape(256, 1 / 128, 2, NoiseType.Lines, 8)
+    const path = (await newNoiseLandscape(256, pathSeed, 1 / 128, 2, NoiseType.Turbulence, 80)) //noiseMaker.noiseLandscape(256, 1 / 128, 2, NoiseType.Lines, 8)
       .map(noiseValue => clamp(noiseValue * -100, 0, 1));
 
     const pathTextureIds = path.map(val => val + pathMaterial!.texture!.id);
@@ -119,7 +119,7 @@ export class Level {
 
   private async drawScenery(scenerySeed: number, heightmap: number[], waterLevel: number, path: number[], treeCollisionMesh: Mesh, plantMaterial: Material, treeMaterial: Material, isTreeLeavesShowing: boolean, rockMaterial: Material) {
     // Draw Scenery
-    const landscapeItemPositionNoise = await newNoiseLandscape(256, scenerySeed, 1 / 16, 4, NewNoiseType.Fractal, 6); //noiseMaker.noiseLandscape(256, 1 / 16, 4, NoiseType.Perlin, 3);
+    const landscapeItemPositionNoise = await newNoiseLandscape(256, scenerySeed, 1 / 16, 4, NoiseType.Fractal, 6); //noiseMaker.noiseLandscape(256, 1 / 16, 4, NoiseType.Perlin, 3);
     const grassTransforms: DOMMatrix[] = [];
     const treeTransforms: DOMMatrix[] = [];
     const rockTransforms: DOMMatrix[] = [];

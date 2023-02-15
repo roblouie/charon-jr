@@ -20,14 +20,15 @@ import { hud } from '@/hud';
 import { gameStates } from '@/index';
 import { ghostFlyAwayAudio, ghostThankYouAudio } from '@/sound-effects';
 import { makeDynamicBody } from '@/modeling/spirit.modeling';
-import { newNoiseLandscape, NewNoiseType } from '@/engine/new-new-noise';
+import { newNoiseLandscape } from '@/engine/new-new-noise';
+import { NewNoiseType } from '@/engine/svg-maker/filters';
 
 const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)
-  .scaleMc(0, 1, 0)
-  .merge(new MoldableCubeGeometry(1, 0.3, 2.5).selectBy(vertex => vertex.z < 0).scaleMc(0.6, 1, 1).allMc().translateMc(0, 0, 3.5).doneMc())
+  .scale_(0, 1, 0)
+  .merge(new MoldableCubeGeometry(1, 0.3, 2.5).selectBy(vertex => vertex.z < 0).scale_(0.6, 1, 1).all_().translate_(0, 0, 3.5).done_())
   .computeNormalsPerPlane()
-  .doneMc();
+  .done_();
 
 export class GameState implements State {
   player: ThirdPersonPlayer;
@@ -51,7 +52,7 @@ export class GameState implements State {
 
   constructor() {
     const camera = new Camera(1.68, 16 / 9, 1, 1700);
-    camera.positionO3d = new EnhancedDOMPoint(0, 5, -17);
+    camera.position_ = new EnhancedDOMPoint(0, 5, -17);
     this.player = new ThirdPersonPlayer(camera);
     this.scene = new Scene();
     this.gridFaces = [];
@@ -62,7 +63,7 @@ export class GameState implements State {
 
     this.currentLevel = {} as Level;
     this.dynamicBody = makeDynamicBody();
-    this.dynamicBody.positionO3d.set(-10000, -10000, -10000);
+    this.dynamicBody.position_.set(-10000, -10000, -10000);
     this.dropoffs = [];
   }
 
@@ -243,18 +244,18 @@ export class GameState implements State {
 
     this.dropoffs = [];
     this.currentLevel.dropOffs.forEach((dropOff, index) => {
-      const dropOffMesh = new Mesh(new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).doneMc(), new Material({ texture: materials.dropOff.texture, emissive: Spirit.Colors[index], isTransparent: true }));
-      dropOffMesh.positionO3d.set(dropOff);
+      const dropOffMesh = new Mesh(new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).done_(), new Material({ texture: materials.dropOff.texture, emissive: Spirit.Colors[index], isTransparent: true }));
+      dropOffMesh.position_.set(dropOff);
       this.dropoffs.push(dropOffMesh);
-      const dropOffGeo = new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).doneMc();
+      const dropOffGeo = new MoldableCubeGeometry(1, 5, 1, 4, 1, 4).cylindrify(40).done_();
       dropOffGeo.getIndices()?.reverse();
       const dropOffMesh2 = new Mesh(dropOffGeo, new Material({ texture: materials.dropOff.texture, emissive: Spirit.Colors[index], isTransparent: true }));
-      dropOffMesh2.positionO3d.set(dropOff);
+      dropOffMesh2.position_.set(dropOff);
       this.dropoffs.push(dropOffMesh2);
-    })
+    });
 
-    this.scene.add(this.player.mesh, ...this.spirits, ...this.dropoffs);
-    this.scene.add(...this.currentLevel.meshesToRender, this.dynamicBody);
+    this.scene.add_(this.player.mesh, ...this.spirits, ...this.dropoffs);
+    this.scene.add_(...this.currentLevel.meshesToRender, this.dynamicBody);
 
     this.scene.skybox = this.currentLevel.skybox;
     this.scene.skybox.bindGeometry();
@@ -268,7 +269,7 @@ export class GameState implements State {
   }
 
   private resetSpiritBody() {
-    this.dynamicBody.positionO3d.set(-10000, -10000, -10000);
+    this.dynamicBody.position_.set(-10000, -10000, -10000);
   }
 
   onLeave() {
@@ -291,13 +292,13 @@ export class GameState implements State {
         const dropOffPosition = this.currentLevel.dropOffs[this.player.carriedSpirit.dropOffPoint];
         this.dropOffPlayerDistance.subtractVectors(dropOffPosition, this.player.chassisCenter);
         if (Math.abs(this.dropOffPlayerDistance.x) <= 40 && Math.abs(this.dropOffPlayerDistance.z) <= 40) {
-          this.dropoffs[this.player.carriedSpirit.dropOffPoint * 2].scaleO3d.y = 2;
-          this.dropoffs[this.player.carriedSpirit.dropOffPoint * 2 + 1].scaleO3d.y = 2;
+          this.dropoffs[this.player.carriedSpirit.dropOffPoint * 2].scale_.y = 2;
+          this.dropoffs[this.player.carriedSpirit.dropOffPoint * 2 + 1].scale_.y = 2;
           ghostFlyAwayAudio().start();
 
           this.resetSpiritBody();
-          this.player.mesh.wrapper.removeO3d(this.dynamicBody);
-          this.scene.removeO3d(this.arrowGuideWrapper);
+          this.player.mesh.wrapper.remove_(this.dynamicBody);
+          this.scene.remove_(this.arrowGuideWrapper);
           this.player.carriedSpirit = undefined;
 
           this.spiritsTransported++;
@@ -308,14 +309,14 @@ export class GameState implements State {
       // Pick Up
       if (this.player.velocity.magnitude < 0.2) {
         this.spirits.some((spirit, index) => {
-          this.spiritPlayerDistance.subtractVectors(spirit.positionO3d, this.player.chassisCenter)
+          this.spiritPlayerDistance.subtractVectors(spirit.position_, this.player.chassisCenter);
           if (Math.abs(this.spiritPlayerDistance.x) < 17 && Math.abs(this.spiritPlayerDistance.z) < 17) {
             this.arrowGuide.material.color = spirit.color.map(val => val * 1.5);
-            this.dropoffs[spirit.dropOffPoint * 2].scaleO3d.y = 800;
-            this.dropoffs[spirit.dropOffPoint * 2 + 1].scaleO3d.y = 800;
+            this.dropoffs[spirit.dropOffPoint * 2].scale_.y = 800;
+            this.dropoffs[spirit.dropOffPoint * 2 + 1].scale_.y = 800;
 
             // Find distance from spirit pickup point to it's drop off point and add a relative amount of time
-            this.spiritDropOffDistance.subtractVectors(this.currentLevel.dropOffs[spirit.dropOffPoint], spirit.positionO3d);
+            this.spiritDropOffDistance.subtractVectors(this.currentLevel.dropOffs[spirit.dropOffPoint], spirit.position_);
             this.spiritDropOffDistance.y = 0;
             const bonus = this.spiritDropOffDistance.magnitude * this.timePerDistanceUnit;
             hud.setTimeBonus(bonus);
@@ -323,13 +324,13 @@ export class GameState implements State {
 
             ghostThankYouAudio().start();
 
-            this.dynamicBody.positionO3d.set(0, 3, -3);
-            this.dynamicBody.setRotationO3d(0, Math.PI, 0);
-            this.player.mesh.wrapper.add(this.dynamicBody);
+            this.dynamicBody.position_.set(0, 3, -3);
+            this.dynamicBody.setRotation_(0, Math.PI, 0);
+            this.player.mesh.wrapper.add_(this.dynamicBody);
             this.player.carriedSpirit = spirit;
             spirit.audioPlayer?.stop();
-            this.scene.add(this.arrowGuideWrapper);
-            this.scene.removeO3d(spirit);
+            this.scene.add_(this.arrowGuideWrapper);
+            this.scene.remove_(spirit);
             this.spirits.splice(index, 1);
             return true;
           }
@@ -350,14 +351,14 @@ export class GameState implements State {
     this.handleDropOffPickUp();
 
     if (this.player.carriedSpirit) {
-      this.arrowGuideWrapper.positionO3d.set(this.player.chassisCenter);
-      this.arrowGuideWrapper.positionO3d.y += 14;
+      this.arrowGuideWrapper.position_.set(this.player.chassisCenter);
+      this.arrowGuideWrapper.position_.y += 14;
       this.arrowLookAtDropOff = this.currentLevel.dropOffs[this.player.carriedSpirit!.dropOffPoint];
-      this.arrowLookAtDropOff.y = this.arrowGuideWrapper.positionO3d.y - 10;
+      this.arrowLookAtDropOff.y = this.arrowGuideWrapper.position_.y - 10;
       this.arrowGuideWrapper.lookAt(this.arrowLookAtDropOff);
     }
 
-    this.dropoffs.forEach(dropoff => dropoff.rotateO3d(0, 0.008, 0));
+    this.dropoffs.forEach(dropoff => dropoff.rotate_(0, 0.008, 0));
 
     this.scene.updateWorldMatrix();
 

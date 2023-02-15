@@ -3,17 +3,12 @@ import { filter, rect, svg } from '@/engine/svg-maker/base';
 import { feColorMatrix, feComponentTransfer, feFunc, feTurbulence } from '@/engine/svg-maker/filters';
 import { toHeightmap } from '@/engine/svg-maker/converters';
 
-export const enum NewNoiseType {
-  Turbulence = 'turbulence',
-  Fractal = 'fractalNoise',
-}
-
 export function noiseImageReplacement(
   size: number,
-  seed: number,
+  seed_: number,
   baseFrequency: number | [number, number],
-  numOctaves: number,
-  type: NewNoiseType,
+  numOctaves_: number,
+  type_: NewNoiseType,
   fromColor: string,
   toColor: string,
   colorScale = 1,
@@ -22,9 +17,9 @@ export function noiseImageReplacement(
   const toColorArray = hexToWebgl(toColor);
 
   return svg({ width: 250, height: 250 },
-    filter({ id: 'noise' },
-      feTurbulence({ seed, baseFrequency, numOctaves, type }),
-      feColorMatrix({ values: [
+    filter({ id_: 'noise' },
+      feTurbulence({ seed_, baseFrequency, numOctaves_, type_ }),
+      feColorMatrix({ colorInterpolationFilters: 'sRGB', values: [
         0, 0, 0, colorScale, 0,
         0, 0, 0, colorScale, 0,
         0, 0, 0, colorScale, 0,

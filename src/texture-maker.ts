@@ -2,7 +2,8 @@ import { textureLoader } from '@/engine/renderer/texture-loader';
 import { Material } from '@/engine/renderer/material';
 import { doTimes } from '@/engine/helpers';
 import { toImage } from '@/engine/svg-maker/converters';
-import { NewNoiseType, noiseImageReplacement } from '@/engine/new-new-noise';
+import { noiseImageReplacement } from '@/engine/new-new-noise';
+import { NewNoiseType } from '@/engine/svg-maker/filters';
 
 const resolution = 128;
 
@@ -13,9 +14,7 @@ const drawContext = canvas.getContext('2d')!;
 // Dirt Path
 // *********************
 export async function drawDirtPath() {
-  const imageBuilder = noiseImageReplacement(128, 33, 1 / 16, 4, NewNoiseType.Fractal, '#525200', '#804b10', 1);
-
-  return toImage(imageBuilder);
+  return toImage(noiseImageReplacement(128, 33, 1 / 16, 4, NewNoiseType.Fractal, '#525200', '#804b10', 1));
 }
 
 // *********************
@@ -38,7 +37,7 @@ export async function drawWater() {
   const waterBuilder = noiseImageReplacement(128, 12, 1 / 64, 1, NewNoiseType.Turbulence, '#030eaf', '#3264ff', 1);
   const water = await toImage(waterBuilder);
 
-  const lakeTexture = textureLoader.loadTl(water);
+  const lakeTexture = textureLoader.load_(water);
   lakeTexture.textureRepeat.set(6, 6);
 
   return new Material({texture: lakeTexture, isTransparent: true, color: '#fffc'});
@@ -76,14 +75,9 @@ export async function drawRocks() {
 // Tree Barks
 // *********************
 export async function drawTreeBarks() {
-  const earthBarkBuilder = noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#933d02', '#4d1d00', 1);
-  const earthBark = await toImage(earthBarkBuilder);
-
-  const purgatoryBarkBuilder = noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#320600', '#4d1d00', 1);
-  const purgatoryBark = await toImage(purgatoryBarkBuilder);
-
-  const underworldBarkBuilder = noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#9a9a9a', '#4d1d00', 1);
-  const underworldBark = await toImage(underworldBarkBuilder);
+  const earthBark = await toImage(noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#933d02', '#4d1d00', 1));
+  const purgatoryBark = await toImage(noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#320600', '#4d1d00', 1));
+  const underworldBark = await toImage(noiseImageReplacement(128, 33, 1 / 64, 2, NewNoiseType.Turbulence, '#9a9a9a', '#4d1d00', 1));
 
   return { earthBark, underworldBark, purgatoryBark };
 }
@@ -154,22 +148,17 @@ export function drawTruckCabRear() {
 // Underworld Path
 // *********************
 export function drawUnderworldPath() {
-  const imageBuilder = noiseImageReplacement(128, 8, 0.03, 1, NewNoiseType.Turbulence, '#009b1a', '#0e3454', 3);
-
-  return toImage(imageBuilder);
+  return toImage(noiseImageReplacement(128, 8, 0.03, 1, NewNoiseType.Turbulence, '#009b1a', '#0e3454', 3));
 }
 
 
 function drawUnderworldGround() {
-  const imageBuilder = noiseImageReplacement(128, 8, 0.03, 1, NewNoiseType.Turbulence, '#000522', '#0e3454', 3);
-
-  return toImage(imageBuilder);
+  return toImage(noiseImageReplacement(128, 8, 0.03, 1, NewNoiseType.Turbulence, '#000522', '#0e3454', 3));
 }
 
 export async function newDrawSky(fromColor: string, toColor: string, seed: number, frequency: number | [number, number], octals: number, colorScale = 1) {
-  const skyImage = noiseImageReplacement(256, seed, frequency, octals, NewNoiseType.Fractal, fromColor, toColor, colorScale)
   const sidesOfSkybox = [];
-  const image = await toImage(skyImage);
+  const image = await toImage(noiseImageReplacement(256, seed, frequency, octals, NewNoiseType.Fractal, fromColor, toColor, colorScale));
   for (let i = 0; i < 6; i++) {
     sidesOfSkybox.push(image);
   }
@@ -178,14 +167,11 @@ export async function newDrawSky(fromColor: string, toColor: string, seed: numbe
 }
 
 
-
 // *********************
 // Drop Off Point
 // *********************
 function drawDropoff() {
-  const imageBuilder = noiseImageReplacement(128, 100, 1 / 32, 2, NewNoiseType.Fractal, '#0000', '#fff', 1);
-
-  return toImage(imageBuilder);
+  return toImage(noiseImageReplacement(128, 100, 1 / 32, 2, NewNoiseType.Fractal, '#0000', '#fff', 1));
 }
 
 
@@ -193,9 +179,7 @@ function drawDropoff() {
 // Underworld Water
 // *********************
 function drawUnderworldWater() {
-  const imageBuilder = noiseImageReplacement(128, 10, 1/64, 1, NewNoiseType.Turbulence, '#90ca6c', '#2d9f52', 1);
-
-  return toImage(imageBuilder);
+  return toImage(noiseImageReplacement(128, 10, 1/64, 1, NewNoiseType.Turbulence, '#90ca6c', '#2d9f52', 1));
 }
 
 export const materials: {[key: string]: Material} = {};
@@ -208,19 +192,19 @@ export async function populateSkyboxes() {
 }
 
 export async function populateMaterials() {
-  const dirtPath = new Material({texture: textureLoader.loadTl(await drawDirtPath())})
+  const dirtPath = new Material({texture: textureLoader.load_(await drawDirtPath())})
   dirtPath.texture?.textureRepeat.set(16, 16);
   materials.dirtPath = dirtPath;
 
   const { earthGrass, purgatoryPlants } = await drawGrass();
-  const floorTexture = textureLoader.loadTl(earthGrass);
+  const floorTexture = textureLoader.load_(earthGrass);
   floorTexture.textureRepeat.x = 12; floorTexture.textureRepeat.y = 12;
   materials.grass = new Material({texture: floorTexture});
 
-  materials.purgatoryGrass = new Material({texture: textureLoader.loadTl(purgatoryPlants) });
-  materials.purgatoryGrass.color = [1.0, 0.8, 0.8, 1.0]
+  materials.purgatoryGrass = new Material({texture: textureLoader.load_(purgatoryPlants) });
+  materials.purgatoryGrass.color = [1.0, 0.8, 0.8, 1.0];
 
-  const treeTexture = textureLoader.loadTl(earthGrass);
+  const treeTexture = textureLoader.load_(earthGrass);
   treeTexture.textureRepeat.set(2, 2);
   materials.treeLeaves = new Material({texture: treeTexture });
 
@@ -230,47 +214,46 @@ export async function populateMaterials() {
   materials.tire = new Material({ color: '#000'});
   materials.wheel = new Material({ color: '#888'});
 
-  const underworldPathTexture = textureLoader.loadTl(await drawUnderworldPath());
+  const underworldPathTexture = textureLoader.load_(await drawUnderworldPath());
   underworldPathTexture.textureRepeat.x = 60; underworldPathTexture.textureRepeat.y = 60;
   materials.underworldPath = new Material({texture: underworldPathTexture});
 
-  const underworldGroundTexture = textureLoader.loadTl(await drawUnderworldGround());
+  const underworldGroundTexture = textureLoader.load_(await drawUnderworldGround());
   underworldGroundTexture.textureRepeat.x = 60; underworldGroundTexture.textureRepeat.y = 60;
   materials.underworldGround = new Material({texture: underworldGroundTexture});
 
   const { earthRocks, underworldRocks, purgatoryRocks, purgatoryFloor, tombstoneFront } = await drawRocks();
-  materials.underworldRocks = new Material({texture: textureLoader.loadTl(underworldRocks)});
-  materials.marble = new Material({texture: textureLoader.loadTl(earthRocks)})
-  materials.purgatoryRocks = new Material({texture: textureLoader.loadTl(purgatoryRocks)});
-  materials.purgatoryFloor = new Material({texture: textureLoader.loadTl(purgatoryFloor)});
+  materials.underworldRocks = new Material({texture: textureLoader.load_(underworldRocks)});
+  materials.marble = new Material({texture: textureLoader.load_(earthRocks)});
+  materials.purgatoryRocks = new Material({texture: textureLoader.load_(purgatoryRocks)});
+  materials.purgatoryFloor = new Material({texture: textureLoader.load_(purgatoryFloor)});
   materials.purgatoryFloor.texture?.textureRepeat.set(12, 12);
 
-  materials.tombstoneFront = new Material({texture: textureLoader.loadTl(tombstoneFront)});
+  materials.tombstoneFront = new Material({texture: textureLoader.load_(tombstoneFront)});
 
   materials.chassis = new Material({color: truckColor});
-  materials.truckCabTop = new Material({texture: textureLoader.loadTl(drawTruckCabTop())});
-  materials.truckCabFront = new Material({texture: textureLoader.loadTl(drawTruckCabFront())});
-  materials.truckCabRightSide = new Material({texture: textureLoader.loadTl(drawTruckCabSide(true))});
-  materials.truckCabLeftSide = new Material({texture: textureLoader.loadTl(drawTruckCabSide(false))});
-  materials.truckCabRear = new Material({texture: textureLoader.loadTl(drawTruckCabRear())});
-
+  materials.truckCabTop = new Material({texture: textureLoader.load_(drawTruckCabTop())});
+  materials.truckCabFront = new Material({texture: textureLoader.load_(drawTruckCabFront())});
+  materials.truckCabRightSide = new Material({texture: textureLoader.load_(drawTruckCabSide(true))});
+  materials.truckCabLeftSide = new Material({texture: textureLoader.load_(drawTruckCabSide(false))});
+  materials.truckCabRear = new Material({texture: textureLoader.load_(drawTruckCabRear())});
 
 
   const { underworldBark, earthBark, purgatoryBark } = await drawTreeBarks();
-  materials.underworldBark = new Material({texture: textureLoader.loadTl(underworldBark)});
-  materials.purgatoryBark = new Material({texture: textureLoader.loadTl(purgatoryBark)})
-  materials.wood = new Material({texture: textureLoader.loadTl(earthBark)});
+  materials.underworldBark = new Material({texture: textureLoader.load_(underworldBark)});
+  materials.purgatoryBark = new Material({texture: textureLoader.load_(purgatoryBark)});
+  materials.wood = new Material({texture: textureLoader.load_(earthBark)});
 
-  materials.dropOff = new Material({texture: textureLoader.loadTl(await drawDropoff())});
+  materials.dropOff = new Material({texture: textureLoader.load_(await drawDropoff())});
 
-  materials.spiritMaterial = new Material({ texture: materials.marble.texture, color: '#fff9', isTransparent: true })
+  materials.spiritMaterial = new Material({ texture: materials.marble.texture, color: '#fff9', isTransparent: true });
   materials.spiritMaterial.emissive = [1.4, 1.4, 1.4, 1.0];
 
-  const underworldWaterTexture = textureLoader.loadTl(await drawUnderworldWater());
+  const underworldWaterTexture = textureLoader.load_(await drawUnderworldWater());
   underworldWaterTexture.textureRepeat.x = 10; underworldWaterTexture.textureRepeat.y = 10;
-  materials.underworldWater = new Material({texture: underworldWaterTexture, isTransparent: true, color: '#fffc'})
+  materials.underworldWater = new Material({texture: underworldWaterTexture, isTransparent: true, color: '#fffc'});
 
-  materials.underworldGrassMaterial = new Material({isTransparent: true, color: '#00D9FFBA'})
+  materials.underworldGrassMaterial = new Material({isTransparent: true, color: '#00D9FFBA'});
 
   textureLoader.bindTextures();
 }
@@ -286,19 +269,4 @@ function clearWith(color: string) {
   drawContext.filter = 'none';
   drawContext.fillStyle = color;
   drawContext.fillRect(0, 0, resolution, resolution);
-}
-
-function noisify(context: CanvasRenderingContext2D, roughness = 1) {
-  const imageData = context.getImageData(0, 0, resolution, resolution);
-  for (let i = 0; i < imageData.data.length; i += 4) {
-    const red = imageData.data[i];
-    const green = imageData.data[i + 1];
-    const blue = imageData.data[i + 2];
-
-    const adjuster = (Math.random() - 1) * roughness;
-    imageData.data[i] = red + (adjuster * red / 256);
-    imageData.data[i + 1] = green + (adjuster * green / 256);
-    imageData.data[i + 2] = blue + (adjuster * blue / 256);
-  }
-  context.putImageData(imageData, 0, 0);
 }

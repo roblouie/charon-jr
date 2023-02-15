@@ -1,5 +1,9 @@
 import { attributesToString } from '@/engine/svg-maker/base';
-import { NewNoiseType } from '@/engine/new-new-noise';
+
+export const NewNoiseType = {
+  Turbulence: 'turbulence',
+  Fractal: 'fractalNoise',
+}
 
 interface HasInputs {
   in?: string;
@@ -12,25 +16,25 @@ interface DoesColorTransformation {
 
 // Turbulence
 interface FeTurbulenceAttributes extends DoesColorTransformation {
-  seed?: number
+  seed_?: number
   baseFrequency?: number | [number, number];
-  numOctaves?: number;
-  type?: NewNoiseType;
+  numOctaves_?: number;
+  type_?: typeof NewNoiseType;
   result?: string;
   stitchTiles?: 'stitch' | 'noStitch'
 }
 export function feTurbulence(attributes: FeTurbulenceAttributes): FeTurbulenceString {
-  return `<feTurbulence ${colorTransformAttribute(attributes)} ${attributesToString(attributes, 'seed', 'baseFrequency', 'numOctaves', 'type', 'result', 'stitchTiles')} />`;
+  return `<feTurbulence ${colorTransformAttribute(attributes)} ${attributesToString(attributes, 'seed_', 'baseFrequency', 'numOctaves_', 'type_', 'result', 'stitchTiles')} />`;
 }
 
 // Color Matrix
 interface FeColorMatrixAttributes extends DoesColorTransformation {
   in?: string;
-  type?: 'matrix' | 'saturate' | 'hueRotate' | 'luminanceToAlpha';
+  type_?: 'matrix' | 'saturate' | 'hueRotate' | 'luminanceToAlpha';
   values?: number[];
 }
 export function feColorMatrix(attributes: FeColorMatrixAttributes): FeColorMatrixString {
-  return `<feColorMatrix ${colorTransformAttribute(attributes)} ${attributesToString(attributes, 'in', 'type', 'values')}/>`;
+  return `<feColorMatrix ${colorTransformAttribute(attributes)} ${attributesToString(attributes, 'in', 'type_', 'values')}/>`;
 }
 
 // Component Transfer
@@ -47,10 +51,10 @@ export function feFunc(color: 'R' | 'G' | 'B' | 'A', type: 'linear' | 'discrete'
 
 // Displacement Map
 interface FeDisplacementMapAttributes extends HasInputs, DoesColorTransformation {
-  scale?: number;
+  scale_?: number;
 }
 export function feDisplacementMap(attributes: FeDisplacementMapAttributes): FeDisplacementMapString {
-  return `<feDisplacementMap ${colorTransformAttribute(attributes)} ${attributesToString(attributes, 'in', 'in2', 'scale')} />`;
+  return `<feDisplacementMap ${colorTransformAttribute(attributes)} ${attributesToString(attributes, 'in', 'in2', 'scale_')} />`;
 }
 
 // Composite

@@ -12,7 +12,8 @@ import { Face } from '@/engine/physics/face';
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 import { Material } from '@/engine/renderer/material';
 import { makeRock, makeTombstoneGeo } from '@/modeling/stone.modeling';
-import { newNoiseLandscape, NewNoiseType } from '@/engine/new-new-noise';
+import { newNoiseLandscape } from '@/engine/new-new-noise';
+import { NewNoiseType } from '@/engine/svg-maker/filters';
 
 function getRandomArbitrary(min: number, max: number) {
   return Math.random() * (max - min) + min;
@@ -68,7 +69,7 @@ export class Level {
     this.dropOffs.push(blueDropOff);
     this.dropOffs.push(orangeDropOff);
 
-    const treeCollision = new MoldableCubeGeometry(3, 12, 3, 2, 1, 2).cylindrify(2).translateMc(0, 3).doneMc();
+    const treeCollision = new MoldableCubeGeometry(3, 12, 3, 2, 1, 2).cylindrify(2).translate_(0, 3).done_();
     const treeCollisionMesh = new Mesh(treeCollision, new Material({color: '#0000'}));
     this.facesToCollideWith = {floorFaces: [], wallFaces: [], ceilingFaces: []};
 
@@ -85,7 +86,7 @@ export class Level {
       new PlaneGeometry(2047, 2047, 1, 1),
       waterMaterial
     );
-    lake.positionO3d.y = waterLevel;
+    lake.position_.y = waterLevel;
     this.waterLevel = waterLevel;
     this.meshesToRender.push(this.floorMesh, lake);
 
@@ -98,7 +99,7 @@ export class Level {
 
     this.buildPath(pathSeed, pathMaterial)
       .then(path => {
-        return this.drawScenery(scenerySeed, heightmap, waterLevel, path, treeCollisionMesh, plantMaterial, treeMaterial, isTreeLeavesShowing, rockMaterial)
+        return this.drawScenery(scenerySeed, heightmap, waterLevel, path, treeCollisionMesh, plantMaterial, treeMaterial, isTreeLeavesShowing, rockMaterial);
       })
       .then(() => resolve());
   }
@@ -112,7 +113,7 @@ export class Level {
       .map(noiseValue => clamp(noiseValue * -100, 0, 1));
 
     const pathTextureIds = path.map(val => val + pathMaterial!.texture!.id);
-    this.floorMesh.geometry.setAttributeMc(AttributeLocation.TextureDepth, new Float32Array(pathTextureIds), 1);
+    this.floorMesh.geometry.setAttribute_(AttributeLocation.TextureDepth, new Float32Array(pathTextureIds), 1);
     return path;
   }
 
@@ -160,7 +161,7 @@ export class Level {
       ) {
 
         // @ts-ignore
-        const spiritPosition = new EnhancedDOMPoint(this.floorMesh.geometry.vertices[index].x, yPosition + 2, this.floorMesh.geometry.vertices[index].z)
+        const spiritPosition = new EnhancedDOMPoint(this.floorMesh.geometry.vertices[index].x, yPosition + 2, this.floorMesh.geometry.vertices[index].z);
         const hasAClosePosition = this.spiritPositions.find(placedPosition => {
           const distance = new EnhancedDOMPoint().subtractVectors(spiritPosition, placedPosition);
           return distance.magnitude < 50;
@@ -222,10 +223,10 @@ export class Level {
       materials.underworldRocks.texture!,
       materials.tombstoneFront.texture!,
     );
-    const tombstone = new Mesh(makeTombstoneGeo(35, 50, 6, 30, 8, 1).translateMc(0, 7, 15).doneMc(), materials.tombstoneFront);
-    tombstone.geometry.setAttributeMc(AttributeLocation.TextureDepth, new Float32Array(texturesPerSide), 1);
-    tombstone.positionO3d.set(rampPosition);
-    tombstone.rotateO3d(0, rampYRotation, 0);
+    const tombstone = new Mesh(makeTombstoneGeo(35, 50, 6, 30, 8, 1).translate_(0, 7, 15).done_(), materials.tombstoneFront);
+    tombstone.geometry.setAttribute_(AttributeLocation.TextureDepth, new Float32Array(texturesPerSide), 1);
+    tombstone.position_.set(rampPosition);
+    tombstone.rotate_(0, rampYRotation, 0);
     tombstone.updateWorldMatrix();
     this.meshesToRender.push(tombstone);
     getGroupedFaces(meshToFaces([tombstone]), this.facesToCollideWith);
@@ -236,5 +237,5 @@ function getMatrixForPosition(xzPosition: EnhancedDOMPoint, yPosition: number, m
   return new DOMMatrix()
     .translate(xzPosition.x + getRandomArbitrary(-2, 2), yPosition, xzPosition.z + getRandomArbitrary(-2, 2))
     .scale(getRandomArbitrary(minScale, maxScale), getRandomArbitrary(minScale, maxScale), getRandomArbitrary(minScale, maxScale))
-    .rotate(0, getRandomArbitrary(0, 360), 0)
+    .rotate(0, getRandomArbitrary(0, 360), 0);
 }

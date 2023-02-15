@@ -13,7 +13,7 @@ export class Spirit extends Object3d {
 
   spiritMesh: Mesh;
   iconMesh: Mesh;
-  positionO3d: EnhancedDOMPoint;
+  position_: EnhancedDOMPoint;
   color: number[];
 
   dropOffPoint: number;
@@ -23,11 +23,11 @@ export class Spirit extends Object3d {
 
   constructor(position: EnhancedDOMPoint) {
     super(new Mesh(staticBodyGeo, materials.spiritMaterial), new Mesh(iconGeo, new Material()));
-    this.spiritMesh = this.childrenO3d[0] as Mesh;
-    this.iconMesh = this.childrenO3d[1] as Mesh;
-    this.positionO3d = new EnhancedDOMPoint().set(position);
+    this.spiritMesh = this.children_[0] as Mesh;
+    this.iconMesh = this.children_[1] as Mesh;
+    this.position_ = new EnhancedDOMPoint().set(position);
     this.dropOffPoint = Math.abs(Math.floor(randomNumber(position.x + position.z) * 3));
-    this.rotationO3d.y = Math.random() * 6;
+    this.rotation_.y = Math.random() * 6;
 
     this.updateWorldMatrix();
     this.color = Spirit.Colors.map(hexToWebgl)[this.dropOffPoint];

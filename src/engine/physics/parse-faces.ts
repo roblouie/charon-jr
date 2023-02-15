@@ -13,7 +13,7 @@ export function meshToFaces(meshes: Mesh[], transformMatrix?: DOMMatrix) {
   return meshes.flatMap(mesh => {
     const indices = mesh.geometry.getIndices()!; // assuming always having indices
 
-    const positions = mesh.geometry.getAttributeMc(AttributeLocation.Positions);
+    const positions = mesh.geometry.getAttribute_(AttributeLocation.Positions);
     const triangles = [];
     for (let i = 0; i < indices.length; i += 3) {
       const firstIndex = indices[i] * 3;

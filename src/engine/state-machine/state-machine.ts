@@ -5,13 +5,13 @@ export class StateMachine {
 
   constructor(initialState: State, ...enterArgs: any) {
     this.currentState = initialState;
-    this.currentState.onEnter ? this.currentState.onEnter(...enterArgs) : null;
+    this.currentState.onEnter?.(...enterArgs);
   }
 
   async setState(newState: State, ...enterArgs: any) {
-    this.currentState.onLeave ? await this.currentState.onLeave() : null;
+    await this.currentState.onLeave?.();
     this.currentState = newState;
-    this.currentState.onEnter ? await this.currentState.onEnter(...enterArgs) : null;
+    await this.currentState.onEnter?.(...enterArgs);
   }
 
   getState() {

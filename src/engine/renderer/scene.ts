@@ -7,8 +7,8 @@ export class Scene extends Object3d {
   solidMeshes: Mesh[] = [];
   transparentMeshes: Mesh[] = [];
 
-  add(...object3ds: Object3d[]) {
-    super.add(...object3ds);
+  add_(...object3ds: Object3d[]) {
+    super.add_(...object3ds);
     const flatWithChildren = [...object3ds, ...object3ds.flatMap(object3d => object3d.allChildren())];
     flatWithChildren.forEach(object3d => {
       // @ts-ignore
@@ -21,8 +21,8 @@ export class Scene extends Object3d {
     })
   }
 
-  removeO3d(object3d: Object3d) {
-    super.removeO3d(object3d);
+  remove_(object3d: Object3d) {
+    super.remove_(object3d);
     [object3d, ...object3d.allChildren()]
       .forEach(obj => {
       // @ts-ignore

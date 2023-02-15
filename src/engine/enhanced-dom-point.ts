@@ -6,7 +6,7 @@ export interface VectorLike {
 }
 
 export class EnhancedDOMPoint extends DOMPoint {
-  add(otherVector: VectorLike) {
+  add_(otherVector: VectorLike) {
     this.addVectors(this, otherVector);
     return this;
   }
@@ -30,11 +30,11 @@ export class EnhancedDOMPoint extends DOMPoint {
     return this;
   }
 
-  clone() {
+  clone_() {
     return new EnhancedDOMPoint(this.x, this.y, this.z, this.w);
   }
 
-  scale(scaleBy: number) {
+  scale_(scaleBy: number) {
     this.x *= scaleBy;
     this.y *= scaleBy;
     this.z *= scaleBy;
@@ -75,7 +75,7 @@ export class EnhancedDOMPoint extends DOMPoint {
     return Math.hypot(...this.toArray());
   }
 
-  normalizePoint() {
+  normalize_() {
     const magnitude = this.magnitude;
     if (magnitude === 0) {
       return new EnhancedDOMPoint();

@@ -7,10 +7,10 @@ export function group(attributes: Filterable, ...elements: string[]) {
 }
 
 interface SvgFilterAttributes extends Placeable, Sizeable {
-  id?: string;
+  id_?: string;
 }
 export function filter(attributes: SvgFilterAttributes, ...filterElements: FilterElements[]): FilterString {
-  return `<filter ${attributesToString(attributes, 'id', 'x', 'y', 'width', 'height')}>${filterElements.join('')}</filter>`;
+  return `<filter ${attributesToString(attributes, 'id_', 'x', 'y', 'width', 'height')}>${filterElements.join('')}</filter>`;
 }
 
 // Rectangle
@@ -32,7 +32,7 @@ export function ellipse(attributes: SvgEllipseAttributes): EllipseString {
 
 // Minify-safe attribute converter
 export function attributesToString<Type, Key extends keyof Type & string>(object: Type, ...keys: Key[]): string {
-  return keys.reduce((acc: string, currentKey) => (object[currentKey] ? `${acc} ${currentKey}="${object[currentKey]}"` : acc), '');
+  return keys.reduce((acc: string, currentKey) => (object[currentKey] ? `${acc} ${currentKey.replace('_', '')}="${object[currentKey]}"` : acc), '');
 }
 
 function filterableAttribute(attributeObject: Filterable): string {

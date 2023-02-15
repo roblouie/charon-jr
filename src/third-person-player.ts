@@ -54,7 +54,7 @@ export class ThirdPersonPlayer {
   private transformIdeal(ideal: EnhancedDOMPoint): EnhancedDOMPoint {
     return new EnhancedDOMPoint()
       .set(this.mesh.wrapper.rotationMatrix.transformPoint(ideal))
-      .add(this.mesh.positionO3d);
+      .add_(this.mesh.position_);
   }
 
   private dragRate = 0;
@@ -79,7 +79,7 @@ export class ThirdPersonPlayer {
 
     this.updateVelocityFromControls();  // set x / z velocity based on input
     this.velocity.y -= 0.01; // gravity
-    this.chassisCenter.add(this.velocity);  // move the player position by the velocity
+    this.chassisCenter.add_(this.velocity);  // move the player position by the velocity
 
     this.updateEngineSound();
 
@@ -99,21 +99,21 @@ export class ThirdPersonPlayer {
     this.velocity.y = clamp(this.velocity.y, -1, 1);
     this.collideWithLevel(gridFaces[playerGridPosition]); // do collision detection, if collision is found, feetCenter gets pushed out of the collision
 
-    this.mesh.positionO3d.set(this.chassisCenter); // at this point, feetCenter is in the correct spot, so draw the mesh there
-    this.mesh.positionO3d.y += 2; // move up by half height so mesh ends at feet position
+    this.mesh.position_.set(this.chassisCenter); // at this point, feetCenter is in the correct spot, so draw the mesh there
+    this.mesh.position_.y += 2; // move up by half height so mesh ends at feet position
 
-    this.camera.positionO3d.lerp(this.transformIdeal(this.idealPosition), 0.07);
+    this.camera.position_.lerp(this.transformIdeal(this.idealPosition), 0.07);
 
     // Keep camera away regardless of lerp
     const distanceToKeep = 17;
-    const {x, z} = this.camera.positionO3d.clone()
-      .subtract(this.mesh.positionO3d) // distance from camera to player
-      .normalizePoint() // direction of camera to player
-      .scale(distanceToKeep) // scale direction out by distance, giving us a lerp direction but constant distance
-      .add(this.mesh.positionO3d); // move back relative to player
+    const {x, z} = this.camera.position_.clone_()
+      .subtract(this.mesh.position_) // distance from camera to player
+      .normalize_() // direction of camera to player
+      .scale_(distanceToKeep) // scale direction out by distance, giving us a lerp direction but constant distance
+      .add_(this.mesh.position_); // move back relative to player
 
-    this.camera.positionO3d.x = x;
-    this.camera.positionO3d.z = z;
+    this.camera.position_.x = x;
+    this.camera.position_.z = z;
 
     this.camera.lookAt(this.transformIdeal(this.idealLookAt));
     this.camera.updateWorldMatrix();
@@ -130,7 +130,7 @@ export class ThirdPersonPlayer {
     this.chassisCenter.z += wallCollisions.zPush;
 
     if (wallCollisions.numberOfWallsHit > 0) {
-      this.angleTravelingVector.normalizePoint();
+      this.angleTravelingVector.normalize_();
       const collisionDot = this.angleTravelingVector.x * wallCollisions.walls[0].normal.x + this.angleTravelingVector.z * wallCollisions.walls[0].normal.z;
       // Play crash sound
       if (wallCollisions.xPush > 0.1 || wallCollisions.zPush > 0.1) {
@@ -282,19 +282,19 @@ export class ThirdPersonPlayer {
     this.velocity.z = Math.cos(this.angleTraveling) * this.speed;
     this.velocity.x = Math.sin(this.angleTraveling) * this.speed;
 
-    this.mesh.wrapper.setRotationO3d(0, this.anglePointing, 0);
+    this.mesh.wrapper.setRotation_(0, this.anglePointing, 0);
   }
 
   private updateAudio() {
     if (this.listener.positionX) {
-      this.listener.positionX.value = this.mesh.positionO3d.x;
-      this.listener.positionY.value = this.mesh.positionO3d.y;
-      this.listener.positionZ.value = this.mesh.positionO3d.z;
+      this.listener.positionX.value = this.mesh.position_.x;
+      this.listener.positionY.value = this.mesh.position_.y;
+      this.listener.positionZ.value = this.mesh.position_.z;
     }
 
-    const cameraPlayerDirection = this.mesh.positionO3d.clone()
-      .subtract(this.camera.positionO3d) // distance from camera to player
-      .normalizePoint() // direction of camera to player
+    const cameraPlayerDirection = this.mesh.position_.clone_()
+      .subtract(this.camera.position_) // distance from camera to player
+      .normalize_(); // direction of camera to player
 
     if (this.listener.forwardX) {
       this.listener.forwardX.value = cameraPlayerDirection.x;

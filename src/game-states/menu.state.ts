@@ -24,21 +24,21 @@ export class MenuState implements State {
   constructor() {
     this.camera = new Camera(Math.PI / 6, 16 / 9, 1, 400);
     this.truck = makeTruck();
-    this.truck.scaleO3d.set(0.4, 0.4, 0.4);
+    this.truck.scale_.set(0.4, 0.4, 0.4);
 
     this.tombstone = new Mesh(makeTombstoneGeo(15, 10, 5, 9,18), materials.underworldRocks);
-    this.tombstone.positionO3d.set(4.6, -1.5, -27.0);
-    this.tombstone.setRotationO3d(0.1, -0.6, 0);
+    this.tombstone.position_.set(4.6, -1.5, -27.0);
+    this.tombstone.setRotation_(0.1, -0.6, 0);
   }
 
   onEnter() {
     this.scene = new Scene();
-    this.truck.positionO3d.set(-6, -1, -23);
-    this.truck.setRotationO3d(0.3, 0, 0);
+    this.truck.position_.set(-6, -1, -23);
+    this.truck.setRotation_(0.3, 0, 0);
     this.scene = new Scene();
     this.scene.skybox = new Skybox(...skyboxes.underworldSky);
     this.scene.skybox.bindGeometry();
-    this.scene.add(this.truck, this.tombstone);
+    this.scene.add_(this.truck, this.tombstone);
     draw2d.context.canvas.style.transform = 'translate3d(13%, 5%, -27px) rotate3d(0, 1, 0, 337deg)'
   }
 
@@ -60,7 +60,7 @@ export class MenuState implements State {
       onChange(-1);
     }
 
-    this.truck.wrapper.rotateO3d(0, -0.01, 0);
+    this.truck.wrapper.rotate_(0, -0.01, 0);
     this.truck.setDriveRotationRate(0.1);
     this.truck.setSteeringAngle(-0.3);
     this.scene!.updateWorldMatrix();
@@ -84,7 +84,6 @@ export class MenuState implements State {
     this.drawEngraving(`Top Score ${level3Score} - RANK: ${getRankFromScore(level3Score)}`, 30, 640, 537,this.selectedOption === 2 ? 1 : 0);
 
     this.drawEngraving('FULLSCREEN', 40, 640, 610, this.selectedOption === 3 ? 1 : 0);
-
 
 
     this.selectedOption = clamp(this.selectedOption, 0, 3);

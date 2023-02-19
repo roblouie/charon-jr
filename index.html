@@ -3,9 +3,10 @@
     <meta charset="UTF-8">
     <title>Charon Jr.</title>
     <style>
-        canvas {
+        canvas, svg, #template {
             width: min(100vw, calc(100vh * 16/9));
             position: absolute;
+            aspect-ratio: auto 1920 / 1080;
         }
 
         /* Get rid of any margins, set background black, use flexbox to center */
@@ -23,11 +24,16 @@
         body {
             perspective: 845px;
         }
+        svg {
+            font-size: 80px;
+            stroke: #fff;
+            font-weight: 800;
+        }
     </style>
 </head>
 
 <body>
     <canvas id="c3d" width="1920" height="1080"></canvas>
-    <canvas id="c2d" width="1280" height="720"></canvas>
+    <div id="template"></div>
     <script type="module" src="/src/index.ts"></script>
 </body>

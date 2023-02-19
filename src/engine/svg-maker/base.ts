@@ -1,4 +1,4 @@
-type LengthOrPercentage = `${number}%` | `${number}` | number;
+export type LengthOrPercentage = `${number}%` | `${number}` | number;
 export type SvgString = `<svg${string}</svg>`;
 type FeTurbulenceString = `<feTurbulence${string}/>`;
 type FeColorMatrixString = `<feColorMatrix${string}/>`;
@@ -13,6 +13,10 @@ type FilterString = `<filter${string}</filter>`;
 type RectString = `<rect${string}/>`;
 type EllipseString = `<ellipse${string}/>`;
 type TextString = `<text${string}</text>`;
+
+interface HasId {
+  id_?: string;
+}
 
 interface Placeable {
   x?: LengthOrPercentage;
@@ -66,9 +70,7 @@ interface SvgEllipseAttributes extends Filterable {
   ry: LengthOrPercentage,
 }
 
-interface SvgFilterAttributes extends Placeable, Sizeable {
-  id_?: string;
-}
+type SvgFilterAttributes = HasId & Placeable & Sizeable;
 
 interface FeColorMatrixAttributes extends DoesColorTransformation {
   in?: string;
@@ -78,7 +80,7 @@ interface FeColorMatrixAttributes extends DoesColorTransformation {
 
 type SvgRectAttributes = Filterable & Placeable & Sizeable & Drawable;
 
-type SvgTextAttributes = Filterable & Placeable & Sizeable & Drawable & Styleable;
+export type SvgTextAttributes = HasId & Filterable & Placeable & Sizeable & Drawable & Styleable;
 
 interface FeBlendAttributes extends HasInputs {
   mode: 'normal' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten' | 'color-dodge'
@@ -94,12 +96,14 @@ interface FeDisplacementMapAttributes extends HasInputs, DoesColorTransformation
   scale_?: number;
 }
 
-export type AllSvgAttributes = FeTurbulenceAttributes & SvgEllipseAttributes & SvgFilterAttributes
+export type AllSvgAttributes = FeTurbulenceAttributes & SvgEllipseAttributes & HasId
   & FeColorMatrixAttributes & SvgRectAttributes & SvgTextAttributes & FeCompositeAttributes
-  & FeDisplacementMapAttributes & FeBlendAttributes;
+  & FeDisplacementMapAttributes & FeBlendAttributes & SvgAttributes;
 
-
-export function svg(attributes: Sizeable, ...elements: string[]): SvgString {
+export interface SvgAttributes extends Sizeable, HasId, Styleable {
+  viewBox?: string;
+}
+export function svg(attributes: SvgAttributes, ...elements: string[]): SvgString {
   return `<svg ${attributesToString(attributes)} xmlns="http://www.w3.org/2000/svg">${elements.join('')}</svg>`;
 }
 
@@ -122,8 +126,8 @@ export function ellipse(attributes: SvgEllipseAttributes): EllipseString {
 }
 
 // Text
-export function text(attributes: SvgTextAttributes, textToDisplay: string): TextString {
-  return `<text ${attributesToString(attributes)}>${textToDisplay}</text>`;
+export function text(attributes: SvgTextAttributes, textToDisplay?: any): TextString {
+  return `<text ${attributesToString(attributes)}>${textToDisplay ?? ''}</text>`;
 }
 
 // Minify-safe attribute converter
@@ -151,6 +155,7 @@ export function attributesToString(object: Partial<AllSvgAttributes>) {
     'style': object.style,
     'type': object.type_,
     'values': object.values,
+    'viewBox': object.viewBox,
     'width': object.width,
     'x': object.x,
     'y': object.y,

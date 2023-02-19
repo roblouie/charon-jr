@@ -1,9 +1,10 @@
-import { draw2d } from '@/engine/draw-2d';
 import { coinAudio } from '@/sound-effects';
+import { text } from '@/engine/svg-maker/base';
+import { overlaySvg } from '@/draw-helpers';
 
 class Hud {
-  timeRemaining = 0;
-  score = 0;
+  #timeRemaining = 0;
+  #score = 0;
   currentScoreBonus = 0;
   isScoreBonusActive = false;
   scoreBonusTimer = 0;
@@ -14,8 +15,37 @@ class Hud {
   timeBonusTimer = 0;
   timeBonusRotator = 0;
 
+  clear() {
+    template.innerHTML = '';
+  }
+
+  set score(newScore: number) {
+    this.#score = newScore;
+    score.innerHTML = '$' + this.#score;
+  }
+
+  get score() {
+    return this.#score;
+  }
+
+  set timeRemaining(newTime: number) {
+    this.#timeRemaining = newTime;
+    time.innerHTML = this.#timeRemaining.toFixed(1);
+  }
+
+  get timeRemaining() {
+    return this.#timeRemaining;
+  }
+
   reset() {
-    this.timeRemaining = 100;
+    template.innerHTML = overlaySvg({},
+      text({id_: 'time', x: 120, y: 100}),
+      text({id_: 'timeBonus', x: 120, y: 200}),
+      text({id_: 'score', x: 1700, y: 100}),
+      text({id_: 'scoreBonus', x: 1700, y: 200})
+    );
+
+    this.#timeRemaining = 100;
     this.score = 0;
     this.currentScoreBonus = 0;
     this.isScoreBonusActive = false;
@@ -46,41 +76,35 @@ class Hud {
   draw() {
     this.timeRemaining -= 0.0166;
 
-    draw2d.clear();
-
-    draw2d.context.filter = 'grayscale(100%)';
-
-    draw2d.context.save();
-    draw2d.context.translate(50, 58);
     if (this.isTimeBonusActive) {
-      draw2d.context.rotate(Math.max(this.timeBonusRotator -= 0.1, 0));
+      // TODO: Sping hourglass in svg
+      // draw2d.context.rotate(Math.max(this.timeBonusRotator -= 0.1, 0));
     }
 
-    draw2d.drawText('⏳', 'monospace', 50, 0, 0, 1, 'center', false);
-    draw2d.context.restore();
-
-    draw2d.drawText(this.timeRemaining.toFixed(1), 'Times New Roman', 70, 160, 60, 2);
-
-    draw2d.drawText('$' + this.score.toString(), 'monospace', 70, 1240, 60, 1, 'right');
+    // TODO: Draw hourglass in svg
+    // draw2d.drawText('⏳', 'monospace', 50, 0, 0, 1, 'center', false);
+    // draw2d.context.restore();
 
     if (this.isTimeBonusActive) {
       this.timeBonusTimer -= 0.0166;
-      draw2d.drawText('+' + this.currentTimeBonus.toFixed(0), 'Times New Roman', 50, 175, 120, 1, 'right');
+      timeBonus.innerHTML = '+' + this.currentTimeBonus.toFixed(0);
       if (this.timeBonusTimer <= 0) {
         this.isTimeBonusActive = false;
+        timeBonus.innerHTML = '';
       }
     }
 
     if (this.isScoreBonusActive) {
       this.scoreBonusTimer -= 0.0166;
 
-      draw2d.drawText('+$' + this.currentScoreBonus.toString(), 'monospace', 50, 1235, 120, 1, 'right');
+      scoreBonus.innerHTML = '+$' + this.currentScoreBonus;
 
       if (this.scoreBonusTimer <= 0) {
         this.score += this.currentScoreBonus;
         this.currentScoreBonus = 0;
         this.isScoreBonusActive = false;
         this.scoreBonusPer = 1;
+        scoreBonus.innerHTML = '';
       }
     }
   }

@@ -5,7 +5,6 @@ import { Camera } from '@/engine/renderer/camera';
 import { render } from '@/engine/renderer/renderer';
 import { controls } from '@/controls';
 import { gameStateMachine } from '@/game-states/game-state-machine';
-import { draw2d } from '@/engine/draw-2d';
 import { makeTruck, TruckObject3d } from '@/modeling/truck.modeling';
 import { gameStates } from '@/index';
 import { materials, skyboxes } from '@/texture-maker';
@@ -13,6 +12,8 @@ import { clamp, getRankFromScore } from '@/engine/helpers';
 import { Mesh } from '@/engine/renderer/mesh';
 import { makeTombstoneGeo } from '@/modeling/stone.modeling';
 import { ghostThankYouAudio, landingAudio } from '@/sound-effects';
+import { rect, text } from '@/engine/svg-maker/base';
+import { overlaySvg, createColumn } from '@/draw-helpers';
 
 export class MenuState implements State {
   scene?: Scene;
@@ -39,7 +40,23 @@ export class MenuState implements State {
     this.scene.skybox = new Skybox(...skyboxes.underworldSky);
     this.scene.skybox.bindGeometry();
     this.scene.add_(this.truck, this.tombstone);
-    draw2d.context.canvas.style.transform = 'translate3d(13%, 5%, -27px) rotate3d(0, 1, 0, 337deg)'
+
+    const nextRow = createColumn('50%', 180, 60);
+
+    const scoreDisplay = (levelNumber: number) => `Top Score ${this.getScore(levelNumber)} - RANK: ${getRankFromScore(this.getScore(levelNumber))}`;
+
+    const smallFont = () => ({ ...nextRow(), style: 'font-size: 40px' });
+    template.style.transform = 'translate3d(13%, 5%, 0) rotate3d(0, 1, 0, 337deg)';
+    template.innerHTML = overlaySvg({ style: 'text-anchor: middle' },
+      text({ ...nextRow(0), style: 'font-size: 140px' }, 'CHARON JR.'),
+      text(nextRow(100), 'Underworld'),
+      text(smallFont(), scoreDisplay(2)),
+      text(nextRow(50), 'Purgatory'),
+      text(smallFont(), scoreDisplay(1)),
+      text(nextRow(50), 'Earth'),
+      text(smallFont(), scoreDisplay(0)),
+      text(nextRow(80), 'Fullscreen'),
+    );
   }
 
   private getScore(levelNumber: number) {
@@ -67,33 +84,15 @@ export class MenuState implements State {
 
     render(this.camera, this.scene!);
 
-    draw2d.clear();
-
-    draw2d.drawText('CHARON JR.', 'Times New Roman', 100, 640, 150);
-
-    const level1Score = this.getScore(2);
-    this.drawEngraving('UNDERWORLD', 55, 640, 270, this.selectedOption === 0 ? 1 : 0);
-    this.drawEngraving(`Top Score ${level1Score} - RANK: ${getRankFromScore(level1Score)}`, 30, 640, 307,this.selectedOption === 0 ? 1 : 0);
-
-    const level2Score = this.getScore(1);
-    this.drawEngraving('PURGATORY', 55, 640, 385, this.selectedOption === 1 ? 1 : 0);
-    this.drawEngraving(`Top Score ${level2Score} - RANK: ${getRankFromScore(level2Score)}`, 30, 640, 422,this.selectedOption === 1 ? 1 : 0);
-
-    const level3Score = this.getScore(0);
-    this.drawEngraving('EARTH', 55, 640, 500, this.selectedOption === 2 ? 1 : 0);
-    this.drawEngraving(`Top Score ${level3Score} - RANK: ${getRankFromScore(level3Score)}`, 30, 640, 537,this.selectedOption === 2 ? 1 : 0);
-
-    this.drawEngraving('FULLSCREEN', 40, 640, 610, this.selectedOption === 3 ? 1 : 0);
-
-
     this.selectedOption = clamp(this.selectedOption, 0, 3);
 
     if (controls.isSelect && !controls.previousState.isSelect) {
       if (this.selectedOption < 3) {
-        draw2d.context.canvas.style.transform = '';
-        draw2d.context.fillStyle = 'black';
-        draw2d.context.fillRect(0, 0, 1920, 1080);
-        draw2d.drawText('Loading...', 'Times New Roman', 80, 640, 360);
+        template.style.transform = '';
+        template.innerHTML = overlaySvg({ style: 'text-anchor: middle' },
+          rect({x: 0, y: 0, width: '100%', height: '100%' }),
+          text({ x: '50%', y: '50%', style: 'font-size: 140px' }, 'Loading...')
+        );
         ghostThankYouAudio().start();
         setTimeout(() => {
           gameStateMachine.setState(gameStates.gameState, 2 - this.selectedOption);
@@ -102,11 +101,6 @@ export class MenuState implements State {
         this.toggleFullScreen();
       }
     }
-  }
-
-  drawEngraving(text: string, size: number, x: number, y: number, lineWidth = 0) {
-    draw2d.drawText(text, 'Times New Roman', size, x - 1, y - 1, 0, 'center', true, '#000');
-    draw2d.drawText(text, 'Times New Roman', size, x, y, lineWidth, 'center', true, 'rgba(45,48,61,0.73)');
   }
 
   toggleFullScreen() {

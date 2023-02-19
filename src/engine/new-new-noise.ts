@@ -24,16 +24,16 @@ export function noiseImageReplacement(
   const fromColorArray = hexToWebgl(fromColor);
   const toColorArray = hexToWebgl(toColor);
 
-  return svg({ width: 250, height: 250 },
+  return svg({ width: 256, height: 256 },
     filter({ id_: 'noise' },
-      feTurbulence({ seed_, baseFrequency, numOctaves_, type_ }),
+      feTurbulence({ seed_, baseFrequency, numOctaves_, type_, stitchTiles_: 'stitch' }),
       feColorMatrix({ colorInterpolationFilters: 'sRGB', values: [
         0, 0, 0, colorScale, 0,
         0, 0, 0, colorScale, 0,
         0, 0, 0, colorScale, 0,
         0, 0, 0, 0, 1,
       ]}),
-      feComponentTransfer(
+      feComponentTransfer({},
         feFunc('R', 'table', [fromColorArray[0], toColorArray[0]]),
         feFunc('G', 'table', [fromColorArray[1], toColorArray[1]]),
         feFunc('B', 'table', [fromColorArray[2], toColorArray[2]]),
@@ -44,7 +44,7 @@ export function noiseImageReplacement(
 }
 
 export async function newNoiseLandscape(size: number,seed: number, frequency: number, octaves: number, noiseType: NoiseType, scale: number) {
-  const image = noiseImageReplacement(size, seed, frequency, octaves, noiseType, 'black', 'white');
+  const image = noiseImageReplacement(size, seed, frequency, octaves, noiseType, 'black', 'white', 1);
   return toHeightmap(image, scale);
 }
 

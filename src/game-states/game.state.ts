@@ -15,7 +15,6 @@ import { getGridPosition } from '@/engine/physics/surface-collision';
 import { clamp } from '@/engine/helpers';
 import { Level } from '@/level';
 import { Spirit } from '@/spirit';
-import { draw2d } from '@/engine/draw-2d';
 import { hud } from '@/hud';
 import { gameStates } from '@/index';
 import { ghostFlyAwayAudio, ghostThankYouAudio } from '@/sound-effects';
@@ -74,7 +73,7 @@ export class GameState implements State {
     this.groupedFaces = { floorFaces: [], wallFaces: [], ceilingFaces: [] }
     this.levelNumber = levelNumber;
     if (levelNumber === 0) {
-      const sampleHeightMap = await newNoiseLandscape(256, 22, 1/64, 4, NoiseType.Fractal, 100);
+      const sampleHeightMap = await newNoiseLandscape(256, 5, 1/28, 2, NoiseType.Fractal, 50);
       this.currentLevel = new Level(
         sampleHeightMap,
         skyboxes.earthSky,
@@ -168,7 +167,7 @@ export class GameState implements State {
         ]
       );
     } else {
-      const sampleHeightMap3 = await newNoiseLandscape(256, 3, 1/28, 3, NoiseType.Fractal, 180);
+      const sampleHeightMap3 = await newNoiseLandscape(256, 3, 1/28, 1, NoiseType.Fractal, 100);
       this.currentLevel = new Level(
         sampleHeightMap3,
         skyboxes.underworldSky,
@@ -264,7 +263,6 @@ export class GameState implements State {
     this.spiritsTransported = 0;
     hud.reset();
     this.isLoaded = true;
-    draw2d.clear();
     this.player.engineGain.gain.value = 0.4;
   }
 
@@ -273,7 +271,7 @@ export class GameState implements State {
   }
 
   onLeave() {
-    draw2d.clear();
+    hud.clear();
     this.player.engineGain.gain.value = 0;
     this.player.drivingThroughWaterGain.gain.value = 0;
     this.spirits.forEach(spirit => spirit.audioPlayer?.stop());

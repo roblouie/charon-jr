@@ -11,7 +11,7 @@ function indexToFaceVertexPoint(index: number, positionData: Float32Array, matri
 
 export function meshToFaces(meshes: Mesh[], transformMatrix?: DOMMatrix) {
   return meshes.flatMap(mesh => {
-    const indices = mesh.geometry.getIndices()!; // assuming always having indices
+    const indices = mesh.geometry.getIndices();
 
     const positions = mesh.geometry.getAttribute_(AttributeLocation.Positions);
     const triangles = [];

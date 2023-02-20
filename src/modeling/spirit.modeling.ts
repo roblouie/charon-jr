@@ -4,13 +4,13 @@ import { materials } from '@/texture-maker';
 import { Object3d } from '@/engine/renderer/object-3d';
 import { createBox } from '@/modeling/building-blocks.modeling';
 
-const neck = new MoldableCubeGeometry(1, 0.4, 1, 2, 1, 2).cylindrify(0.3).translate_(0, 1.3, 0).computeNormalsCrossPlane().done_();
+const neck = new MoldableCubeGeometry(1, 0.4, 1, 2, 1, 2).cylindrify(0.3).translate_(0, 1.3, 0).computeNormals(true).done_();
 
 const head = new MoldableCubeGeometry(1, 1, 1, 2, 3, 2)
   .spherify(1)
   .scale_(1, 1.2, 1)
   .translate_(0, 2.5, 0)
-  .computeNormalsCrossPlane()
+  .computeNormals(true)
   .done_();
 
 function makeBody() {
@@ -21,7 +21,7 @@ function makeBody() {
     .translate_(0, 0.3, 0)
     .merge(neck)
     .all_()
-    .computeNormalsCrossPlane()
+    .computeNormals(true)
     .done_();
 }
 

@@ -26,7 +26,7 @@ const arrowGuideGeo = new MoldableCubeGeometry(2, 0.3, 5)
   .selectBy(vertex => vertex.z < 0)
   .scale_(0, 1, 0)
   .merge(new MoldableCubeGeometry(1, 0.3, 2.5).selectBy(vertex => vertex.z < 0).scale_(0.6, 1, 1).all_().translate_(0, 0, 3.5).done_())
-  .computeNormalsPerPlane()
+  .computeNormals()
   .done_();
 
 export class GameState implements State {

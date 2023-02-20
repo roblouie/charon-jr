@@ -12,7 +12,7 @@ export class LevelOverState implements State {
     const nextRightRow = createColumn(1300, 300, 100);
     const nextCenterRow = createColumn(640, 160, 120);
 
-    t.innerHTML = overlaySvg({},
+    tmpl.innerHTML = overlaySvg({},
       rect({ fill: '#0008' }),
       ...['TIME UP', 'RANK', getRankFromScore(score)].map((columnText, i) => text(nextCenterRow(i === 1 ? 420 : 0), columnText)),
       ...['SPIRITS TRANSPORTED', 'PAYMENT COLLECTED', 'TOTAL SCORE'].map(columnText => text(nextLeftRow(), columnText)),
@@ -30,6 +30,6 @@ export class LevelOverState implements State {
   onUpdate() {}
 
   onLeave() {
-    t.innerHTML = '';
+    tmpl.innerHTML = '';
   }
 }

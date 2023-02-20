@@ -3,8 +3,8 @@ import { text } from '@/engine/svg-maker/base';
 import { overlaySvg } from '@/draw-helpers';
 
 class Hud {
-  #timeRemaining = 0;
-  #score = 0;
+  private _timeRemaining = 0;
+  private _score = 0;
   currentScoreBonus = 0;
   isScoreBonusActive = false;
   scoreBonusTimer = 0;
@@ -16,36 +16,36 @@ class Hud {
   timeBonusRotator = 0;
 
   clear() {
-    t.innerHTML = '';
+    tmpl.innerHTML = '';
   }
 
   set score(newScore: number) {
-    this.#score = newScore;
-    sc.innerHTML = '$' + this.#score;
+    this._score = newScore;
+    sc.innerHTML = '$' + this._score;
   }
 
   get score() {
-    return this.#score;
+    return this._score;
   }
 
   set timeRemaining(newTime: number) {
-    this.#timeRemaining = newTime;
-    ti.innerHTML = this.#timeRemaining.toFixed(1);
+    this._timeRemaining = newTime;
+    ti.innerHTML = this._timeRemaining.toFixed(1);
   }
 
   get timeRemaining() {
-    return this.#timeRemaining;
+    return this._timeRemaining;
   }
 
   reset() {
-    t.innerHTML = overlaySvg({},
+    tmpl.innerHTML = overlaySvg({},
       text({id_: 'ti', x: 120, y: 100}),
       text({id_: 'tiB', x: 120, y: 200}),
       text({id_: 'sc', x: 1700, y: 100}),
       text({id_: 'scB', x: 1700, y: 200})
     );
 
-    this.#timeRemaining = 100;
+    this._timeRemaining = 100;
     this.score = 0;
     this.currentScoreBonus = 0;
     this.isScoreBonusActive = false;

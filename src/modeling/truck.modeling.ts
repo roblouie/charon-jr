@@ -14,7 +14,7 @@ function createTire() {
     .cylindrify(3.5, 'y')
     .all_()
     .rotate_(0, 0, Math.PI / 2)
-    .computeNormalsCrossPlane()
+    .computeNormals(true)
     .done_();
 }
 
@@ -26,7 +26,7 @@ function createWheel() {
     .scale_(1, 0.5, 1)
     .all_()
     .rotate_(0, 0, Math.PI / 2)
-    .computeNormalsPerPlane()
+    .computeNormals()
     .done_();
 }
 
@@ -74,7 +74,7 @@ function createChassis() {
     .translate_(0, 2, 1.8)
     .selectBy(vertex => vertex.y > 1 && (vertex.z < 3 && vertex.z > 0))
     .translate_(0, 0, -1)
-    .computeNormalsPerPlane()
+    .computeNormals()
     .done_();
 
   cab.setAttribute_(AttributeLocation.TextureDepth, new Float32Array(texturesPerSide), 1);

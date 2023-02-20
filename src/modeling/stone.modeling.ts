@@ -1,7 +1,7 @@
 import { MoldableCubeGeometry } from '@/engine/moldable-cube-geometry';
 
 export function makeRock() {
-  return new MoldableCubeGeometry(3, 3, 3, 2, 3, 1).spherify(3).scale_(4, 2.3, 2).noisify(22, 0.07).computeNormalsCrossPlane().done_();
+  return new MoldableCubeGeometry(3, 3, 3, 2, 3, 1).spherify(3).scale_(4, 2.3, 2).noisify(22, 0.07).computeNormals(true).done_();
 }
 
 
@@ -13,7 +13,7 @@ export function makeTombstoneGeo(width: number, height: number, depth: number, t
     .cylindrify(topRadius, 'z')
     .all_()
     .rotate_(xRotation)
-    .computeNormalsPerPlane()
+    .computeNormals()
     .done_();
 }
 

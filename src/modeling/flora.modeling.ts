@@ -44,7 +44,7 @@ function makeLeavesGeo(
     .translate_(translateX, translateY, translateZ)
     .scale_(scaleX, scaleY, scaleZ)
     .noisify(noiseSeed, 0.05)
-    .computeNormalsCrossPlane()
+    .computeNormals(true)
     .done_();
 }
 
@@ -56,7 +56,7 @@ export function makeLargeTreeGeo() {
   branch1.all_().rotate_(0, 0, 1).translate_(0, 5, -0.2).done_();
   branch2.all_().rotate_(0.8, 0, -1).translate_(0, 8, -0.2).done_();
 
-  return treeBase.merge(branch1).merge(branch2).computeNormalsCrossPlane().done_();
+  return treeBase.merge(branch1).merge(branch2).computeNormals(true).done_();
 }
 
 export function makeTreeLeavesGeo() {

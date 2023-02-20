@@ -16,12 +16,12 @@ class Hud {
   timeBonusRotator = 0;
 
   clear() {
-    template.innerHTML = '';
+    t.innerHTML = '';
   }
 
   set score(newScore: number) {
     this.#score = newScore;
-    score.innerHTML = '$' + this.#score;
+    sc.innerHTML = '$' + this.#score;
   }
 
   get score() {
@@ -30,7 +30,7 @@ class Hud {
 
   set timeRemaining(newTime: number) {
     this.#timeRemaining = newTime;
-    time.innerHTML = this.#timeRemaining.toFixed(1);
+    ti.innerHTML = this.#timeRemaining.toFixed(1);
   }
 
   get timeRemaining() {
@@ -38,11 +38,11 @@ class Hud {
   }
 
   reset() {
-    template.innerHTML = overlaySvg({},
-      text({id_: 'time', x: 120, y: 100}),
-      text({id_: 'timeBonus', x: 120, y: 200}),
-      text({id_: 'score', x: 1700, y: 100}),
-      text({id_: 'scoreBonus', x: 1700, y: 200})
+    t.innerHTML = overlaySvg({},
+      text({id_: 'ti', x: 120, y: 100}),
+      text({id_: 'tiB', x: 120, y: 200}),
+      text({id_: 'sc', x: 1700, y: 100}),
+      text({id_: 'scB', x: 1700, y: 200})
     );
 
     this.#timeRemaining = 100;
@@ -87,24 +87,24 @@ class Hud {
 
     if (this.isTimeBonusActive) {
       this.timeBonusTimer -= 0.0166;
-      timeBonus.innerHTML = '+' + this.currentTimeBonus.toFixed(0);
+      tiB.innerHTML = '+' + this.currentTimeBonus.toFixed(0);
       if (this.timeBonusTimer <= 0) {
         this.isTimeBonusActive = false;
-        timeBonus.innerHTML = '';
+        tiB.innerHTML = '';
       }
     }
 
     if (this.isScoreBonusActive) {
       this.scoreBonusTimer -= 0.0166;
 
-      scoreBonus.innerHTML = '+$' + this.currentScoreBonus;
+      scB.innerHTML = '+$' + this.currentScoreBonus;
 
       if (this.scoreBonusTimer <= 0) {
         this.score += this.currentScoreBonus;
         this.currentScoreBonus = 0;
         this.isScoreBonusActive = false;
         this.scoreBonusPer = 1;
-        scoreBonus.innerHTML = '';
+        scB.innerHTML = '';
       }
     }
   }

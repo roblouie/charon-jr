@@ -185,7 +185,6 @@ export class ThirdPersonPlayer {
   private angleTraveling = 0;
   private angleTravelingVector = new EnhancedDOMPoint();
   private anglePointing = 0;
-  private slipAngle = 0;
 
   private steeringAngle = 0;
   private turningAbilityPercent = 1;
@@ -275,9 +274,6 @@ export class ThirdPersonPlayer {
     this.angleTraveling = clamp(this.angleTraveling, this.anglePointing - quarterTurn, this.anglePointing + quarterTurn);
 
     this.angleTravelingVector.set(Math.cos(this.angleTraveling), 0, Math.sin(this.angleTraveling));
-
-
-    this.slipAngle = this.angleTraveling - this.anglePointing;
 
     this.velocity.z = Math.cos(this.angleTraveling) * this.speed;
     this.velocity.x = Math.sin(this.angleTraveling) * this.speed;

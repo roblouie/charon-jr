@@ -20,7 +20,7 @@ export const gameStates = {
   gameStates.menuState = new MenuState();
   gameStates.levelOverState = new LevelOverState();
 
-  createGameStateMachine(gameStates.levelOverState, 10, 100, 0);
+  createGameStateMachine(gameStates.menuState);
 
   let previousTime = 0;
   const interval = 1000 / 60;

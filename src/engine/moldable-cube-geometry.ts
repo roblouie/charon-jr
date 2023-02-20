@@ -83,14 +83,8 @@ export class MoldableCubeGeometry {
           // now apply vector to vertex buffer
           this.vertices.push(vector);
 
-
-          // uvs.push(ix);
-          // uvs.push(1 - (iy));
-          // To make the texture spread across the whole plane regardless of subdivisions we can do this instead:
           uvs.push(ix / gridX);
           uvs.push(1 - (iy / gridY));
-          // Currently I don't want this behavior but might in the future. Might be better to have it spread across
-          // the whole mesh and handle texture repeat via the material repeat property.
         }
       }
 
@@ -170,7 +164,7 @@ export class MoldableCubeGeometry {
   }
 
   spherify(radius: number) {
-    this.verticesToActOn.forEach(vertex => {
+    this.modifyEachVertex(vertex => {
       vertex.normalize_().scale_(radius);
     });
     return this;
@@ -182,15 +176,22 @@ export class MoldableCubeGeometry {
 
     this.vertices.push(...otherMoldable.vertices);
 
-    const thisTextureCoords = this.getAttribute_(AttributeLocation.TextureCoords).data;
-    const otherTextureCoords = otherMoldable.getAttribute_(AttributeLocation.TextureCoords).data;
-    const combinedCoords = new Float32Array([...thisTextureCoords, ...otherTextureCoords]);
-    this.setAttribute_(AttributeLocation.TextureCoords, combinedCoords, 2);
-
-    const thisNormals = this.getAttribute_(AttributeLocation.Normals).data;
-    const otherNormals = otherMoldable.getAttribute_(AttributeLocation.Normals).data;
-    const combinedNormals = new Float32Array([...thisNormals, ...otherNormals]);
-    this.setAttribute_(AttributeLocation.Normals, combinedNormals, 3);
+    // const thisTextureCoords = this.getAttribute_(AttributeLocation.TextureCoords).data;
+    // const otherTextureCoords = otherMoldable.getAttribute_(AttributeLocation.TextureCoords).data;
+    // const combinedCoords = new Float32Array([...thisTextureCoords, ...otherTextureCoords]);
+    // this.setAttribute_(AttributeLocation.TextureCoords, combinedCoords, 2);
+    //
+    // const thisNormals = this.getAttribute_(AttributeLocation.Normals).data;
+    // const otherNormals = otherMoldable.getAttribute_(AttributeLocation.Normals).data;
+    // const combinedNormals = new Float32Array([...thisNormals, ...otherNormals]);
+    // this.setAttribute_(AttributeLocation.Normals, combinedNormals, 3);
+    // Semi-code-golfed code of the easier to read code above
+    [AttributeLocation.TextureCoords, AttributeLocation.Normals].forEach((location, index) => {
+      const thisData = this.getAttribute_(location).data;
+      const otherData = otherMoldable.getAttribute_(location).data;
+      const combined = new Float32Array([...thisData, ...otherData]);
+      this.setAttribute_(location, combined, index + 2);
+    })
 
     return this;
   }
@@ -213,7 +214,7 @@ export class MoldableCubeGeometry {
   }
 
   cylindrify(radius: number, aroundAxis: 'x' | 'y' | 'z' = 'y', circleCenter: VectorLike = {x: 0, y: 0, z: 0}) {
-    this.verticesToActOn.forEach(vertex => {
+    this.modifyEachVertex(vertex => {
       const originalAxis = vertex[aroundAxis];
       vertex[aroundAxis] = 0;
       vertex.subtract(circleCenter).normalize_().scale_(radius);
@@ -262,17 +263,18 @@ export class MoldableCubeGeometry {
       originalNormals[normalIndex + 2] = newNormal.z;
     });
 
-    // // Now just set our new normals and we're done.
+    // Now just set our new normals and we're done.
     this.setAttribute_(AttributeLocation.Normals, originalNormals, 3);
 
     return this;
   }
 
+  // TODO: Should this just combine the indices instead? Like permanently change them.
   private getUniqueIndices() {
     const checkedVertices: EnhancedDOMPoint[] = [];
 
     // One cube is made up of six planes. Each plane has its own vertices, uvs, and normals. This is fine until
-    // we mold our cube a shape that should appear to have a more continuous surface across multiple sides, like
+    // we mold our cube to a shape that should appear to have a more continuous surface across multiple sides, like
     // a sphere. Then when normals are computed vertices on the edges of a plane aren't able to access surfaces
     // on a different side. For instance, when computing the normal for the upper left corner vertex of the front
     // of a cube, it should take into account surfaces connected to the front left corner of the top of the cube and
@@ -296,7 +298,7 @@ export class MoldableCubeGeometry {
     // vertices we ignored. Luckily we have a map of duplicates to the first value, and since there's a normal for
     // every vertex, their indices are the same. So we just use our same replacer map to copy the normal of the unique
     // position into all of its copies.
-    const indexReplacers = this.verticesToActOn.flatMap((vertex: EnhancedDOMPoint): { index: number, firstIndex: number }[] => {
+    const indexReplacers = this.verticesToActOn.flatMap((vertex: EnhancedDOMPoint, firstIndex: number): { index: number, firstIndex: number }[] => {
       // If we've already found this vertex once, stop
       if (checkedVertices.find(compareVertex => vertex.isEqualTo(compareVertex))) {
         return [];
@@ -306,15 +308,16 @@ export class MoldableCubeGeometry {
 
       // If we've gotten this far, this vertex hasn't been checked yet. So now find the first index of this vertex position,
       // then find all indices of this vertex position, and create a map from first index to each other occurrence.
-      const firstOccurrence = this.verticesToActOn.indexOf(vertex);
       return this.verticesToActOn.reduce((indices, compareVertex, currentIndex) => {
         if (vertex.isEqualTo(compareVertex)) {
-          indices.push({index: currentIndex, firstIndex: firstOccurrence});
+          indices.push({index: currentIndex, firstIndex: firstIndex});
         }
         return indices;
       }, [] as { index: number, firstIndex: number }[]);
     });
 
+    // We now have our index replacers. The problem is we don't know the original index the vertex in question.
+    // So here we
     const allIndices = this.getIndices()!;
     const indicesInSelection: number[] = [];
     for (let i = 0; i < allIndices.length; i += 3) {

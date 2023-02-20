@@ -46,8 +46,8 @@ export class MenuState implements State {
     const scoreDisplay = (levelNumber: number) => `Top Score ${this.getScore(levelNumber)} - RANK: ${getRankFromScore(this.getScore(levelNumber))}`;
 
     const smallFont = () => ({ ...nextRow(), style: 'font-size: 40px' });
-    template.style.transform = 'translate3d(13%, 5%, 0) rotate3d(0, 1, 0, 337deg)';
-    template.innerHTML = overlaySvg({ style: 'text-anchor: middle' },
+    t.style.transform = 'translate3d(13%, 5%, 0) rotate3d(0, 1, 0, 337deg)';
+    t.innerHTML = overlaySvg({ style: 'text-anchor: middle' },
       text({ ...nextRow(0), style: 'font-size: 140px' }, 'CHARON JR.'),
       text(nextRow(100), 'Underworld'),
       text(smallFont(), scoreDisplay(2)),
@@ -88,8 +88,8 @@ export class MenuState implements State {
 
     if (controls.isSelect && !controls.previousState.isSelect) {
       if (this.selectedOption < 3) {
-        template.style.transform = '';
-        template.innerHTML = overlaySvg({ style: 'text-anchor: middle' },
+        t.style.transform = '';
+        t.innerHTML = overlaySvg({ style: 'text-anchor: middle' },
           rect({x: 0, y: 0, width: '100%', height: '100%' }),
           text({ x: '50%', y: '50%', style: 'font-size: 140px' }, 'Loading...')
         );

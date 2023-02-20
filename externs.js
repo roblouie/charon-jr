@@ -1,7 +1,7 @@
 let localStorage;
 let c3d;
-let scoreBonus;
-let timeBonus;
-let score;
-let time;
-let template;
+let scB;
+let tiB;
+let sc;
+let ti;
+let t;

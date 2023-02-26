@@ -30,13 +30,9 @@
     "build": "cross-env LEVEL_2_BUILD=true vite build",
     "find-best-roadroller": "node find-best-roadroller.js",
     "build-with-best-roadroller": "cross-env USE_RR_CONFIG=true vite build",
-    "minify-shaders": "shader_minifier.exe --format js src/engine/shaders/vertex.shader.glsl src/shaders/fragment.shader.glsl src/shaders/skybox.fragment.glsl src/shaders/skybox.vertex.glsl src/engine/shaders/instanced.vertex.glsl -o src/shaders/shaders.js",
     "lint": "eslint --ext .ts,.js,.vue --ignore-path .gitignore src",
     "vite": "vite serve",
     "tsc": "tsc --watch --noEmit"
   },
-  "author": "Rob Louie",
-  "dependencies": {
-    "concurrently": "^7.6.0"
-  }
+  "author": "Rob Louie"
 }

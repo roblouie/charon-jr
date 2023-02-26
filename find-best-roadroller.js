@@ -22,7 +22,7 @@ rl.question('How many seconds should RoadRoller spend looking for the best confi
   console.log('Building...');
   exec('vite build', () => {
     console.log(`Spending ${seconds} seconds searching for config...`);
-    exec(`node node_modules/roadroller/cli.mjs ${__dirname}/dist/output.js -D -OO`, { timeout: seconds * 1000, killSignal: 'SIGINT' }, (error, stdout, stderr) => {
+    exec(`node node_modules/roadroller/cli.mjs ${__dirname}/dist/output.js -D -OO`, { timeout: seconds * 1000, killSignal: 'SIGINT', maxBuffer: 4069 * 1024 }, (error, stdout, stderr) => {
       const bestConfigJs = { allowFreeVars: true };
       const bestConfigConsole = stderr.split('\n').reverse().find(line => line.includes('<-'));
       const itemCheckRemoved = bestConfigConsole.split(') ')[1];

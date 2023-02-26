@@ -1,6 +1,6 @@
 import {
-  fragment_shader_glsl, skybox_fragment_glsl, skybox_vertex_glsl,
-  instanced_vertex_glsl, vertex_shader_glsl
+  fragment_glsl, skybox_fragment_glsl, skybox_vertex_glsl,
+  instanced_vertex_glsl, vertex_glsl
 } from '@/engine/shaders/shaders';
 
 export class LilGl {
@@ -12,8 +12,8 @@ export class LilGl {
  constructor() {
    // @ts-ignore
    this.gl = c3d.getContext('webgl2')!;
-   const vertex = this.createShader(this.gl.VERTEX_SHADER, vertex_shader_glsl);
-   const fragment = this.createShader(this.gl.FRAGMENT_SHADER, fragment_shader_glsl);
+   const vertex = this.createShader(this.gl.VERTEX_SHADER, vertex_glsl);
+   const fragment = this.createShader(this.gl.FRAGMENT_SHADER, fragment_glsl);
    this.program = this.createProgram(vertex, fragment);
    const skyboxVertex = this.createShader(this.gl.VERTEX_SHADER, skybox_vertex_glsl);
    const skyboxFragment = this.createShader(this.gl.FRAGMENT_SHADER, skybox_fragment_glsl);

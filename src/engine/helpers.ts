@@ -5,9 +5,13 @@ const context = new OffscreenCanvas(1,1).getContext('2d')!;
 // DO NOT USE FOR REAL TIME COLOR CHANGES
 // This is a very small way to convert color but not a fast one obviously
 export function hexToWebgl(hex: string): number[] {
+  // @ts-ignore
   context.clearRect(0, 0, 1, 1);
+  // @ts-ignore
   context.fillStyle = hex;
+  // @ts-ignore
   context.fillRect(0, 0, 1, 1);
+  // @ts-ignore
   return [...context.getImageData(0, 0, 1, 1).data].map(val => val / 255);
 }
 

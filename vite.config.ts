@@ -1,4 +1,4 @@
-import { defineConfig, IndexHtmlTransformContext, Plugin } from 'vite';
+import { defineConfig, HmrContext, IndexHtmlTransformContext, Plugin } from 'vite';
 import path from 'path';
 import fs from 'fs/promises';
 import typescriptPlugin from '@rollup/plugin-typescript';
@@ -8,10 +8,18 @@ import CleanCSS from 'clean-css';
 import { statSync } from 'fs';
 const { execFileSync } = require('child_process');
 import ect from 'ect-bin';
+const { exec } = require('node:child_process');
 
 const htmlMinify = require('html-minifier');
 const tmp = require('tmp');
 const ClosureCompiler = require('google-closure-compiler').compiler;
+
+const shaderMinifyConfig = {
+  shouldMinify: true,
+  shaderDirectory: './src/engine/shaders',
+  output: './src/engine/shaders/shaders.ts',
+  debounce: 2000,
+}
 
 export default defineConfig(({ command, mode }) => {
   const config = {
@@ -23,7 +31,8 @@ export default defineConfig(({ command, mode }) => {
         '@': path.resolve(__dirname, './src'),
       }
     },
-    plugins: undefined
+    shaderDirectory: 'wow',
+    plugins: [minifyShaders(shaderMinifyConfig)]
   };
 
   if (command === 'build') {
@@ -37,7 +46,7 @@ export default defineConfig(({ command, mode }) => {
       polyfillModulePreload: false,
     };
     // @ts-ignore
-    config.plugins = [typescriptPlugin(), closurePlugin(), roadrollerPlugin(), ectPlugin()];
+    config.plugins.push(typescriptPlugin(), closurePlugin(), roadrollerPlugin(), ectPlugin());
 
     // @ts-ignore
     config.rollupOptions = {
@@ -202,4 +211,40 @@ function ectPlugin(): Plugin {
       }
     },
   };
+}
+
+
+function minifyShaders(config: { shouldMinify: boolean, shaderDirectory: string, output: string, debounce: number }): Plugin {
+  function doMinification() {
+    debounce(async () => {
+      const filesInShaderDir = await fs.readdir(config.shaderDirectory);
+      const shaderFiles = filesInShaderDir.filter(file => file.endsWith('glsl'));
+      const fileArgs = shaderFiles.map(filename => {
+        return config.shaderDirectory.endsWith('/') ? `${config.shaderDirectory}${filename}` : `${config.shaderDirectory}/${filename}`
+      }).join(' ');
+      const monoRunner = process.platform === 'win32' ? '' : 'mono ';
+      exec(`${monoRunner} shader_minifier.exe --format js ${fileArgs} -o ${config.output}`)
+    }, config.debounce);
+  }
+
+  return {
+    name: 'vite:shader-minify',
+    buildStart() {
+      doMinification();
+    },
+    handleHotUpdate(context: HmrContext) {
+      if (!config.shouldMinify || !context.file.includes('glsl')) {
+        return;
+      }
+
+      doMinification();
+    }
+  }
+}
+
+let debounceTimeout: ReturnType<typeof setTimeout>;
+
+export function debounce(callback: (...args: any[]) => any, wait: number) {
+  clearTimeout(debounceTimeout);
+  debounceTimeout = setTimeout(callback, wait);
 }

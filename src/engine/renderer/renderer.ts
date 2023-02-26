@@ -6,11 +6,11 @@ import { Scene } from '@/engine/renderer/scene';
 import { Mesh } from '@/engine/renderer/mesh';
 import { InstancedMesh } from '@/engine/renderer/instanced-mesh';
 import {
-  var_COLOR,
-  var_EMISSIVE,
-  var_MODELVIEWPROJECTION,
-  var_NORMALMATRIX,
-  var_TEXTUREREPEAT, var_U_SKYBOX, var_U_VIEWDIRECTIONPROJECTIONINVERSE, var_VIEWPROJECTION
+  color,
+  emissive,
+  modelviewProjection,
+  normalMatrix,
+  textureRepeat, u_skybox, u_viewDirectionProjectionInverse, viewProjection
 } from '@/engine/shaders/shaders';
 
 // IMPORTANT! The index of a given buffer in the buffer array must match it's respective data location in the shader.
@@ -29,17 +29,17 @@ gl.enable(gl.CULL_FACE);
 gl.enable(gl.DEPTH_TEST);
 gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-const modelviewProjectionLocation = gl.getUniformLocation(lilgl.program, var_MODELVIEWPROJECTION)!;
-const normalMatrixLocation =  gl.getUniformLocation(lilgl.program, var_NORMALMATRIX)!;
-const colorLocation =  gl.getUniformLocation(lilgl.program, var_COLOR)!;
-const emissiveLocation = gl.getUniformLocation(lilgl.program, var_EMISSIVE)!;
-const textureRepeatLocation = gl.getUniformLocation(lilgl.program, var_TEXTUREREPEAT)!;
-const skyboxLocation = gl.getUniformLocation(lilgl.skyboxProgram, var_U_SKYBOX)!;
-const viewDirectionProjectionInverseLocation = gl.getUniformLocation(lilgl.skyboxProgram, var_U_VIEWDIRECTIONPROJECTIONINVERSE)!;
-const viewProjectionLocation = gl.getUniformLocation(lilgl.instancedProgram, var_VIEWPROJECTION)!;
-const instancedColorLocation = gl.getUniformLocation(lilgl.instancedProgram, var_COLOR)!;
-const instancedEmissiveLocation = gl.getUniformLocation(lilgl.instancedProgram, var_EMISSIVE)!;
-const instancedTextureRepeatLocation = gl.getUniformLocation(lilgl.instancedProgram, var_TEXTUREREPEAT);
+const modelviewProjectionLocation = gl.getUniformLocation(lilgl.program, modelviewProjection)!;
+const normalMatrixLocation =  gl.getUniformLocation(lilgl.program, normalMatrix)!;
+const colorLocation =  gl.getUniformLocation(lilgl.program, color)!;
+const emissiveLocation = gl.getUniformLocation(lilgl.program, emissive)!;
+const textureRepeatLocation = gl.getUniformLocation(lilgl.program, textureRepeat)!;
+const skyboxLocation = gl.getUniformLocation(lilgl.skyboxProgram, u_skybox)!;
+const viewDirectionProjectionInverseLocation = gl.getUniformLocation(lilgl.skyboxProgram, u_viewDirectionProjectionInverse)!;
+const viewProjectionLocation = gl.getUniformLocation(lilgl.instancedProgram, viewProjection)!;
+const instancedColorLocation = gl.getUniformLocation(lilgl.instancedProgram, color)!;
+const instancedEmissiveLocation = gl.getUniformLocation(lilgl.instancedProgram, emissive)!;
+const instancedTextureRepeatLocation = gl.getUniformLocation(lilgl.instancedProgram, textureRepeat);
 
 export function render(camera: Camera, scene: Scene) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
